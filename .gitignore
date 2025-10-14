@@ -1,0 +1,75 @@
+# ----------------------------------------------------------------------
+# 1. GLOBAL IGNORES (Hệ thống, IDE, Cấu hình)
+# ----------------------------------------------------------------------
+# System and IDE files
+.DS_Store
+Thumbs.db
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+temp/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.production.local
+application*.properties.bak
+application*.yml.bak
+
+# Test reports and coverage
+surefire-reports/
+jacoco/
+cobertura/
+
+# ----------------------------------------------------------------------
+# 2. BACKEND (Java / Maven / Spring Boot)
+# Quy tắc được áp dụng bên trong thư mục backend/warranty/
+# ----------------------------------------------------------------------
+# Build artifacts
+backend/warranty/target/
+backend/warranty/build/
+backend/warranty/out/
+
+# Maven Specific
+backend/warranty/dependency-reduced-pom.xml
+backend/warranty/release.properties
+backend/warranty/pom.xml.tag
+backend/warranty/pom.xml.releaseBackup
+backend/warranty/pom.xml.versionsBackup
+backend/warranty/pom.xml.next
+backend/warranty/*.jar
+backend/warranty/*.war
+backend/warranty/*.ear
+backend/warranty/*.zip
+backend/warranty/*.tar.gz
+backend/warranty/hs_err_pid*
+backend/warranty/.mvn/wrapper/maven-wrapper.jar
+!backend/warranty/.mvn/wrapper/maven-wrapper.properties
+!backend/warranty/.mvn/wrapper/MavenWrapperDownloader.java 
+
+# Gradle Specific (Nếu có sử dụng Gradle thay vì Maven)
+backend/warranty/.gradle/
+backend/warranty/bin/
+backend/warranty/.apt_generated/
+
+# ----------------------------------------------------------------------
+# 3. FRONTEND (Next.js / React / Node.js)
+# Quy tắc được áp dụng bên trong thư mục frontend/
+# ----------------------------------------------------------------------
+# Node dependencies
+frontend/node_modules/
+# Next.js build cache and output
+frontend/.next/
+frontend/out/
+# Package manager lock files (nếu bạn muốn bỏ qua package-lock.json của frontend)
+# frontend/package-lock.json 
+# Cache TypeScript
+frontend/.tsbuildinfo
