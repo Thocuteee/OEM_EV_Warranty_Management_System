@@ -1,26 +1,75 @@
+
 @import "tailwindcss";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Thêm biến màu chính (Blue Primary) */
+  --color-primary: #2563eb; /* blue-600 */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* Các kiểu dáng toàn cục khác */
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ---------------------- STYLES CHO LAYOUT/NAVBAR (Chỉ dùng Base Utilities) ---------------------- */
+
+/* Class cho Sidebar */
+.app-sidebar {
+  
+  @apply flex flex-col border-r p-4 space-y-4 flex-shrink-0
+       bg-white border-gray-200 overflow-y-auto overflow-x-hidden;
+}
+
+/* Class cho Menu Item trong Sidebar */
+.sidebar-menu-item-base { 
+  @apply relative flex items-center space-x-4 p-2 rounded-lg font-medium; 
+  
+}
+
+/* Class cho Navbar */
+.app-navbar {
+    @apply fixed top-0 left-0 right-0 h-16 bg-white z-20 flex items-center justify-between px-4 sm:px-6;
+    
+}
+
+/* Class cho Vị trí User/Avatar */
+.auth-user-info-base { 
+  @apply flex items-center space-x-3 p-1 pl-4 rounded-full;
+  
+}
+
+/* Class cho Nút Đăng nhập */
+.auth-button-primary {
+    @apply bg-blue-600 text-white font-bold py-1.5 px-4 rounded-full;
+  
+}
+
+
+/* ---------------------- STYLES CHO MAIN CONTENT (index.tsx) ---------------------- */
+
+/* Class cho container chứa Bảng */
+.main-table-container {
+    @apply bg-white rounded-lg overflow-hidden mb-10 border border-gray-200;
+    
+}
+
+/* Class cho thead của Bảng */
+.main-table-head {
+    @apply bg-blue-50;
+}
+
+/* Class cho hàng (row) trong Bảng */
+.main-table-row-base { 
+    @apply divide-y divide-gray-200; 
+    
+}
+
+/* Class cho Thẻ mục Quản lý (Horizontal Scroll List Item) */
+.other-section-card-base { 
+    @apply flex-shrink-0 w-60 h-auto bg-white p-4 rounded-lg border border-gray-200;
 }
