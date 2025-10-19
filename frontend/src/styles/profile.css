@@ -1,0 +1,118 @@
+body {
+  background: linear-gradient(135deg, #1a1b26, #23263a);
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 50px;
+  min-height: 100vh;
+  margin: 0;
+  scroll-behavior: smooth;
+}
+
+.profile-container {
+  background-color: rgba(20, 21, 31, 0.9);
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 0 25px rgba(255, 0, 179, 0.25);
+  width: 400px;
+  color: white;
+  position: relative;
+  overflow-y: auto;
+  max-height: 85vh;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.profile-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 35px rgba(255, 97, 199, 0.4);
+}
+
+.profile-avatar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 25px;
+  animation: fadeZoom 1s ease-in-out;
+}
+
+.profile-avatar img {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 3px solid #ff61c7;
+  box-shadow: 0 0 12px rgba(255, 97, 199, 0.6);
+}
+
+@keyframes fadeZoom {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.profile-container h2 {
+  text-align: center;
+  color: #ff61c7;
+  margin-bottom: 25px;
+  letter-spacing: 1px;
+}
+
+.profile-form label {
+  display: block;
+  margin-top: 15px;
+  margin-bottom: 5px;
+  color: #c8c8d8;
+  font-size: 14px;
+}
+
+.profile-form input,
+.profile-form textarea,
+.profile-form select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  background-color: #2c2e3e;
+  color: white;
+  font-size: 14px;
+  transition: 0.3s ease;
+}
+
+.profile-form input:focus,
+.profile-form textarea:focus,
+.profile-form select:focus {
+  box-shadow: 0 0 8px #ff61c7;
+  background-color: #33354b;
+}
+
+.profile-form input:hover,
+.profile-form textarea:hover {
+  background-color: #35384f;
+}
+
+.profile-form .gender-options {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 10px;
+}
+
+.profile-form .gender-options label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #ccc;
+}
+
+.profile-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.profile-container::-webkit-scrollbar-thumb {
+  background-color: #ff61c7;
+  border-radius: 4px;
+}
