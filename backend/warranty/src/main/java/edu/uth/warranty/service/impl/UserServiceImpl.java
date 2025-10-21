@@ -1,7 +1,5 @@
 package edu.uth.warranty.service.impl;
 
-import jakarta.persistence.*;
-
 import edu.uth.warranty.model.User;
 import edu.uth.warranty.repository.UserRepository;
 import edu.uth.warranty.dto.LoginRequest;
@@ -16,7 +14,7 @@ import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements IUserService {
-    // Interface khac nhau
+    
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
        
@@ -31,11 +29,13 @@ public class UserServiceImpl implements IUserService {
         Optional<User> userOpt = userRepository.findByUsername(loginRequest.getUsername());
         if (userOpt.isPresent()) {
             User user = userOpt.get();
+            // So sánh mật khẩu đầu vào (chưa mã hóa) với mật khẩu đã mã hóa trong DB
             if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
                 return Optional.of(user);
             }
         }
         return Optional.empty();
     }
+    
     
 }

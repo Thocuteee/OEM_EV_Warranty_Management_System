@@ -19,6 +19,6 @@ public class Worklog {
 
     private LocalDate end_time;
     
-
+    
     
 }
