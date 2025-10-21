@@ -64,6 +64,13 @@ public class User {
 
     }
 
+    public User(String username, String password, String role) {
+        this.username = username;
+        this.password = password;
+        this.role = role;
+        this.report_id = null;
+    }
+
     public User(String username, String password, String role, Long report_id) {
         this.username = username;
         this.password = password;
