@@ -6,7 +6,6 @@ import edu.uth.warranty.dto.LoginRequest;
 import edu.uth.warranty.service.IUserService;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

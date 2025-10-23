@@ -1,10 +1,19 @@
 package edu.uth.warranty.model;
 
 import jakarta.persistence.*;
-
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "ServiceCenter")
 public class ServiceCenter {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long center_id;
 
     @Column(name = "name", nullable = false, unique = true)
@@ -13,37 +22,7 @@ public class ServiceCenter {
     @Column(name = "location", nullable = false)
     private String location;
 
-    public Long getCenter_id() {
-        return center_id;
-    }
-
-    public void setCenter_id(Long center_id) {
-        this.center_id = center_id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public ServiceCenter() {
-    }
-
-    public ServiceCenter(String name, String location) {
-        this.name = name;
-        this.location = location;
-    }
+    
 
 
 }

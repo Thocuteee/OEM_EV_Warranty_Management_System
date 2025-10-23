@@ -1,6 +1,5 @@
 package edu.uth.warranty.dto;
 
-import edu.uth.warranty.common.role;
 
 public class LoginResponse {
     private Long id;
