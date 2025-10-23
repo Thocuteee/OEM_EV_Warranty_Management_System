@@ -1,9 +1,16 @@
 package edu.uth.warranty.model;
 
 import jakarta.persistence.*;
-
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "Customer")
 public class Customer {
     @Id
@@ -22,59 +29,7 @@ public class Customer {
     @Column(name = "address", nullable = false)
     private String address;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    
 
-    private Long getCustomer_id() {
-        return customer_id;
-    }
-
-    public void setCustomer_id(Long customer_id) {
-        this.customer_id = customer_id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public Customer() {
-        
-    }
-
-    public Customer(String name, String email, String phone, String address) {
-        this.name = name;
-        this.email = email;
-        this.phone = phone;
-        this.address = address;
-    }
-
-
+    
 }

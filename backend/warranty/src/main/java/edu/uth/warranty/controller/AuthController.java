@@ -1,7 +1,7 @@
 package edu.uth.warranty.controller;
 
 import edu.uth.warranty.dto.LoginResponse;
-import edu.uth.warranty.common.role;
+import edu.uth.warranty.common.Role;
 import edu.uth.warranty.dto.LoginRequest;
 import edu.uth.warranty.dto.MessageResponse;
 import edu.uth.warranty.model.User;
@@ -32,7 +32,7 @@ public class AuthController {
         if(userOptional.isPresent()){
             User user = userOptional.get();
 
-            String roleName = user.getRole();
+            String roleName = user.getRole().name();
             
             String jwtToken = "MOCK_JWT_TOKEN_" + user.getUsername() + "_" + user.getRole();
 
