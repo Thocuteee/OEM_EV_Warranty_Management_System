@@ -4,6 +4,7 @@ import React, { useState, ReactNode } from "react";
 import Image from "next/image"; 
 import { useAuth } from "../../../context/AuthContext"; // Import useAuth hook
 import { useRouter } from "next/router"; // Import useRouter để xử lý chuyển hướng sau logout
+import Link from "next/link";
 
 
 // Giả định kiểu cho các props của Layout
@@ -77,7 +78,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           {/* Tên User/Đăng nhập ở góc phải */}
           {isAuthenticated ? (
               <div className="auth-user-info-base bg-blue-50 hover:bg-blue-100 cursor-pointer transition-colors"
-                  onClick={() => console.log("Đăng xuất (Giả lập)")}> 
+                  onClick={handleLogout}> {/* BƯỚC 2: Gọi hàm handleLogout thực tế */}
                 <span className="text-sm font-semibold text-gray-700 hidden sm:inline">
                   {displayName}
                 </span>
@@ -86,9 +87,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </div>
               </div>
           ) : (
-              <button className="auth-button-primary hover:bg-blue-700 transition-colors"> {/* Thêm lại hover/transition */}
-                  Đăng nhập
-              </button>
+              <Link href="/login" passHref>
+                  <button className="auth-button-primary hover:bg-blue-700 transition-colors">
+                      Đăng nhập
+                  </button>
+              </Link>
           )}
       </header>
 
