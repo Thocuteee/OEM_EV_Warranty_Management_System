@@ -11,5 +11,5 @@ public interface IUserService {
     // Nó không có thân code, chỉ có dấu chấm phẩy ở cuối.
     Optional<User> authenticateUser(LoginRequest loginRequest);
     
-    String getPassword();
+    
 }

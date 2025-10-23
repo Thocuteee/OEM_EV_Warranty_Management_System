@@ -2,27 +2,34 @@
 
 import React, { useState, ReactNode } from "react"; 
 import Image from "next/image"; 
+import { useAuth } from "../../../context/AuthContext"; // Import useAuth hook
+import { useRouter } from "next/router"; // Import useRouter để xử lý chuyển hướng sau logout
+import Link from "next/link";
+
 
 // Giả định kiểu cho các props của Layout
 interface LayoutProps {
   children: ReactNode;
 }
 
-// Giả lập thông tin người dùng đã đăng nhập phần này sau sẽ được thay bằng logic xác thực thực tế
-const MOCK_USER = {
-    id: 101,
-    name: "Nguyễn Văn Chiến (SC Staff)",
-    initial: "N",
-    isAuthenticated: true,
-};
+
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  
-  const displayName = MOCK_USER.name;
-  const initial = MOCK_USER.initial;
-  const isAuthenticated = MOCK_USER.isAuthenticated;
-  
+
+  // Sử dụng useAuth hook để lấy thông tin người dùng
+  const { user, isAuthenticated, logout } = useAuth();
+  const router = useRouter();
+
+  const displayName = user?.username ?? "";
+  const initial = displayName ? displayName.charAt(0).toUpperCase() : '?';
+
+  // Hàm xử lý Logout
+  const handleLogout = () => {
+      logout();
+      router.push('/login'); // Chuyển hướng về trang đăng nhập sau khi logout
+  };
+
   const sidebarMenuItems = [
     { name: "Dashboard", icon: "🏠", href: "#" },
     { name: "Quản lý Xe", icon: "🚗", href: "#" },
@@ -56,8 +63,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {/* VỊ TRÍ CHÈN LOGO - Dùng placeholder Image */}
               <div className="flex items-center space-x-2">
                 <Image
-                  src="/next.svg" 
-                  alt="[VỊ TRÍ CHÈN LOGO]"
+                  src="/logo.png" 
+                  alt=""
                   width={30}
                   height={30}
                   className="rounded-full bg-blue-500 p-1"
@@ -71,7 +78,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           {/* Tên User/Đăng nhập ở góc phải */}
           {isAuthenticated ? (
               <div className="auth-user-info-base bg-blue-50 hover:bg-blue-100 cursor-pointer transition-colors"
-                  onClick={() => console.log("Đăng xuất (Giả lập)")}> 
+                  onClick={handleLogout}> {/* BƯỚC 2: Gọi hàm handleLogout thực tế */}
                 <span className="text-sm font-semibold text-gray-700 hidden sm:inline">
                   {displayName}
                 </span>
@@ -80,9 +87,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </div>
               </div>
           ) : (
-              <button className="auth-button-primary hover:bg-blue-700 transition-colors"> {/* Thêm lại hover/transition */}
-                  Đăng nhập
-              </button>
+              <Link href="/login" passHref>
+                  <button className="auth-button-primary hover:bg-blue-700 transition-colors">
+                      Đăng nhập
+                  </button>
+              </Link>
           )}
       </header>
 
