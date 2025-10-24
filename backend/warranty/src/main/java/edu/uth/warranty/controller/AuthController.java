@@ -1,7 +1,6 @@
 package edu.uth.warranty.controller;
 
 import edu.uth.warranty.dto.LoginResponse;
-import edu.uth.warranty.common.Role;
 import edu.uth.warranty.dto.LoginRequest;
 import edu.uth.warranty.dto.MessageResponse;
 import edu.uth.warranty.model.User;
