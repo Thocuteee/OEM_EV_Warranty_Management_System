@@ -6,19 +6,31 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "WorkLog")
-public class Worklog {
+public class WorkLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long log_id;
 
-    private Long clam_id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "claim_id", nullable = false)
+    private WarrantyClaim claim;
 
-    private Long technician_id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "technician_id", nullable = false)
+    private Technician technician;
 
+    @Column(name = "start_time", nullable = false)
     private LocalDate start_time;
 
+    @Column(name = "end_time", nullable = false)
     private LocalDate end_time;
     
+    @Column(name = "log_date")
+    private LocalDate log_date;
 
+    @Column(name = "duration", precision = 5, scale = 2) 
+    private BigDecimal duration;
     
+    @Column(name = "notes")
+    private String notes;
 }
