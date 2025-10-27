@@ -8,20 +8,22 @@ import java.util.Objects;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
-
+import lombok.AllArgsConstructor;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "CampaignVehicle")
 @IdClass(CampaignVehicle.CampaignVehicleId.class)
 public class CampaignVehicle {
     public static class CampaignVehicleId implements Serializable {
-        private Long campaign;
-        private Long vehicle;
+        private Long campaign; 
+        private Long vehicle;  
 
         public CampaignVehicleId() {}
+
         public CampaignVehicleId(Long campaign, Long vehicle) {
             this.campaign = campaign;
             this.vehicle = vehicle;
@@ -43,13 +45,13 @@ public class CampaignVehicle {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "campaign_id", nullable = false)
-    private RecallCampaign campaign;
+    @JoinColumn(name = "campaign_id", nullable = false, insertable = false, updatable = false) 
+    private RecallCampaign campaign; 
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vehicle_id", nullable = false)
-    private Vehicle vehicle;
+    @JoinColumn(name = "vehicle_id", nullable = false, insertable = false, updatable = false) 
+    private Vehicle vehicle; 
 
     @Column(name = "status", nullable = false)
     private String status;
