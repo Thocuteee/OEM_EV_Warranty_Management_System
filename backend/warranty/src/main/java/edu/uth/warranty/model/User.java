@@ -34,6 +34,4 @@ public class User {
     private List<Report> reports;
 
     
-
-    
 }
