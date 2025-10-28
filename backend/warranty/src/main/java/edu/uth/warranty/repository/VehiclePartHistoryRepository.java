@@ -12,7 +12,11 @@ import java.util.List;
 
 @Repository
 public interface VehiclePartHistoryRepository extends JpaRepository<VehiclePartHistory, Long>{
-    List<VehiclePartHistory> findByVehicle_PartSerial_Claim(Vehicle vehicle, PartSerial partSerial, WarrantyClaim claim);
+    List<VehiclePartHistory> findByVehicle(Vehicle vehicle);
+
+    List<VehiclePartHistory> findByPartserial(PartSerial partserial);
+
+    List<VehiclePartHistory> findByClaim(WarrantyClaim claim);
 
     List<VehiclePartHistory> findByDateInstalledBetween(LocalDate startDate, LocalDate endDate);
 }

@@ -12,11 +12,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory,Long>{
-    List<Inventory> findByPartAndCenter(Part part, ServiceCenter center);
+    List<Inventory> findByPart(Part part);
 
-    Optional<Inventory> findByInventory_Part_Center(Long inventory , Part part, ServiceCenter center);
+    List<Inventory> findByCenter(ServiceCenter center);
 
-    List<Inventory> findByAmount (BigDecimal amount);
+    Optional<Inventory> findByPartAndCenter(Part part, ServiceCenter center);
 
-    List<Inventory> findByInvoiceDate(LocalDate invoiceDate);
+    List<Inventory> findByAmountLessThanEqual(BigDecimal amount);
+
+    List<Inventory> findByInvoiceDateBetween(LocalDate startDate, LocalDate endDate);
 }

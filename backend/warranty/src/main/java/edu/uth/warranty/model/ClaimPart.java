@@ -61,16 +61,16 @@ public class ClaimPart {
     private Integer quantity;
 
     @Column(name = "unit_price", precision = 10, scale = 2, nullable = false)
-    private BigDecimal unit_price;
+    private BigDecimal unitPrice;
 
     @Column(name = "total_price", precision = 10, scale = 2, nullable = false)
-    private BigDecimal total_price;
+    private BigDecimal totalPrice;
 
     public ClaimPart(WarrantyClaim claim, Part part, Integer quantity, BigDecimal unit_price, BigDecimal total_price) {
         this.claim = claim;
         this.part = part;
         this.quantity = quantity;
-        this.unit_price = unit_price;
-        this.total_price = total_price;
+        this.unitPrice = unit_price;
+        this.totalPrice = total_price;
     }
 }
