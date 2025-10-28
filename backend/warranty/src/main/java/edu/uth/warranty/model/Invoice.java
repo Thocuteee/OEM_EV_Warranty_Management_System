@@ -31,14 +31,14 @@ public class Invoice {
     private ServiceCenter center;
 
     @Column(name = "location_type", nullable = false)
-    private String location_type;
+    private String locationType;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
     @Column(name = "min_stock_level", nullable = false)
-    private Integer min_stock_level;
+    private Integer minStockLevel;
 
     @Column(name = "payments_status", nullable = false)
-    private String payments_status;
+    private String paymentsStatus;
 }
