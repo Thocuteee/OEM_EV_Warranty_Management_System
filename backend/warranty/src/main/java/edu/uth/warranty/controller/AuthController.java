@@ -38,7 +38,7 @@ public class AuthController {
             // 2. Trả về response thành công (HTTP 200 OK)
             // FE cần username và token để lưu trữ và hiển thị
             LoginResponse response = new LoginResponse(
-                    user.getUser_id(),
+                    user.getId(),
                     user.getUsername(),
                     roleName,
                     jwtToken

@@ -32,5 +32,5 @@ public class Inventory {
     private BigDecimal amount;
 
     @Column(name = "invoice_date", nullable = false)
-    private LocalDate invoice_date;
+    private LocalDate invoiceDate;
 }
