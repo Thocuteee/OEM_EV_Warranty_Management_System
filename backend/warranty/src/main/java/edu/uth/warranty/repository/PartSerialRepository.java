@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface PartSerialRepository {
+public interface PartSerialRepository extends JpaRepository<PartSerial, Long>{
     Optional<PartSerial> findBySerialNumber(String serialNumber);
 
     Boolean existsBySerialNumber(String serialNumber);
