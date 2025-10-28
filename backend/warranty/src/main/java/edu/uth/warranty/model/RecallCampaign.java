@@ -23,10 +23,10 @@ public class RecallCampaign {
     private String title;
 
     @Column(name = "start_date")
-    private LocalDate start_date;
+    private LocalDate startDate;
     
     @Column(name = "end_date")
-    private LocalDate end_date;
+    private LocalDate endDate;
 
     
 
