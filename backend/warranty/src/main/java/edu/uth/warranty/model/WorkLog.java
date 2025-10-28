@@ -20,13 +20,13 @@ public class WorkLog {
     private Technician technician;
 
     @Column(name = "start_time", nullable = false)
-    private LocalDate start_time;
+    private LocalDate startTime;
 
     @Column(name = "end_time", nullable = false)
-    private LocalDate end_time;
+    private LocalDate endTime;
     
     @Column(name = "log_date")
-    private LocalDate log_date;
+    private LocalDate logDate;
 
     @Column(name = "duration", precision = 5, scale = 2) 
     private BigDecimal duration;

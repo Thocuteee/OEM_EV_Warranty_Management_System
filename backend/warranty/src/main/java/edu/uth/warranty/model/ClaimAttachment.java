@@ -22,7 +22,7 @@ public class ClaimAttachment {
     private WarrantyClaim claim;
 
     @Column(name = "file_url", nullable = false)
-    private String file_url;
+    private String fileUrl;
 
     @Column(name = "type", nullable = false)
     private String type;
