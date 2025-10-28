@@ -1,43 +1,41 @@
 package edu.uth.warranty.model;
+import java.time.LocalDate;
 
-import jakarta.persistence.*;
-import java.time.LocalDateTime;
-import java.math.BigDecimal;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "WarrantyClaim")
-public class WarrantyClaim {
-    @Id
+public class WarrantyClaim
+{
+
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "claim_id")
     private Long claim_id;
 
-    @ManyToOne
-    @JoinColumn(name = "staff_id", nullable = false)
-    private Long staff_id;
+    @Column(name = "claim_date")
+    private LocalDate claim_date;
 
-    private Long vehicle_id;
-
-    private Long customer_id;
-
-    private Long technician_id;
-
-    private Long center_id;
-
-    @Column(name = "status", nullable = false, unique = true)
+    @Column(name = "status")
     private String status;
 
-    private String description;
+    @Column(name = "total_cost")
+    private Double total_cost;
 
-    @Column(name = "created_at")
-    private LocalDateTime created_at;
+    @Column(name = "vehicle_id")
+    private Long vehicle_id;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updated_at;
+    @Column(name = "customer_id")
+    private Long customer_id;
 
-    @Column(name = "total_cost", precision = 10, scale = 2, nullable = false)
-    private BigDecimal total_cost;
+    @Column(name = "center_id")
+    private Long center_id;
 
-    private String approval_status;
+    @Column(name = "technician_id")
+    private Long technician_id;
 
     public Long getClaim_id() {
         return claim_id;
@@ -47,12 +45,28 @@ public class WarrantyClaim {
         this.claim_id = claim_id;
     }
 
-    public Long getStaff_id() {
-        return staff_id;
+    public LocalDate getClaim_date() {
+        return claim_date;
     }
 
-    public void setStaff_id(Long staff_id) {
-        this.staff_id = staff_id;
+    public void setClaim_date(LocalDate claim_date) {
+        this.claim_date = claim_date;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Double getTotal_cost() {
+        return total_cost;
+    }
+
+    public void setTotal_cost(Double total_cost) {
+        this.total_cost = total_cost;
     }
 
     public Long getVehicle_id() {
@@ -71,14 +85,6 @@ public class WarrantyClaim {
         this.customer_id = customer_id;
     }
 
-    public Long getTechnician_id() {
-        return technician_id;
-    }
-
-    public void setTechnician_id(Long technician_id) {
-        this.technician_id = technician_id;
-    }
-
     public Long getCenter_id() {
         return center_id;
     }
@@ -87,72 +93,28 @@ public class WarrantyClaim {
         this.center_id = center_id;
     }
 
-    public String getStatus() {
-        return status;
+    public Long getTechnician_id() {
+        return technician_id;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setTechnician_id(Long technician_id) {
+        this.technician_id = technician_id;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public LocalDateTime getCreated_at() {
-        return created_at;
-    }
-
-    public void setCreated_at(LocalDateTime created_at) {
-        this.created_at = created_at;
-    }
-
-    public LocalDateTime getUpdated_at() {
-        return updated_at;
-    }
-
-    public void setUpdated_at(LocalDateTime updated_at) {
-        this.updated_at = updated_at;
-    }
-
-    public BigDecimal getTotal_cost() {
-        return total_cost;
-    }
-
-    public void setTotal_cost(BigDecimal total_cost) {
-        this.total_cost = total_cost;
-    }
-
-    public String getApproval_status() {
-        return approval_status;
-    }
-
-    public void setApproval_status(String approval_status) {
-        this.approval_status = approval_status;
-    }
 
     public WarrantyClaim() {
     }
 
-    public WarrantyClaim(Long staff_id, Long vehicle_id, Long customer_id, Long technician_id, 
-    Long center_id, String status, String description, LocalDateTime created_at, 
-    LocalDateTime updated_at, BigDecimal total_cost, String approval_status) {
-        this.staff_id = staff_id;
+    public WarrantyClaim(LocalDate claim_date, String status, Double total_cost,
+                         Long vehicle_id, Long customer_id, Long center_id, Long technician_id) {
+        this.claim_date = claim_date;
+        this.status = status;
+        this.total_cost = total_cost;
         this.vehicle_id = vehicle_id;
         this.customer_id = customer_id;
-        this.technician_id = technician_id;
         this.center_id = center_id;
-        this.status = status;
-        this.description = description;
-        this.created_at = created_at;
-        this.updated_at = updated_at;
-        this.total_cost = total_cost;
-        this.approval_status = approval_status;
+        this.technician_id = technician_id;
     }
+}
 
-
-}   
+    

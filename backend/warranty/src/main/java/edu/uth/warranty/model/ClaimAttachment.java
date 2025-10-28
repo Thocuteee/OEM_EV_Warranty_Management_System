@@ -1,22 +1,28 @@
 package edu.uth.warranty.model;
-
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "ClaimAttachment")
-public class ClaimAttachment {
+public class ClaimAttachment 
+{
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "attachment_id")
     private Long attachment_id;
 
-    @ManyToOne
-    @JoinColumn(name = "claim_id", nullable = false)
+    @Column(name = "claim_id")
     private Long claim_id;
 
-    @Column(name = "file_url", nullable = false)
+    @Column(name = "file_url")
     private String file_url;
 
-    @Column(name = "type", nullable = false)
+    @Column(name = "type")
     private String type;
 
     public Long getAttachment_id() {
@@ -59,6 +65,4 @@ public class ClaimAttachment {
         this.file_url = file_url;
         this.type = type;
     }
-
-    
 }
