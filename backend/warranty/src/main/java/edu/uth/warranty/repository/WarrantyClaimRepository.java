@@ -1,18 +1,18 @@
 package edu.uth.warranty.repository;
 
-import edu.uth.warranty.model.WarrantyClaim;
-import edu.uth.warranty.model.Customer;
-import edu.uth.warranty.model.Vehicle;
-import edu.uth.warranty.model.ServiceCenter;
-import edu.uth.warranty.model.Technician;
-import edu.uth.warranty.model.Staff;
-
-import java.util.List;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import edu.uth.warranty.model.Customer;
+import edu.uth.warranty.model.ServiceCenter;
+import edu.uth.warranty.model.Staff;
+import edu.uth.warranty.model.Technician;
+import edu.uth.warranty.model.Vehicle;
+import edu.uth.warranty.model.WarrantyClaim;
 
 @Repository
 public interface WarrantyClaimRepository extends JpaRepository<WarrantyClaim, Long>{
@@ -20,7 +20,7 @@ public interface WarrantyClaimRepository extends JpaRepository<WarrantyClaim, Lo
 
     List<WarrantyClaim> findByApprovalStatus(String approvalStatus);
 
-    List<WarrantyClaim> findByStatusIn(List<String> statuses);
+    List<WarrantyClaim> findByStatusIn(String statuses);
 
     List<WarrantyClaim> findByVehicle(Vehicle vehicle);
 
