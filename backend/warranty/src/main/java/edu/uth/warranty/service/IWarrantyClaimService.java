@@ -1,5 +1,7 @@
 package edu.uth.warranty.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +14,7 @@ import edu.uth.warranty.model.Technician;
 import edu.uth.warranty.model.Vehicle;
 import edu.uth.warranty.model.WarrantyClaim;
 
+
 @Service
 
 public interface IWarrantyClaimService {
@@ -20,37 +23,20 @@ public interface IWarrantyClaimService {
 
     Optional<WarrantyClaim> getWarrantyClaimById(Long id);
 
-    WarrantyClaim createWarrantyClaim(WarrantyClaim warrantyClaim);
-
-    WarrantyClaim updateWarrantyClaim(Long id, WarrantyClaim warrantyClaimDetails);
-
     WarrantyClaim saveWarrantyClaim(WarrantyClaim warrantyClaim);
 
     void deleteWarrantyClaim(Long id);
-    
-    WarrantyClaim updateWarrantyClaimStatus(Long id, String status);
+    List<WarrantyClaim> getWarrantyClaimsByStatus(String status);
 
-    
+    List<WarrantyClaim> getWarrantyClaimsByApprovalStatus(String approvalStatus);
 
-    WarrantyClaim updateApprovalStatus(Long id, String approvalStatus);
+    WarrantyClaim updateWarrantyClaimsStatus(Long id , String status);
 
-    List<WarrantyClaim> findByStatusIn(String statuses);
-
-    List<WarrantyClaim> findClaimsByApprovalStatus(String approvalStatus);
-
-    List<WarrantyClaim> findClaimsByVehicle(Vehicle vehicle);
-
-    List<WarrantyClaim> findClaimsByCustomer(Customer customer);
-
-    List<WarrantyClaim> findClaimsByTechnician(Technician technician);
-
-    List<WarrantyClaim> findClaimsByStaff(Staff staff);
-
-    List<WarrantyClaim> findClaimsByServiceCenter(ServiceCenter center);
-
-    List<WarrantyClaim> findClaimsByCreatedBetween(java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
-
-    List<WarrantyClaim> findClaimsByTotalCostGreaterThanEqual(java.math.BigDecimal totalCost);
-
-    
+    List<WarrantyClaim> getWarrantyClaimsByVehicle(Vehicle vehicle);
+    List<WarrantyClaim> getWarrantyClaimsByCustomer(Customer customer);
+    List<WarrantyClaim> getWarrantyClaimsByCenter(ServiceCenter center);
+    List<WarrantyClaim> getWarrantyClaimsByTechnician(Technician technician);
+    List<WarrantyClaim> getWarrantyClaimsByStaff(Staff staff);
+    List<WarrantyClaim> getWarrantyClaimsCreatedBetween(LocalDateTime start, LocalDateTime end);
+    List<WarrantyClaim> getWarrantyClaimsByMinTotalCost(BigDecimal totalCost);
 }

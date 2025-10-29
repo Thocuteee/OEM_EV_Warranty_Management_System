@@ -1,5 +1,7 @@
 package edu.uth.warranty.service.impl;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,112 +13,136 @@ import edu.uth.warranty.model.Staff;
 import edu.uth.warranty.model.Technician;
 import edu.uth.warranty.model.Vehicle;
 import edu.uth.warranty.model.WarrantyClaim;
+import edu.uth.warranty.repository.CustomerRepository;
+import edu.uth.warranty.repository.ServiceCenterRepository;
+import edu.uth.warranty.repository.StaffRepository;
+import edu.uth.warranty.repository.TechnicianRepository;
+import edu.uth.warranty.repository.VehicleRepository;
 import edu.uth.warranty.repository.WarrantyClaimRepository;
 import edu.uth.warranty.service.IWarrantyClaimService;
 import jakarta.transaction.Transactional;
 
 @Service
 @Transactional
-public class WarrantyClaimImpl   implements IWarrantyClaimService {
+public class WarrantyClaimImpl implements IWarrantyClaimService {
+
+    private final CustomerRepository customerRepository;
 
     private final WarrantyClaimRepository warrantyClaimRepository;
-    // Inject thêm các repository khác nếu cần cho logic phức tạp hơn (ví dụ: ClaimPartRepository để tính tổng tiền)
-
-    public WarrantyClaimImpl(WarrantyClaimRepository warrantyClaimRepository) {
+    
+    private final VehicleRepository vehicleRepository;
+    private final TechnicianRepository technicianRepository;
+    private final StaffRepository staffRepository;
+    private final ServiceCenterRepository serviceCenterRepository;
+    
+    public WarrantyClaimImpl(WarrantyClaimRepository warrantyClaimRepository,
+            CustomerRepository customerRepository,
+            VehicleRepository vehicleRepository,
+            TechnicianRepository technicianRepository,
+            StaffRepository staffRepository,
+            ServiceCenterRepository serviceCenterRepository, CustomerServiceImpl customerServiceImpl)
+            {
         this.warrantyClaimRepository = warrantyClaimRepository;
-
+        this.customerRepository = customerRepository;
+        this.vehicleRepository = vehicleRepository;
+        this.technicianRepository = technicianRepository;
+        this.staffRepository = staffRepository;
+        this.serviceCenterRepository = serviceCenterRepository;
+    
     }
     @Override
     public List<WarrantyClaim> getAllWarrantyClaims() {
         return warrantyClaimRepository.findAll();
     }
-
     @Override
     public Optional<WarrantyClaim> getWarrantyClaimById(Long id) {
         return warrantyClaimRepository.findById(id);
     }
     @Override
-    public WarrantyClaim createWarrantyClaim(WarrantyClaim warrantyClaim) {
-        return warrantyClaimRepository.save(warrantyClaim);
-    }
-    @Override
-    public WarrantyClaim updateWarrantyClaim(Long id, WarrantyClaim warrantyClaimDetails) {
-        return warrantyClaimRepository.findById(id)
-                .map(existingClaim -> {
-                    // Update all fields from warrantyClaimDetails to existingClaim
-                    existingClaim.setStatus(warrantyClaimDetails.getStatus());
-                    existingClaim.setApprovalStatus(warrantyClaimDetails.getApprovalStatus());
-                    existingClaim.setTotalCost(warrantyClaimDetails.getTotalCost());
-                    // Add other fields as needed
-                    return warrantyClaimRepository.save(existingClaim);
-                })
-                .orElseThrow(() -> new RuntimeException("WarrantyClaim not found with id: " + id));
-    }
-    @Override
-    public WarrantyClaim saveWarrantyClaim(WarrantyClaim warrantyClaim) {
-        return warrantyClaimRepository.save(warrantyClaim);
+    public WarrantyClaim saveWarrantyClaim(WarrantyClaim warrantyClaim){
+        if(vehicleRepository.findById(warrantyClaim.getVehicle().getVehicle_id()).isEmpty()) {
+            throw new IllegalArgumentException("Yêu cầu bảo hành với không tồn tại.");
         }
+        if(customerRepository.findById(warrantyClaim.getCustomer().getCustomer_id()).isEmpty()) {
+            throw new IllegalArgumentException("Khách hàng với ID " + warrantyClaim.getCustomer().getCustomer_id() + " không tồn tại.");
+        }
+        if(serviceCenterRepository.findById(warrantyClaim.getCenter().getCenter_id()).isEmpty()) {
+            throw new IllegalArgumentException("Trung tâm dịch vụ với ID " + warrantyClaim.getCenter().getCenter_id() + " không tồn tại.");
+        }
+        if(warrantyClaim.getClaim_id() == null) {
+            warrantyClaim.setCreatedAt(LocalDateTime.now());
+            warrantyClaim.setStatus("DRAFT ");
+            warrantyClaim.setApprovalStatus("PENDING");
 
+        }
+        warrantyClaim.setUpdatedAt(LocalDateTime.now());
+        return warrantyClaimRepository.save(warrantyClaim);
+    
+    }
     @Override
     public void deleteWarrantyClaim(Long id) {
-        warrantyClaimRepository.deleteById(id);
-    }
-
-    @Override
-    public WarrantyClaim updateWarrantyClaimStatus(Long id, String status) {
-        return warrantyClaimRepository.findById(id)
-                .map(existingClaim -> {
-                    existingClaim.setStatus(status);
-                    return warrantyClaimRepository.save(existingClaim);
-                })
-                .orElseThrow(() -> new RuntimeException("WarrantyClaim not found with id: " + id));
-    }
-
-    @Override
-    public List<WarrantyClaim> findByStatusIn(String statuses) {
-        return warrantyClaimRepository.findByStatus(statuses);
+    Optional<WarrantyClaim> claimOpt = warrantyClaimRepository.findById(id);
+         if(!claimOpt.isPresent()) {
+            throw new IllegalArgumentException("Claim không tồn tại.");
+         }
+         if(!claimOpt.get().getStatus().equals("DRAFT")) {
+            throw new IllegalArgumentException("Chỉ có thể xóa các yêu cầu bảo hành ở trạng thái DRAFT.");
+         }
+         warrantyClaimRepository.deleteById(id);
     }
     @Override
-    public WarrantyClaim updateApprovalStatus(Long id, String approvalStatus) {
-        return warrantyClaimRepository.findById(id)
-                .map(claim -> {
-                    claim.setApprovalStatus(approvalStatus); // Assuming you have setApprovalStatus method
-                    return warrantyClaimRepository.save(claim);
-                })
-                .orElseThrow(() -> new RuntimeException("WarrantyClaim not found with id: " + id));
+    public List<WarrantyClaim> getWarrantyClaimsByStatus(String status) {
+        return warrantyClaimRepository.findByStatus(status);
     }
     @Override
-    public List<WarrantyClaim> findClaimsByApprovalStatus(String approvalStatus) {
+    public List<WarrantyClaim> getWarrantyClaimsByApprovalStatus(String approvalStatus) {
         return warrantyClaimRepository.findByApprovalStatus(approvalStatus);
     }
     @Override
-    public List<WarrantyClaim> findClaimsByVehicle(Vehicle vehicle) {
+    public WarrantyClaim updateWarrantyClaimsStatus(Long claimId, String newApprovalStatus) {
+        WarrantyClaim claim = warrantyClaimRepository.findById(claimId).orElseThrow(() -> new IllegalArgumentException("Claim không tồn tại."));
+
+        if(claim.getStatus().equals("SENT")) {
+            claim.setApprovalStatus(newApprovalStatus);
+            claim.setUpdatedAt(LocalDateTime.now());
+            
+            if(newApprovalStatus.equals("APPROVED")) {
+                claim.setStatus("IN_PROGRESS");
+            } else if(newApprovalStatus.equals("REJECTED")) {
+                claim.setStatus("REJECTED");
+            }
+            return warrantyClaimRepository.save(claim);
+        } else {
+            throw new IllegalArgumentException("Khong thể phê duyệt ở trạng thái SENT.");
+        }
+    }
+
+    @Override
+    public List<WarrantyClaim> getWarrantyClaimsByVehicle(Vehicle vehicle) {
         return warrantyClaimRepository.findByVehicle(vehicle);
     }
     @Override
-    public List<WarrantyClaim> findClaimsByCustomer(Customer customer) {
+    public List<WarrantyClaim> getWarrantyClaimsByCustomer(Customer customer) {
         return warrantyClaimRepository.findByCustomer(customer);
     }
     @Override
-    public List<WarrantyClaim> findClaimsByTechnician(Technician technician) {
-        return warrantyClaimRepository.findByTechnician(technician);
-    }
-    @Override
-    public List<WarrantyClaim> findClaimsByStaff(Staff staff) {
-        return warrantyClaimRepository.findByStaff(staff);
-    }
-    @Override
-    public List<WarrantyClaim> findClaimsByServiceCenter(ServiceCenter center) {
+    public List<WarrantyClaim> getWarrantyClaimsByCenter(ServiceCenter center) {
         return warrantyClaimRepository.findByCenter(center);
     }
     @Override
-    public List<WarrantyClaim> findClaimsByCreatedBetween(java.time.LocalDateTime startDate, java.time.LocalDateTime endDate) {
-        return warrantyClaimRepository.findByCreatedAtBetween(startDate, endDate);
+    public List<WarrantyClaim> getWarrantyClaimsByTechnician(Technician technician) {
+        return warrantyClaimRepository.findByTechnician(technician);
     }
     @Override
-    public List<WarrantyClaim> findClaimsByTotalCostGreaterThanEqual(java.math.BigDecimal totalCost) {
+    public List<WarrantyClaim> getWarrantyClaimsByStaff(Staff staff) {
+        return warrantyClaimRepository.findByStaff(staff);
+    }
+    @Override
+    public List<WarrantyClaim> getWarrantyClaimsCreatedBetween(LocalDateTime start, LocalDateTime end) {
+        return warrantyClaimRepository.findByCreatedAtBetween(start, end);
+    }
+    @Override
+    public List<WarrantyClaim> getWarrantyClaimsByMinTotalCost(BigDecimal totalCost) {
         return warrantyClaimRepository.findByTotalCostGreaterThanEqual(totalCost);
     }
-
-
 }
