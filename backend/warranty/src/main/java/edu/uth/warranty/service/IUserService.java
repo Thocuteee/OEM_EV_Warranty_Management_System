@@ -1,10 +1,9 @@
 package edu.uth.warranty.service;
 
-import edu.uth.warranty.model.User;
-import edu.uth.warranty.dto.LoginRequest;
-
-
 import java.util.Optional;
+
+import edu.uth.warranty.dto.LoginRequest;
+import edu.uth.warranty.model.User;
 
 
 public interface IUserService {
