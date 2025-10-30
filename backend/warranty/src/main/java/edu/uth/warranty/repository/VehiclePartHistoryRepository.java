@@ -1,13 +1,12 @@
 package edu.uth.warranty.repository;
 
-import edu.uth.warranty.model.VehiclePartHistory;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 import edu.uth.warranty.model.Vehicle;
+import edu.uth.warranty.model.VehiclePartHistory;
 
 
 @Repository
