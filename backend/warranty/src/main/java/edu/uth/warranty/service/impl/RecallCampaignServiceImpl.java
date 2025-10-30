@@ -13,10 +13,10 @@ import java.util.Optional;
 
 @Service
 @Transactional
-public class RecallCampaignImpl implements IRecallCampaignService{
+public class RecallCampaignServiceImpl implements IRecallCampaignService{
     private final RecallCampaignRepository recallCampaignRepository;
 
-    public RecallCampaignImpl(RecallCampaignRepository recallCampaignRepository) {
+    public RecallCampaignServiceImpl(RecallCampaignRepository recallCampaignRepository) {
         this.recallCampaignRepository = recallCampaignRepository;
     }
 
