@@ -24,7 +24,7 @@ public class Part {
     private String name;
 
     @Column(name = "part_number", nullable = false, unique = true)
-    private String part_number;
+    private String partNumber;
 
     @Column(name = "price", precision = 10, scale = 2, nullable = false)
     private BigDecimal price;

@@ -20,7 +20,7 @@ import lombok.AllArgsConstructor;
 public class Report {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long report_id;
+    private Long reportId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "claim_id", nullable = false)
@@ -45,43 +45,43 @@ public class Report {
     @Column(name = "status", nullable = false)
     private String status;
     @Column(name = "report_date", nullable = false)
-    private LocalDate report_date;
+    private LocalDate reportDate;
 
     @Column(name = "started_at")
-    private LocalDateTime started_at;
+    private LocalDateTime startedAt;
 
     @Column(name = "finished_at")
-    private LocalDateTime finished_at;
+    private LocalDateTime finishedAt;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(columnDefinition = "TEXT")
-    private String action_taken;
+    private String actionTaken;
 
     @Column(columnDefinition = "TEXT")
-    private String part_used;
+    private String partUsed;
 
     @Column(columnDefinition = "TEXT")
-    private String replaced_part;
+    private String replacedPart;
 
     @Column(name = "part_cost", precision = 10, scale = 2)
-    private BigDecimal part_cost;
+    private BigDecimal partCost;
 
     @Column(name = "labor_cost", precision = 10, scale = 2)
-    private BigDecimal actual_cost;
+    private BigDecimal actualCost;
 
     @Column(name = "created_date")
-    private LocalDateTime created_date;
+    private LocalDateTime createdDate;
 
     @Column(name = "created_by")
-    private String created_by;
+    private String createdByUsername;
 
     @Column(name = "updated_at")
-    private LocalDateTime updated_at;
+    private LocalDateTime updatedAt;
 
     @Column(name = "updated_by")
-    private String updated_by;
+    private String updatedBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false) // FK trỏ về User

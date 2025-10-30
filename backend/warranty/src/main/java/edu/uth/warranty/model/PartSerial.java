@@ -33,10 +33,10 @@ public class PartSerial {
     private Part part;
 
     @Column(name = "serial_number", nullable = false, unique = true)
-    private String serial_number;
+    private String serialNumber;
 
     @Column(name = "date_received", nullable = false)
-    private LocalDate date_received;
+    private LocalDate dateReceived;
 
     
 

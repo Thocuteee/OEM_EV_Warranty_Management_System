@@ -1,4 +1,5 @@
 package edu.uth.warranty.service;
+
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -16,4 +17,5 @@ public interface IVehicleService {
 
     List<Vehicle> getVehiclesByCustomer(Customer customer);
     List<Vehicle> getVehiclesByYear(String year);
+    
 }

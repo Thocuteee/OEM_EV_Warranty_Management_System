@@ -46,16 +46,16 @@ public class WarrantyClaim {
     private String description;
 
     @Column(name = "created_at")
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
-    private LocalDateTime updated_at;
+    private LocalDateTime updatedAt;
 
     @Column(name = "total_cost", precision = 10, scale = 2, nullable = false)
-    private BigDecimal total_cost;
+    private BigDecimal totalCost;
 
     @Column(name = "approval_status")
-    private String approval_status;
+    private String approvalStatus;
 
     
 

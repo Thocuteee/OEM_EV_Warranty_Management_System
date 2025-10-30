@@ -1,16 +1,23 @@
 package edu.uth.warranty.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import edu.uth.warranty.model.CampaignVehicle;
+import edu.uth.warranty.model.RecallCampaign;
+import edu.uth.warranty.model.Vehicle;
 
 @Repository
-public interface CampaignVehicleRepository extends JpaRepository<CampaignVehicle, CampaignVehicle.CampaignVehicleId> {
-    List<CampaignVehicle> findByCampaignVehicle_CampaignId(String campaignId);
+public interface CampaignVehicleRepository extends JpaRepository<CampaignVehicle, Long>{
+    List<CampaignVehicle> findByCampaign(RecallCampaign campaign);
 
-    List<CampaignVehicle> findByCampaignVehicle_Vin(String vin);
-    List<CampaignVehicle> findByCampaignVehicle_Status(String status);
+    List<CampaignVehicle> findByVehicle(Vehicle vehicle);
+
+    Optional<CampaignVehicle> findByCampaignAndVehicle(RecallCampaign campaign, Vehicle vehicle);
+
+    List<CampaignVehicle> findByStatus(String status);
 }
+

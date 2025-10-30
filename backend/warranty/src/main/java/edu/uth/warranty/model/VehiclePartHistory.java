@@ -31,7 +31,7 @@ public class VehiclePartHistory {
     private WarrantyClaim claim;
 
     @Column(name = "date_installed")
-    private LocalDate date_installed;
+    private LocalDate dateInstalled;
 
 
 

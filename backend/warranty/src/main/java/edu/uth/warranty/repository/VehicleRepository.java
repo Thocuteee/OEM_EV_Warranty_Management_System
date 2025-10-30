@@ -10,16 +10,14 @@ import org.springframework.stereotype.Repository;
 import edu.uth.warranty.model.Customer;
 import edu.uth.warranty.model.Vehicle;
 
-
-
-
 @Repository
-public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
-    Optional<Vehicle> findByVehicle_Customer(Long vehicle , Customer customer);
-    
+public interface VehicleRepository extends JpaRepository<Vehicle, Long>{
     Optional<Vehicle> findByVIN(String VIN);
 
-    List<Vehicle> findByModel(String model);
+    Optional<Vehicle> findByModel(String model);
+
+    List<Vehicle> findByCustomer(Customer customer);
+
 
     List<Vehicle> findByYear(String year);
 }
