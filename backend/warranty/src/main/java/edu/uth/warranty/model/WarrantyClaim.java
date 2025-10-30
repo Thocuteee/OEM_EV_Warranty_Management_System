@@ -7,7 +7,15 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Table;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "WarrantyClaim")
 public class WarrantyClaim
 {
@@ -16,6 +24,7 @@ public class WarrantyClaim
     @Column(name = "claim_id")
     private Long claim_id;
 
+<<<<<<< HEAD
     @Column(name = "claim_date")
     private LocalDate claim_date;
 
@@ -116,5 +125,46 @@ public class WarrantyClaim
         this.technician_id = technician_id;
     }
 }
+=======
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "staff_id", nullable = false)
+    private Staff staff;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "vehicle_id", nullable = false)
+    private Vehicle vehicle;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private Customer customer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "technician_id", nullable = false)
+    private Technician technician;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "center_id", nullable = false)
+    private ServiceCenter center;
+
+    @Column(name = "status", nullable = false, unique = true)
+    private String status;
+
+    @Column(name = "description")
+    private String description;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Column(name = "total_cost", precision = 10, scale = 2, nullable = false)
+    private BigDecimal totalCost;
+
+    @Column(name = "approval_status")
+    private String approvalStatus;
+
+    
+>>>>>>> main
 
     
