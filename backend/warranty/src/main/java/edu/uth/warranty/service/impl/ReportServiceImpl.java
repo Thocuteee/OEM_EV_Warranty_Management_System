@@ -4,8 +4,6 @@ import edu.uth.warranty.model.Report;
 import edu.uth.warranty.model.WarrantyClaim;
 import edu.uth.warranty.model.Technician;
 import edu.uth.warranty.model.ServiceCenter;
-import edu.uth.warranty.model.Vehicle;
-import edu.uth.warranty.model.RecallCampaign;
 import edu.uth.warranty.model.User;
 
 import edu.uth.warranty.repository.*; // Import tất cả các Repository cần thiết
