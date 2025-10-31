@@ -41,4 +41,5 @@ public class Staff {
 
     @Column(name = "password", nullable = false)
     private String password;
+    
 }

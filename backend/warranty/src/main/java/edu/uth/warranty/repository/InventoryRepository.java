@@ -11,7 +11,7 @@ import java.util.List;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 @Repository
-public interface InventoryRepository extends JpaRepository<Inventory,Long>{
+public interface InventoryRepository extends JpaRepository<Inventory, Long>{
     List<Inventory> findByPart(Part part);
 
     List<Inventory> findByCenter(ServiceCenter center);
