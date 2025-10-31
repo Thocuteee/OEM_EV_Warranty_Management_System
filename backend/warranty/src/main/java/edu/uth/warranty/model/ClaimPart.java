@@ -6,15 +6,16 @@ import java.math.BigDecimal;
 import java.io.Serializable;
 import java.util.Objects;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
-
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "ClaimPart")
 @IdClass(ClaimPart.IdClass.class)
 public class ClaimPart {
@@ -65,11 +66,5 @@ public class ClaimPart {
     @Column(name = "total_price", precision = 10, scale = 2, nullable = false)
     private BigDecimal totalPrice;
 
-    public ClaimPart(WarrantyClaim claim, Part part, Integer quantity, BigDecimal unit_price, BigDecimal total_price) {
-        this.claim = claim;
-        this.part = part;
-        this.quantity = quantity;
-        this.unitPrice = unit_price;
-        this.totalPrice = total_price;
-    }
+    
 }
