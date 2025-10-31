@@ -11,6 +11,7 @@ import edu.uth.warranty.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,4 +38,6 @@ public interface ReportRepository extends JpaRepository<Report, Long>{
     List<Report> findByStartedAtBetween(LocalDateTime start, LocalDateTime end);
 
     List<Report> findByFinishedAtBetween(LocalDateTime start, LocalDateTime end);
+
+    List<Report> findByActualCostGreaterThanEqual(BigDecimal actualCost);
 }
