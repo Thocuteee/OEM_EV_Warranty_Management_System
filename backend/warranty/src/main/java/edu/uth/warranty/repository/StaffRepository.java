@@ -19,5 +19,7 @@ public interface StaffRepository extends JpaRepository<Staff, Long>{
 
     List<Staff> findByRole(Role role);
 
+    List<Staff> findByCenter(ServiceCenter center);
+
     List<Staff> findByRoleAndCenter(Role role, ServiceCenter center);
 }
