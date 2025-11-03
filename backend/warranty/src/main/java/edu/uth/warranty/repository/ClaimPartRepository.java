@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ClaimPartRepository extends JpaRepository<ClaimPart, Long>{
+public interface ClaimPartRepository extends JpaRepository<ClaimPart, ClaimPart.IdClass>{
     List<ClaimPart> findByClaim(WarrantyClaim claim);
 
     List<ClaimPart> findByPart(Part part);
