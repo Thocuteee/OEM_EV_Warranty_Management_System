@@ -19,7 +19,7 @@ public class CustomerServiceImpl implements ICustomerService{
     }
     
     @Override
-    public List<Customer> getAllCustomer() {
+    public List<Customer> getAllCustomers() {
         return customerRepository.findAll();
     }
 
@@ -29,6 +29,18 @@ public class CustomerServiceImpl implements ICustomerService{
 
     @Override
     public Customer saveCustomer(Customer customer) {
+        // Kiểm tra Email
+        Optional<Customer> existingByEmail = customerRepository.findByEmail(customer.getEmail());
+        if (existingByEmail.isPresent() && (customer.getCustomer_id() == null || !customer.getCustomer_id().equals(existingByEmail.get().getCustomer_id()))) {
+            throw new IllegalArgumentException("Email đã tồn tại.");
+        }
+        
+        // Kiểm tra Phone
+        Optional<Customer> existingByPhone = customerRepository.findByPhone(customer.getPhone());
+        if (existingByPhone.isPresent() && (customer.getCustomer_id() == null || !customer.getCustomer_id().equals(existingByPhone.get().getCustomer_id()))) {
+            throw new IllegalArgumentException("Số điện thoại đã tồn tại.");
+        }
+
         return customerRepository.save(customer);
     }
 
@@ -37,24 +49,33 @@ public class CustomerServiceImpl implements ICustomerService{
         customerRepository.deleteById(id);
     }
 
-    //?NGHIỆP VỤ TÌM KIẾM
     @Override
-    public Optional<Customer> getCustomerByEmail(String email) {
+    public Optional<Customer> getCustomersByEmail(String email) {
         return customerRepository.findByEmail(email);
     }
 
     @Override
-    public Optional<Customer> getCustomerByPhone(String phone) {
+    public Optional<Customer> getCustomersByPhone(String phone) {
         return customerRepository.findByPhone(phone);
     }
 
     @Override
-    public List<Customer> getCustomerByName(String name) {
+    public List<Customer> getCustomersByName(String name) {
         return customerRepository.findByName(name);
     }
 
     @Override
-    public List<Customer> getCustomerByAddress(String address) {
+    public List<Customer> getCustomersByAddress(String address) {
         return customerRepository.findByAddress(address);
+    }
+
+    @Override
+    public Boolean isEmailUnique(String email) {
+        return customerRepository.findByEmail(email).isEmpty();
+    }
+
+    @Override
+    public Boolean isPhoneUnique(String phone) {
+        return customerRepository.findByPhone(phone).isEmpty();
     }
 }
