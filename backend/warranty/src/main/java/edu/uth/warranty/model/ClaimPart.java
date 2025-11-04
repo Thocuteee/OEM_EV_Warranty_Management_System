@@ -6,15 +6,16 @@ import java.math.BigDecimal;
 import java.io.Serializable;
 import java.util.Objects;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
-
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "ClaimPart")
 @IdClass(ClaimPart.IdClass.class)
 public class ClaimPart {
@@ -46,7 +47,6 @@ public class ClaimPart {
 
 
 
-
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "claim_id", nullable = false)
@@ -61,16 +61,10 @@ public class ClaimPart {
     private Integer quantity;
 
     @Column(name = "unit_price", precision = 10, scale = 2, nullable = false)
-    private BigDecimal unit_price;
+    private BigDecimal unitPrice;
 
     @Column(name = "total_price", precision = 10, scale = 2, nullable = false)
-    private BigDecimal total_price;
+    private BigDecimal totalPrice;
 
-    public ClaimPart(WarrantyClaim claim, Part part, Integer quantity, BigDecimal unit_price, BigDecimal total_price) {
-        this.claim = claim;
-        this.part = part;
-        this.quantity = quantity;
-        this.unit_price = unit_price;
-        this.total_price = total_price;
-    }
+    
 }
