@@ -1,70 +1,51 @@
 package edu.uth.warranty.service.impl;
-
-import edu.uth.warranty.model.Staff;
-import edu.uth.warranty.model.ServiceCenter;
-import edu.uth.warranty.common.Role;
-import edu.uth.warranty.repository.StaffRepository;
-import edu.uth.warranty.repository.ServiceCenterRepository; 
-import edu.uth.warranty.service.IStaffService;
-
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import edu.uth.warranty.common.Role;
+import edu.uth.warranty.model.ServiceCenter;
+import edu.uth.warranty.model.Staff;
+import edu.uth.warranty.repository.ServiceCenterRepository;
+import edu.uth.warranty.repository.StaffRepository;
+import edu.uth.warranty.service.IStaffService;
+
 @Service
 @Transactional
-public class StaffServiceImpl implements IStaffService{
+public class StaffServiceImpl implements IStaffService {
     private final StaffRepository staffRepository;
     private final ServiceCenterRepository serviceCenterRepository;
-    private final PasswordEncoder passwordEncoder;
 
-    public StaffServiceImpl(StaffRepository staffRepository, ServiceCenterRepository serviceCenterRepository, PasswordEncoder passwordEncoder) {
+    public StaffServiceImpl(StaffRepository staffRepository, ServiceCenterRepository serviceCenterRepository) {
         this.staffRepository = staffRepository;
         this.serviceCenterRepository = serviceCenterRepository;
-        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
-    public List<Staff> getAllStaffs() {
+    public List<Staff> getStaff() {
         return staffRepository.findAll();
     }
 
     @Override
-    public Optional<Staff> getStaffById(Long id) {
-        return staffRepository.findById(id);
+    public Optional<Staff> getStaffById(Long Id) {
+        return staffRepository.findById(Id);
     }
 
     @Override
     public Staff saveStaff(Staff staff) {
-        //Kiểm tra Service Center có tồn tại không
-        if (staff.getCenter() == null || staff.getCenter().getCenter_id() == null) {
-            throw new IllegalArgumentException("Nhân viên phải được gán cho một Trung tâm Dịch vụ hợp lệ.");
+        if(staff.getCenter() != null && staff.getCenter().getCenter_id() != null) {
+            throw new IllegalArgumentException("Không thể gán trung tâm chỉ bằng ID. Vui lòng cung cấp đối tượng ServiceCenter hợp lệ.");
         }
-        if (serviceCenterRepository.findById(staff.getCenter().getCenter_id()).isEmpty()) {
-            throw new IllegalArgumentException("Trung tâm dịch vụ không tồn tại.");
+        if(serviceCenterRepository.findById(staff.getCenter().getCenter_id()).isEmpty()) {
+            throw new IllegalArgumentException("Trung tâm dịch vụ với ID " + staff.getCenter().getCenter_id() + " không tồn tại.");
         }
-
-        //Kiểm tra tính duy nhất của Username, Email, Phone
         
-        // Kiểm tra Username
-        Optional<Staff> existingStaffByUsername = staffRepository.findByUsername(staff.getUsername());
-        if (existingStaffByUsername.isPresent() && (staff.getStaff_id() == null || !staff.getStaff_id().equals(existingStaffByUsername.get().getStaff_id()))) {
-            throw new IllegalArgumentException("Tên đăng nhập đã tồn tại.");
+        Optional<Staff> existingStaff = staffRepository.findByEmail(staff.getEmail());
+        if(existingStaff.isPresent() && (staff.getStaff_id() == null || !existingStaff.get().getStaff_id().equals(staff.getStaff_id()))) {
+            throw new IllegalArgumentException("Email đã tồn tại");
         }
-
-        // Kiểm tra Email
-        Optional<Staff> existingStaffByEmail = staffRepository.findByEmail(staff.getEmail());
-        if (existingStaffByEmail.isPresent() && (staff.getStaff_id() == null || !staff.getStaff_id().equals(existingStaffByEmail.get().getStaff_id()))) {
-            throw new IllegalArgumentException("Email đã tồn tại.");
-        }
-
-        if (staff.getPassword() != null && !staff.getPassword().isEmpty()) {
-            String hashedPassword = passwordEncoder.encode(staff.getPassword());
-            staff.setPassword(hashedPassword); 
-        }
-
         return staffRepository.save(staff);
     }
 
@@ -89,17 +70,19 @@ public class StaffServiceImpl implements IStaffService{
     }
 
     @Override
-    public List<Staff> getStaffsByRole(Role role) {
-        return staffRepository.findByRole(role);
+    public List<Staff> getStaffByRole(String role) {
+        return staffRepository.findByRole(Role.valueOf(role));
     }
 
     @Override
-    public List<Staff> getStaffsByCenter(ServiceCenter center) {
+    public List<Staff> getStaffByServiceCenter(ServiceCenter center) {
         return staffRepository.findByCenter(center);
     }
 
     @Override
-    public List<Staff> getStaffsByRoleAndCenter(Role role, ServiceCenter center) {
+    public List<Staff> getStaffByRoleAndCenter(Role role, ServiceCenter center) {
         return staffRepository.findByRoleAndCenter(role, center);
     }
+
 }
+

@@ -13,14 +13,12 @@ import edu.uth.warranty.model.Staff;
 import edu.uth.warranty.model.Technician;
 import edu.uth.warranty.model.Vehicle;
 import edu.uth.warranty.model.WarrantyClaim;
-
 import edu.uth.warranty.repository.CustomerRepository;
 import edu.uth.warranty.repository.ServiceCenterRepository;
 import edu.uth.warranty.repository.StaffRepository;
 import edu.uth.warranty.repository.TechnicianRepository;
 import edu.uth.warranty.repository.VehicleRepository;
 import edu.uth.warranty.repository.WarrantyClaimRepository;
-
 import edu.uth.warranty.service.IWarrantyClaimService;
 import jakarta.transaction.Transactional;
 
@@ -84,13 +82,13 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
     @Override
     public void deleteWarrantyClaim(Long id) {
     Optional<WarrantyClaim> claimOpt = warrantyClaimRepository.findById(id);
-        if(!claimOpt.isPresent()) {
+         if(!claimOpt.isPresent()) {
             throw new IllegalArgumentException("Claim không tồn tại.");
-        }
-        if(!claimOpt.get().getStatus().equals("DRAFT")) {
+         }
+         if(!claimOpt.get().getStatus().equals("DRAFT")) {
             throw new IllegalArgumentException("Chỉ có thể xóa các yêu cầu bảo hành ở trạng thái DRAFT.");
-        }
-        warrantyClaimRepository.deleteById(id);
+         }
+         warrantyClaimRepository.deleteById(id);
     }
     @Override
     public List<WarrantyClaim> getWarrantyClaimsByStatus(String status) {

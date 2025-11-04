@@ -1,4 +1,7 @@
-package edu.uth.warranty.repository;
+
+
+
+public interface CustomerRepository {
 
 import edu.uth.warranty.model.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;

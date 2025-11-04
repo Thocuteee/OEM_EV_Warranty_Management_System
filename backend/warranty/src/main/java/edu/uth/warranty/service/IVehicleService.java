@@ -1,30 +1,19 @@
 package edu.uth.warranty.service;
-
-import edu.uth.warranty.model.Vehicle;
-import edu.uth.warranty.model.Customer;
-
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import edu.uth.warranty.model.Customer;
+import edu.uth.warranty.model.Vehicle;
 @Service
 public interface IVehicleService {
-    List<Vehicle> getAllVehicle();
-
-    Optional<Vehicle> getAllById(Long id);
 
     Vehicle saveVehicle(Vehicle vehicle);
 
-    void deleteVehicle(Long id);
+    Vehicle getVehicleByVIN(String VIN);
 
-    Optional<Vehicle> getVehicleByVIN(String VIN);
-
-    boolean isVINUnique(String VIN);
+    Vehicle getVehicleByModel(String model);
 
     List<Vehicle> getVehiclesByCustomer(Customer customer);
-
-    Optional<Vehicle> getVehicleByModel(String model);
-
     List<Vehicle> getVehiclesByYear(String year);
 }

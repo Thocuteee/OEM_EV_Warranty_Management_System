@@ -1,11 +1,12 @@
 package edu.uth.warranty.repository;
 
-import edu.uth.warranty.model.ServiceCenter;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-import java.util.List;
+import edu.uth.warranty.model.ServiceCenter;
 
 @Repository
 public interface ServiceCenterRepository extends JpaRepository<ServiceCenter, Long>{
@@ -13,5 +14,5 @@ public interface ServiceCenterRepository extends JpaRepository<ServiceCenter, Lo
 
     List<ServiceCenter> findByLocation(String location);
 
-    Boolean existsByName(String name);
+    boolean existsByName(String name);
 }

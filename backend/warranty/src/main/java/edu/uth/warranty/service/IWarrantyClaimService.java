@@ -20,6 +20,7 @@ import edu.uth.warranty.model.WarrantyClaim;
 public interface IWarrantyClaimService {
 
     List<WarrantyClaim> getAllWarrantyClaims();
+
     Optional<WarrantyClaim> getWarrantyClaimById(Long id);
 
     WarrantyClaim saveWarrantyClaim(WarrantyClaim warrantyClaim);
@@ -38,5 +39,4 @@ public interface IWarrantyClaimService {
     List<WarrantyClaim> getWarrantyClaimsByStaff(Staff staff);
     List<WarrantyClaim> getWarrantyClaimsCreatedBetween(LocalDateTime start, LocalDateTime end);
     List<WarrantyClaim> getWarrantyClaimsByMinTotalCost(BigDecimal totalCost);
-
 }
