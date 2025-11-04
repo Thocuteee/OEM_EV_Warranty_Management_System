@@ -35,10 +35,11 @@ public class StaffController {
         Long centerId = null;
 
         if(staff.getCenter() != null && staff.getCenter().getCenter_id() != null) {
+            Long actualCenterId = staff.getCenter().getCenter_id();
             Optional<ServiceCenter> centerOpt = serviceCenterService.getServiceCenterById(centerId);
             if(centerOpt.isPresent()) {
                 centerName = centerOpt.get().getName();
-                centerId = centerOpt.get().getCenter_id();
+                centerId = actualCenterId;
             }
         }
         return new StaffResponse(

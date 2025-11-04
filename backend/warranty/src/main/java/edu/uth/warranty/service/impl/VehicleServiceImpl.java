@@ -48,7 +48,9 @@ public class VehicleServiceImpl implements IVehicleService{
         Optional<Vehicle> exitstingVehicle = vehicleRepository.findByVIN(vehicle.getVIN());
         // Nếu là xe mới (chưa có ID) HOẶC là xe cũ nhưng cố tình thay đổi VIN
         if(exitstingVehicle.isPresent()) {
-            throw new IllegalArgumentException("Số VIN đã tồn tại trong hệ thống.");
+            if (vehicle.getVehicle_id() == null || !vehicle.getVehicle_id().equals(exitstingVehicle.get().getVehicle_id())) {
+                throw new IllegalArgumentException("Số VIN đã tồn tại trong hệ thống.");
+            }
         }
         return vehicleRepository.save(vehicle);
     }

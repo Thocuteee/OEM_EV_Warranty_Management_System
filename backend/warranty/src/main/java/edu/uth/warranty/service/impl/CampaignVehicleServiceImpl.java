@@ -43,7 +43,7 @@ public class CampaignVehicleServiceImpl implements ICampaignVehicleService{
     @Override
     public CampaignVehicle saveCampaignVehicle(CampaignVehicle entity) {
         Long campaignId = entity.getCampaign().getCampaign_id();
-        Long vehicleId = entity.getCampaign().getCampaign_id();
+        Long vehicleId = entity.getVehicle().getVehicle_id();
         // Kiểm tra xem Campaign và Vehicle có tồn tại không
         if (recallCampaignRepository.findById(campaignId).isEmpty()) {
             throw new IllegalArgumentException("Chiến dịch triệu hồi không tồn tại.");
