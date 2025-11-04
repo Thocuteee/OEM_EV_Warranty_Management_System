@@ -1,14 +1,17 @@
 package edu.uth.warranty.controller;
 
+import edu.uth.warranty.dto.PartRequest;
+import edu.uth.warranty.dto.PartResponse;
 import edu.uth.warranty.model.Part;
 import edu.uth.warranty.service.IPartService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/parts")
@@ -20,65 +23,98 @@ public class PartController {
         this.partService = partService;
     }
 
-    // Lấy danh sách tất cả Part
+    // Lấy tất cả linh kiện
     @GetMapping
-    public List<Part> getAllParts() {
-        return partService.getAllParts();
+    public ResponseEntity<List<PartResponse>> getAllParts() {
+        List<PartResponse> parts = partService.getAllParts()
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(parts);
     }
 
     // Lấy Part theo ID
     @GetMapping("/{id}")
-    public ResponseEntity<Part> getPartById(@PathVariable Long id) {
-        Optional<Part> part = partService.getPartById(id);
-        return part.map(ResponseEntity::ok)
-                   .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<PartResponse> getPartById(@PathVariable Long id) {
+        Optional<Part> partOpt = partService.getPartById(id);
+        return partOpt.map(part -> ResponseEntity.ok(toResponse(part)))
+                      .orElse(ResponseEntity.notFound().build());
     }
 
-    // Tạo mới hoặc cập nhật Part
+    // Tạo mới linh kiện
     @PostMapping
-    public ResponseEntity<?> savePart(@RequestBody Part part) {
-        try {
-            Part savedPart = partService.savePart(part);
-            return ResponseEntity.ok(savedPart);
-        } catch (IllegalArgumentException e) {
-            // Nếu trùng partNumber → trả lỗi hợp lý
-            return ResponseEntity.badRequest().body(e.getMessage());
+    public ResponseEntity<PartResponse> createPart(@Valid @RequestBody PartRequest request) {
+        Part entity = toEntity(request);
+        Part saved = partService.savePart(entity);
+        return ResponseEntity.ok(toResponse(saved));
+    }
+
+    // Cập nhật linh kiện
+    @PutMapping("/{id}")
+    public ResponseEntity<PartResponse> updatePart(@PathVariable Long id,
+                                                   @Valid @RequestBody PartRequest request) {
+        Optional<Part> existingOpt = partService.getPartById(id);
+        if (existingOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
         }
+
+        Part entity = toEntity(request);
+        entity.setPart_id(id);
+        Part updated = partService.savePart(entity);
+        return ResponseEntity.ok(toResponse(updated));
     }
 
-    // Xóa Part theo ID
+    // Xóa linh kiện
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deletePart(@PathVariable Long id) {
+    public ResponseEntity<Void> deletePart(@PathVariable Long id) {
         partService.deletePart(id);
-        return ResponseEntity.ok("Đã xóa Part có ID = " + id);
+        return ResponseEntity.noContent().build();
     }
 
-    // Tìm kiếm Part theo Part Number
-    @GetMapping("/part-number/{partNumber}")
-    public ResponseEntity<Part> getPartByPartNumber(@PathVariable String partNumber) {
-        Optional<Part> part = partService.getPartByPartNumber(partNumber);
-        return part.map(ResponseEntity::ok)
-                   .orElse(ResponseEntity.notFound().build());
-    }
-
-    // Tìm kiếm Part theo tên (một phần của tên)
+    // Tìm theo tên
     @GetMapping("/search")
-    public List<Part> searchPartsByName(@RequestParam("name") String name) {
-        return partService.getPartsByNameContaining(name);
+    public ResponseEntity<List<PartResponse>> searchByName(@RequestParam String keyword) {
+        List<PartResponse> parts = partService.getPartsByNameContaining(keyword)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(parts);
     }
 
-    // Lọc Part theo khoảng giá (min - max)
-    @GetMapping("/filter")
-    public List<Part> filterByPriceRange(
+    // Tìm theo khoảng giá
+    @GetMapping("/price-range")
+    public ResponseEntity<List<PartResponse>> getByPriceRange(
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice) {
-        return partService.getPartsByPriceRange(minPrice, maxPrice);
+        List<PartResponse> parts = partService.getPartsByPriceRange(minPrice, maxPrice)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(parts);
     }
 
-    // Kiểm tra mã PartNumber có bị trùng không
-    @GetMapping("/unique/{partNumber}")
-    public ResponseEntity<Boolean> checkUniquePartNumber(@PathVariable String partNumber) {
-        Boolean isUnique = partService.isPartNumberUnique(partNumber);
-        return ResponseEntity.ok(isUnique);
+    // ======================
+    // Mapper nội bộ (Entity ↔ DTO)
+    // ======================
+
+    private PartResponse toResponse(Part entity) {
+        PartResponse dto = new PartResponse();
+        dto.setId(entity.getPart_id());
+        dto.setPartNumber(entity.getPartNumber());
+        dto.setName(entity.getName());
+        dto.setDescription(entity.getDescription());
+        dto.setPrice(entity.getPrice());
+        dto.setStockQuantity(entity.getStockQuantity());
+        return dto;
+    }
+
+    private Part toEntity(PartRequest request) {
+        Part entity = new Part();
+        entity.setPartNumber(request.getPartNumber());
+        entity.setName(request.getName());
+        entity.setDescription(request.getDescription());
+        entity.setPrice(request.getPrice());
+        entity.setStockQuantity(request.getStockQuantity());
+        return entity;
     }
 }

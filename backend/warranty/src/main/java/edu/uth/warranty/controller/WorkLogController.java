@@ -1,5 +1,7 @@
 package edu.uth.warranty.controller;
 
+import edu.uth.warranty.dto.WorkLogRequest;
+import edu.uth.warranty.dto.WorkLogResponse;
 import edu.uth.warranty.model.WorkLog;
 import edu.uth.warranty.model.WarrantyClaim;
 import edu.uth.warranty.model.Technician;
@@ -7,13 +9,13 @@ import edu.uth.warranty.service.IWorkLogService;
 import edu.uth.warranty.repository.WarrantyClaimRepository;
 import edu.uth.warranty.repository.TechnicianRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import jakarta.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/worklogs")
@@ -31,71 +33,91 @@ public class WorkLogController {
         this.technicianRepository = technicianRepository;
     }
 
-    // Lấy toàn bộ WorkLog
+    // Lấy tất cả WorkLog
     @GetMapping
-    public ResponseEntity<List<WorkLog>> getAllWorkLogs() {
-        return ResponseEntity.ok(workLogService.getAllWorkLogs());
+    public ResponseEntity<List<WorkLogResponse>> getAllWorkLogs() {
+        List<WorkLogResponse> responses = workLogService.getAllWorkLogs()
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
     }
 
     // Lấy WorkLog theo ID
     @GetMapping("/{id}")
-    public ResponseEntity<WorkLog> getWorkLogById(@PathVariable Long id) {
-        return workLogService.getWorkLogById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<WorkLogResponse> getWorkLogById(@PathVariable Long id) {
+        Optional<WorkLog> workLogOpt = workLogService.getWorkLogById(id);
+        return workLogOpt.map(workLog -> ResponseEntity.ok(toResponse(workLog)))
+                         .orElse(ResponseEntity.notFound().build());
     }
 
-    // Thêm mới WorkLog
+    // Tạo mới WorkLog
     @PostMapping
-    public ResponseEntity<?> createWorkLog(@RequestBody WorkLog workLog) {
-        try {
-            WorkLog saved = workLogService.saveWorkLog(workLog);
-            return ResponseEntity.ok(saved);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<WorkLogResponse> createWorkLog(@Valid @RequestBody WorkLogRequest request) {
+        WorkLog entity = toEntity(request);
+        WorkLog saved = workLogService.saveWorkLog(entity);
+        return ResponseEntity.ok(toResponse(saved));
     }
 
-    // Xóa WorkLog theo ID
+    // Cập nhật WorkLog
+    @PutMapping("/{id}")
+    public ResponseEntity<WorkLogResponse> updateWorkLog(@PathVariable Long id,
+                                                         @Valid @RequestBody WorkLogRequest request) {
+        Optional<WorkLog> existingOpt = workLogService.getWorkLogById(id);
+        if (existingOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        WorkLog entity = toEntity(request);
+        entity.setLog_id(id);
+        WorkLog updated = workLogService.saveWorkLog(entity);
+        return ResponseEntity.ok(toResponse(updated));
+    }
+
+    // Xóa WorkLog
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteWorkLog(@PathVariable Long id) {
         workLogService.deleteWorkLog(id);
         return ResponseEntity.noContent().build();
     }
 
-    // Lấy danh sách WorkLog theo Claim
-    @GetMapping("/claim/{claimId}")
-    public ResponseEntity<List<WorkLog>> getWorkLogsByClaim(@PathVariable Long claimId) {
-        return claimRepository.findById(claimId)
-                .map(claim -> ResponseEntity.ok(workLogService.getWorkLogsByClaim(claim)))
-                .orElse(ResponseEntity.notFound().build());
+    // ==========================
+    // Mapper nội bộ (chuyển đổi giữa Entity ↔ DTO)
+    // ==========================
+
+    private WorkLogResponse toResponse(WorkLog entity) {
+        WorkLogResponse dto = new WorkLogResponse();
+        dto.setId(entity.getLog_id());
+        dto.setClaimId(entity.getClaim().getClaim_id());
+        dto.setTechnicianId(entity.getTechnician().getTechnician_id());
+        dto.setTechnicianName(entity.getTechnician().getName());
+        dto.setStartTime(entity.getStartTime());
+        dto.setEndTime(entity.getEndTime());
+        dto.setLogDate(entity.getLogDate());
+        dto.setDuration(entity.getDuration());
+        dto.setNotes(entity.getNotes());
+        return dto;
     }
 
-    // Lấy danh sách WorkLog theo Technician
-    @GetMapping("/technician/{techId}")
-    public ResponseEntity<List<WorkLog>> getWorkLogsByTechnician(@PathVariable Long techId) {
-        return technicianRepository.findById(techId)
-                .map(tech -> ResponseEntity.ok(workLogService.getWorkLogsByTechnician(tech)))
-                .orElse(ResponseEntity.notFound().build());
-    }
+    private WorkLog toEntity(WorkLogRequest request) {
+        WorkLog entity = new WorkLog();
 
-    // Lọc WorkLog theo khoảng ngày
-    @GetMapping("/date")
-    public ResponseEntity<List<WorkLog>> getWorkLogsByDateRange(
-            @RequestParam LocalDate start,
-            @RequestParam LocalDate end) {
-        return ResponseEntity.ok(workLogService.getWorkLogsByLogDateBetween(start, end));
-    }
+        // Gán quan hệ Claim
+        WarrantyClaim claim = claimRepository.findById(request.getClaimId())
+                .orElseThrow(() -> new IllegalArgumentException("Warranty Claim không tồn tại."));
+        entity.setClaim(claim);
 
-    // Lọc WorkLog có Duration ≥ giá trị cho trước
-    @GetMapping("/duration")
-    public ResponseEntity<List<WorkLog>> getWorkLogsByMinDuration(@RequestParam BigDecimal min) {
-        return ResponseEntity.ok(workLogService.getWorkLogsByDurationGreaterThan(min));
-    }
+        // Gán quan hệ Technician
+        Technician tech = technicianRepository.findById(request.getTechnicianId())
+                .orElseThrow(() -> new IllegalArgumentException("Technician không tồn tại."));
+        entity.setTechnician(tech);
 
-    // Tìm WorkLog theo từ khóa trong ghi chú
-    @GetMapping("/search")
-    public ResponseEntity<List<WorkLog>> searchWorkLogsByNotes(@RequestParam String keyword) {
-        return ResponseEntity.ok(workLogService.searchWorkLogsByNotes(keyword));
+        // Gán dữ liệu chính
+        entity.setStartTime(request.getStartTime());
+        entity.setEndTime(request.getEndTime());
+        entity.setLogDate(request.getLogDate());
+        entity.setDuration(request.getDuration());
+        entity.setNotes(request.getNotes());
+        return entity;
     }
 }
