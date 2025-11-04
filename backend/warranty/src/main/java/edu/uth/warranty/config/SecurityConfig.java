@@ -23,7 +23,22 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+
     @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .authorizeHttpRequests(auth -> auth
+                .anyRequest().permitAll() // Cho phép tất cả các request, không cần xác thực
+            );
+        return http.build();
+    }
+
+
+
+
+    /*@Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable) // Vô hiệu hóa CSRF cho API
@@ -33,7 +48,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated() // Yêu cầu xác thực cho các yêu cầu khác
                 );
         return http.build();
-    }
+    } */
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

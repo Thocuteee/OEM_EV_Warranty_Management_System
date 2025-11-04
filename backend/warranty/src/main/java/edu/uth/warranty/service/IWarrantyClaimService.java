@@ -20,7 +20,6 @@ import edu.uth.warranty.model.WarrantyClaim;
 public interface IWarrantyClaimService {
 
     List<WarrantyClaim> getAllWarrantyClaims();
-
     Optional<WarrantyClaim> getWarrantyClaimById(Long id);
 
     WarrantyClaim saveWarrantyClaim(WarrantyClaim warrantyClaim);
