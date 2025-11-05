@@ -10,7 +10,7 @@ import edu.uth.warranty.model.Customer;
 
 @Service
 public interface ICustomerService {
-    List<Customer> getAllCustomer();
+    List<Customer> getAllCustomers();
     Optional<Customer> getCustomerById(Long id);
 
     //?Tạo mới hoặc Cập nhật thông tin Khách hàng.
@@ -19,11 +19,14 @@ public interface ICustomerService {
     void deleteCustomer(Long id);
 
     //Tìm kiếm Khách hàng bằng Email
-    Optional<Customer> getCustomerByEmail(String email);
+    Optional<Customer> getCustomersByEmail(String email);
 
-    Optional<Customer> getCustomerByPhone(String phone);
+    Optional<Customer> getCustomersByPhone(String phone);
 
-    List<Customer> getCustomerByName(String name);
+    List<Customer> getCustomersByName(String name);
 
-    List<Customer> getCustomerByAddress(String address);
+    List<Customer> getCustomersByAddress(String address);
+
+    Boolean isEmailUnique(String email); 
+    Boolean isPhoneUnique(String phone);
 }   
