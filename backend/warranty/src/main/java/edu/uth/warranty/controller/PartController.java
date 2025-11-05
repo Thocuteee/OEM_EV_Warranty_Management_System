@@ -8,10 +8,11 @@ import edu.uth.warranty.service.IPartService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/parts")
@@ -33,7 +34,7 @@ public class PartController {
         return ResponseEntity.ok(parts);
     }
 
-    // Lấy Part theo ID
+    // Lấy linh kiện theo ID
     @GetMapping("/{id}")
     public ResponseEntity<PartResponse> getPartById(@PathVariable Long id) {
         Optional<Part> partOpt = partService.getPartById(id);
@@ -71,7 +72,7 @@ public class PartController {
         return ResponseEntity.noContent().build();
     }
 
-    // Tìm theo tên
+    // Tìm linh kiện theo tên
     @GetMapping("/search")
     public ResponseEntity<List<PartResponse>> searchByName(@RequestParam String keyword) {
         List<PartResponse> parts = partService.getPartsByNameContaining(keyword)
@@ -81,7 +82,7 @@ public class PartController {
         return ResponseEntity.ok(parts);
     }
 
-    // Tìm theo khoảng giá
+    // Tìm linh kiện theo khoảng giá
     @GetMapping("/price-range")
     public ResponseEntity<List<PartResponse>> getByPriceRange(
             @RequestParam(required = false) BigDecimal minPrice,
@@ -100,21 +101,18 @@ public class PartController {
     private PartResponse toResponse(Part entity) {
         PartResponse dto = new PartResponse();
         dto.setId(entity.getPart_id());
-        dto.setPartNumber(entity.getPartNumber());
         dto.setName(entity.getName());
-        dto.setDescription(entity.getDescription());
+        dto.setPartNumber(entity.getPartNumber());
         dto.setPrice(entity.getPrice());
-        dto.setStockQuantity(entity.getStockQuantity());
         return dto;
     }
 
     private Part toEntity(PartRequest request) {
         Part entity = new Part();
-        entity.setPartNumber(request.getPartNumber());
+        entity.setPart_id(request.getId());
         entity.setName(request.getName());
-        entity.setDescription(request.getDescription());
+        entity.setPartNumber(request.getPartNumber());
         entity.setPrice(request.getPrice());
-        entity.setStockQuantity(request.getStockQuantity());
         return entity;
     }
 }
