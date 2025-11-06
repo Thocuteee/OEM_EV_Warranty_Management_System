@@ -2,6 +2,7 @@ package edu.uth.warranty.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.math.BigDecimal;
 
 import lombok.Getter;
@@ -18,7 +19,7 @@ import lombok.AllArgsConstructor;
 public class WorkLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long log_id;
+    private Long logId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "claim_id", nullable = false)
@@ -29,17 +30,17 @@ public class WorkLog {
     private Technician technician;
 
     @Column(name = "start_time", nullable = false)
-    private LocalDate startTime;
+    private LocalTime startTime;
 
     @Column(name = "end_time", nullable = false)
-    private LocalDate endTime;
+    private LocalTime endTime;
     
     @Column(name = "log_date")
     private LocalDate logDate;
 
-    @Column(name = "duration", precision = 5, scale = 2) 
+    @Column(name = "duration", precision = 5, scale = 2)
     private BigDecimal duration;
-    
+
     @Column(name = "notes")
     private String notes;
 }
