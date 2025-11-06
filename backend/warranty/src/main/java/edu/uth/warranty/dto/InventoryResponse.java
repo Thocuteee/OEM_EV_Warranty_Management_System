@@ -13,12 +13,15 @@ public class InventoryResponse {
     private Long id;
 
     private Long partId;
-    private String partNumber; 
-    private String partName;
+
+    //thông tin sẽ thêm nếu cần 
+    
+    // private String partNumber; 
+    // private String partName;
 
     // Thông tin Trung tâm
     private Long centerId;
-    private String centerName;
+    // private String centerName;
     
     // Chi tiết Tồn kho
     private BigDecimal amount;
