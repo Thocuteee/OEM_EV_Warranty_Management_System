@@ -1,8 +1,8 @@
 package edu.uth.warranty.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -11,7 +11,7 @@ public class VehicleResponse {
     private Long id;
     private String VIN;
     private String model;
-    private String year;
+    private Integer year;
 
     // Thông tin Chủ sở hữu (ID và Tên để hiển thị)
     private Long customerId;

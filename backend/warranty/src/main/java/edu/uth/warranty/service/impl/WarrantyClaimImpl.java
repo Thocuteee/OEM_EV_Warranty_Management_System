@@ -13,14 +13,12 @@ import edu.uth.warranty.model.Staff;
 import edu.uth.warranty.model.Technician;
 import edu.uth.warranty.model.Vehicle;
 import edu.uth.warranty.model.WarrantyClaim;
-
 import edu.uth.warranty.repository.CustomerRepository;
 import edu.uth.warranty.repository.ServiceCenterRepository;
 import edu.uth.warranty.repository.StaffRepository;
 import edu.uth.warranty.repository.TechnicianRepository;
 import edu.uth.warranty.repository.VehicleRepository;
 import edu.uth.warranty.repository.WarrantyClaimRepository;
-
 import edu.uth.warranty.service.IWarrantyClaimService;
 import jakarta.transaction.Transactional;
 
@@ -62,14 +60,14 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
     }
     @Override
     public WarrantyClaim saveWarrantyClaim(WarrantyClaim warrantyClaim){
-        if(vehicleRepository.findById(warrantyClaim.getVehicle().getVehicle_id()).isEmpty()) {
+        if(vehicleRepository.findById(warrantyClaim.getVehicle().getVehicleId()).isEmpty()) {
             throw new IllegalArgumentException("Yêu cầu bảo hành với không tồn tại.");
         }
-        if(customerRepository.findById(warrantyClaim.getCustomer().getCustomer_id()).isEmpty()) {
-            throw new IllegalArgumentException("Khách hàng với ID " + warrantyClaim.getCustomer().getCustomer_id() + " không tồn tại.");
+        if(customerRepository.findById(warrantyClaim.getCustomer().getCustomerId()).isEmpty()) {
+            throw new IllegalArgumentException("Khách hàng với ID " + warrantyClaim.getCustomer().getCustomerId() + " không tồn tại.");
         }
-        if(serviceCenterRepository.findById(warrantyClaim.getCenter().getCenter_id()).isEmpty()) {
-            throw new IllegalArgumentException("Trung tâm dịch vụ với ID " + warrantyClaim.getCenter().getCenter_id() + " không tồn tại.");
+        if(serviceCenterRepository.findById(warrantyClaim.getCenter().getCenterId()).isEmpty()) {
+            throw new IllegalArgumentException("Trung tâm dịch vụ với ID " + warrantyClaim.getCenter().getCenterId() + " không tồn tại.");
         }
         if(warrantyClaim.getClaim_id() == null) {
             warrantyClaim.setCreatedAt(LocalDateTime.now());

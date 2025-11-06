@@ -1,18 +1,18 @@
 package edu.uth.warranty.service.impl;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import edu.uth.warranty.model.CampaignVehicle;
 import edu.uth.warranty.model.RecallCampaign;
 import edu.uth.warranty.model.Vehicle;
-
 import edu.uth.warranty.repository.CampaignVehicleRepository;
 import edu.uth.warranty.repository.RecallCampaignRepository;
 import edu.uth.warranty.repository.VehicleRepository;
 import edu.uth.warranty.service.ICampaignVehicleService;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -43,7 +43,7 @@ public class CampaignVehicleServiceImpl implements ICampaignVehicleService{
     @Override
     public CampaignVehicle saveCampaignVehicle(CampaignVehicle entity) {
         Long campaignId = entity.getCampaign().getCampaign_id();
-        Long vehicleId = entity.getCampaign().getCampaign_id();
+        Long vehicleId = entity.getVehicle().getVehicleId();
         // Kiểm tra xem Campaign và Vehicle có tồn tại không
         if (recallCampaignRepository.findById(campaignId).isEmpty()) {
             throw new IllegalArgumentException("Chiến dịch triệu hồi không tồn tại.");

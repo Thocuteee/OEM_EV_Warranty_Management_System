@@ -39,10 +39,10 @@ public class StaffServiceImpl implements IStaffService{
     @Override
     public Staff saveStaff(Staff staff) {
         //Kiểm tra Service Center có tồn tại không
-        if (staff.getCenter() == null || staff.getCenter().getCenter_id() == null) {
+        if (staff.getCenter() == null || staff.getCenter().getCenterId() == null) {
             throw new IllegalArgumentException("Nhân viên phải được gán cho một Trung tâm Dịch vụ hợp lệ.");
         }
-        if (serviceCenterRepository.findById(staff.getCenter().getCenter_id()).isEmpty()) {
+        if (serviceCenterRepository.findById(staff.getCenter().getCenterId()).isEmpty()) {
             throw new IllegalArgumentException("Trung tâm dịch vụ không tồn tại.");
         }
 

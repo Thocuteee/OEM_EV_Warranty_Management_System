@@ -1,12 +1,13 @@
 package edu.uth.warranty.repository;
 
-import edu.uth.warranty.model.Vehicle;
-import edu.uth.warranty.model.Customer;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+import edu.uth.warranty.model.Customer;
+import edu.uth.warranty.model.Vehicle;
 
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, Long>{
@@ -16,5 +17,5 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long>{
 
     List<Vehicle> findByCustomer(Customer customer);
 
-    List<Vehicle> findByYear(String year);
+    List<Vehicle> findByYear(Integer year);
 }

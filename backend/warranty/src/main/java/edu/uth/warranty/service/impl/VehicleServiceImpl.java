@@ -1,16 +1,16 @@
 package edu.uth.warranty.service.impl;
 
-import edu.uth.warranty.model.Vehicle;
-import edu.uth.warranty.model.Customer;
-import edu.uth.warranty.repository.VehicleRepository;
-import edu.uth.warranty.repository.CustomerRepository;
-import edu.uth.warranty.service.IVehicleService;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Optional;
+import edu.uth.warranty.model.Customer;
+import edu.uth.warranty.model.Vehicle;
+import edu.uth.warranty.repository.CustomerRepository;
+import edu.uth.warranty.repository.VehicleRepository;
+import edu.uth.warranty.service.IVehicleService;
 
 @Service
 @Transactional
@@ -36,11 +36,11 @@ public class VehicleServiceImpl implements IVehicleService{
     @Override
     public Vehicle saveVehicle(Vehicle vehicle) {
         // Đảm bảo Customer đã tồn tại trước khi đăng ký/cập nhật xe
-        if(vehicle.getCustomer() == null || vehicle.getCustomer().getCustomer_id() == null) {
+        if(vehicle.getCustomer() == null || vehicle.getCustomer().getCustomerId() == null) {
             throw new IllegalArgumentException("Vehicle phải liên kết với một Customer hợp lệ.");
         }
 
-        Optional<Customer> existingCustomer = customerRepository.findById(vehicle.getCustomer().getCustomer_id());
+        Optional<Customer> existingCustomer = customerRepository.findById(vehicle.getCustomer().getCustomerId());
         if(existingCustomer.isEmpty()) {
             throw new IllegalArgumentException("Không tìm thấy Customer trong hệ thống.");
         }
@@ -48,7 +48,9 @@ public class VehicleServiceImpl implements IVehicleService{
         Optional<Vehicle> exitstingVehicle = vehicleRepository.findByVIN(vehicle.getVIN());
         // Nếu là xe mới (chưa có ID) HOẶC là xe cũ nhưng cố tình thay đổi VIN
         if(exitstingVehicle.isPresent()) {
-            throw new IllegalArgumentException("Số VIN đã tồn tại trong hệ thống.");
+            if (vehicle.getVehicleId() == null || !vehicle.getVehicleId().equals(exitstingVehicle.get().getVehicleId())) {
+                throw new IllegalArgumentException("Số VIN đã tồn tại trong hệ thống.");
+            }
         }
         return vehicleRepository.save(vehicle);
     }
@@ -69,6 +71,10 @@ public class VehicleServiceImpl implements IVehicleService{
     }
 
     @Override
+    public Optional<Vehicle> getVehicleById(Long id){
+        return vehicleRepository.findById(id);
+    }
+    @Override
     public List<Vehicle> getVehiclesByCustomer(Customer customer) {
         return vehicleRepository.findByCustomer(customer);
     }
@@ -79,7 +85,7 @@ public class VehicleServiceImpl implements IVehicleService{
     }
 
     @Override
-    public List<Vehicle> getVehiclesByYear(String year) {
+    public List<Vehicle> getVehicleByYear(Integer year){
         return vehicleRepository.findByYear(year);
     }
 }

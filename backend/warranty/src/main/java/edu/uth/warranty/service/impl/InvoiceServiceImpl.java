@@ -63,8 +63,8 @@ public class InvoiceServiceImpl implements IInvoiceService{
         }
 
         // 3. Kiểm tra Service Center
-        if (invoice.getCenter() == null || invoice.getCenter().getCenter_id() == null || 
-            centerRepository.findById(invoice.getCenter().getCenter_id()).isEmpty()) {
+        if (invoice.getCenter() == null || invoice.getCenter().getCenterId() == null || 
+            centerRepository.findById(invoice.getCenter().getCenterId()).isEmpty()) {
             throw new IllegalArgumentException("Trung tâm Dịch vụ không tồn tại hoặc không hợp lệ.");
         }
         

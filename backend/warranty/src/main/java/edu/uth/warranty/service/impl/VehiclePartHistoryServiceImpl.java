@@ -1,20 +1,21 @@
 package edu.uth.warranty.service.impl;
 
-import edu.uth.warranty.model.VehiclePartHistory;
-import edu.uth.warranty.model.Vehicle;
-import edu.uth.warranty.model.PartSerial;
-import edu.uth.warranty.model.WarrantyClaim;
-import edu.uth.warranty.repository.VehiclePartHistoryRepository;
-import edu.uth.warranty.repository.VehicleRepository;
-import edu.uth.warranty.repository.PartSerialRepository;
-import edu.uth.warranty.repository.WarrantyClaimRepository;
-import edu.uth.warranty.service.IVehiclePartHistoryService;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import edu.uth.warranty.model.PartSerial;
+import edu.uth.warranty.model.Vehicle;
+import edu.uth.warranty.model.VehiclePartHistory;
+import edu.uth.warranty.model.WarrantyClaim;
+import edu.uth.warranty.repository.PartSerialRepository;
+import edu.uth.warranty.repository.VehiclePartHistoryRepository;
+import edu.uth.warranty.repository.VehicleRepository;
+import edu.uth.warranty.repository.WarrantyClaimRepository;
+import edu.uth.warranty.service.IVehiclePartHistoryService;
 
 @Service
 @Transactional
@@ -49,7 +50,7 @@ public class VehiclePartHistoryServiceImpl implements IVehiclePartHistoryService
     @Override
     public VehiclePartHistory saveHistoryRecord(VehiclePartHistory record) {
         //Kiểm tra Khóa Ngoại (FK) phải tồn tại
-        if (record.getVehicle() == null || vehicleRepository.findById(record.getVehicle().getVehicle_id()).isEmpty()) {
+        if (record.getVehicle() == null || vehicleRepository.findById(record.getVehicle().getVehicleId()).isEmpty()) {
             throw new IllegalArgumentException("Vehicle (Xe) không tồn tại.");
         }
         if (record.getPartserial() == null || partSerialRepository.findById(record.getPartserial().getPart_serial_id()).isEmpty()) {
