@@ -36,7 +36,7 @@ public class StaffController {
 
         if(staff.getCenter() != null && staff.getCenter().getCenter_id() != null) {
             Long actualCenterId = staff.getCenter().getCenter_id();
-            Optional<ServiceCenter> centerOpt = serviceCenterService.getServiceCenterById(centerId);
+            Optional<ServiceCenter> centerOpt = serviceCenterService.getServiceCenterById(actualCenterId);
             if(centerOpt.isPresent()) {
                 centerName = centerOpt.get().getName();
                 centerId = actualCenterId;
@@ -110,7 +110,7 @@ public class StaffController {
 
     // 4. PUT /api/staffs/{id} : Cập nhật Staff
     @PutMapping("/{id}")
-    public ResponseEntity<StaffResponse> updateStaff(@PathVariable Long id, @RequestBody StaffRequest request) {
+    public ResponseEntity<StaffResponse> updateStaff(@PathVariable Long id,@Valid @RequestBody StaffRequest request) {
         request.setId(id);
 
         if(staffService.getStaffById(id).isEmpty()) {
@@ -122,9 +122,12 @@ public class StaffController {
 
     // 5. DELETE /api/staffs/{id} : Xóa Staff
     @DeleteMapping("/{id}")
-    public ResponseEntity<StaffResponse> deleteStaff(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteStaff(@PathVariable Long id) {
+        if(staffService.getStaffById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
         staffService.deleteStaff(id);
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.noContent().build();
     }
 
     // 6. GET /api/staffs/center/{centerId} : Tìm kiếm theo Trung tâm Dịch vụ

@@ -78,8 +78,8 @@ public class CustomerController {
 
 
     // 4. PUT /api/customers/{id} : Cập nhật Khách hàng
-    @DeleteMapping("/{id}")
-    public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable Long id, @RequestBody CustomerRequest request) {
+    @PutMapping("/{id}")
+    public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable Long id, @Valid @RequestBody CustomerRequest request) { 
         request.setId(id);
 
         if(customerService.getCustomerById(id).isEmpty()) {
@@ -92,16 +92,13 @@ public class CustomerController {
 
 
     // 5. DELETE /api/customers/{id} : Xóa
-
-    public ResponseEntity<CustomerResponse> getCustomerByPhone(@RequestParam String phone) {
-        Optional<Customer> customer = customerService.getCustomersByPhone(phone);
-        if(customer.isEmpty()) {
-            return ResponseEntity.notFound().build();
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
+        if(customerService.getCustomerById(id).isEmpty()) {
+            return ResponseEntity.notFound().build(); 
         }
-        return ResponseEntity.ok(toResponseDTO(customer.get()));
+        customerService.deleteCustomer(id);
+        return ResponseEntity.noContent().build();
     }
-
-
-
 
 }
