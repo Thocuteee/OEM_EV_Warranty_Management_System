@@ -41,8 +41,8 @@ public class ClaimPartServiceImpl implements IClaimPartService{
     @Override
     public ClaimPart saveClaimPart(ClaimPart entity) {
         //Kiểm tra Khóa Ngoại (FK) có tồn tại không
-        if (entity.getClaim() == null || entity.getClaim().getWarrantyClaimId() == null || 
-            claimRepository.findById(entity.getClaim().getWarrantyClaimId()).isEmpty()) {
+        if (entity.getClaim() == null || entity.getClaim().getClaimId() == null || 
+            claimRepository.findById(entity.getClaim().getClaimId()).isEmpty()) {
             throw new IllegalArgumentException("Warranty Claim không tồn tại hoặc không hợp lệ.");
         }
         if (entity.getPart() == null || entity.getPart().getPart_id() == null || 

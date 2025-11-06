@@ -71,7 +71,7 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
         if(serviceCenterRepository.findById(warrantyClaim.getCenter().getCenterId()).isEmpty()) {
             throw new IllegalArgumentException("Trung tâm dịch vụ với ID " + warrantyClaim.getCenter().getCenterId() + " không tồn tại.");
         }
-        if(warrantyClaim.getWarrantyClaimId() == null) {
+        if(warrantyClaim.getClaimId() == null) {
             warrantyClaim.setCreatedAt(LocalDateTime.now());
             warrantyClaim.setStatus("DRAFT ");
             warrantyClaim.setApprovalStatus("PENDING");

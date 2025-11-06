@@ -58,7 +58,7 @@ public class ReportServiceImpl implements IReportService{
 
     @Override
     public Report saveReport(Report report) {
-        if (report.getClaim() == null || claimRepository.findById(report.getClaim().getWarrantyClaimId()).isEmpty()) {
+        if (report.getClaim() == null || claimRepository.findById(report.getClaim().getClaimId()).isEmpty()) {
             throw new IllegalArgumentException("Report phải liên kết với một Claim tồn tại.");
         }
         if (report.getTechnician() == null || technicianRepository.findById(report.getTechnician().getTechnicianId()).isEmpty()) {

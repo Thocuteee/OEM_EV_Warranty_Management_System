@@ -38,7 +38,7 @@ public class RecallCampaignServiceImpl implements IRecallCampaignService{
 
         // Kiểm tra trùng tên
         Optional<RecallCampaign> existingCampaign = recallCampaignRepository.findByTitle(recallCampaign.getTitle());
-        if(existingCampaign.isPresent() && (recallCampaign.getCampaign_id() == null || !recallCampaign.getCampaign_id().equals(existingCampaign.get().getCampaign_id()))) {
+        if(existingCampaign.isPresent() && (recallCampaign.getCampaignId() == null || !recallCampaign.getCampaignId().equals(existingCampaign.get().getCampaignId()))) {
             throw new IllegalArgumentException("Tiêu đề Chiến dịch đã tồn tại.");
         }
         return recallCampaignRepository.save(recallCampaign);

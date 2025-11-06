@@ -42,7 +42,7 @@ public class CampaignVehicleServiceImpl implements ICampaignVehicleService{
 
     @Override
     public CampaignVehicle saveCampaignVehicle(CampaignVehicle entity) {
-        Long campaignId = entity.getCampaign().getCampaign_id();
+        Long campaignId = entity.getCampaign().getCampaignId();
         Long vehicleId = entity.getVehicle().getVehicleId();
         // Kiểm tra xem Campaign và Vehicle có tồn tại không
         if (recallCampaignRepository.findById(campaignId).isEmpty()) {
