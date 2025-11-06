@@ -51,10 +51,11 @@ public class WorkLogServiceImpl implements IWorkLogService{
 
         //Tính toán Duration nếu startTime và endTime được cung cấp
         if (workLog.getStartTime() != null && workLog.getEndTime() != null) {
-            long days = ChronoUnit.DAYS.between(workLog.getStartTime(), workLog.getEndTime());
-            // Giả định Duration được tính bằng số ngày
-            workLog.setDuration(new BigDecimal(days)); 
+            long minutes = ChronoUnit.MINUTES.between(workLog.getStartTime(), workLog.getEndTime());
+            BigDecimal hours = BigDecimal.valueOf(minutes / 60.0);
+            workLog.setDuration(hours);
         }
+
         
         // Thiết lập logDate nếu không có (thường là ngày tạo bản ghi)
         if (workLog.getLogDate() == null) {

@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import java.time.LocalTime;
 
 @Data
 @NoArgsConstructor
@@ -17,8 +18,8 @@ public class WorkLogResponse {
     private String technicianName;
 
     //? Time & Performents
-    private LocalDate startTime;
-    private LocalDate endTime;
+    private LocalTime startTime;
+    private LocalTime endTime;
     private LocalDate logDate;
     private BigDecimal duration;
     private String notes;

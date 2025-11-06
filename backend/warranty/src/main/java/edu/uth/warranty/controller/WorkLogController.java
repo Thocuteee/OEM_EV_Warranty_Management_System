@@ -53,6 +53,7 @@ public class WorkLogController {
     }
 
     // Tạo mới WorkLog
+
     @PostMapping
     public ResponseEntity<WorkLogResponse> createWorkLog(@Valid @RequestBody WorkLogRequest request) {
         WorkLog entity = toEntity(request);
@@ -70,7 +71,7 @@ public class WorkLogController {
         }
 
         WorkLog entity = toEntity(request);
-        entity.setLog_id(id);
+        entity.setLogId(id);
         WorkLog updated = workLogService.saveWorkLog(entity);
         return ResponseEntity.ok(toResponse(updated));
     }
@@ -88,7 +89,7 @@ public class WorkLogController {
 
     private WorkLogResponse toResponse(WorkLog entity) {
         WorkLogResponse dto = new WorkLogResponse();
-        dto.setId(entity.getLog_id());
+        dto.setId(entity.getLogId());
         dto.setClaimId(entity.getClaim().getClaim_id());
         dto.setTechnicianId(entity.getTechnician().getTechnician_id());
         dto.setTechnicianName(entity.getTechnician().getName());
