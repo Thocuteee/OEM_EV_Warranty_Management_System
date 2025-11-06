@@ -23,7 +23,30 @@ public class PartController {
     public PartController(IPartService partService) {
         this.partService = partService;
     }
+    // ======================
+    // Mapper nội bộ (Entity ↔ DTO)
+    // ======================
 
+    private PartResponse toResponse(Part entity) {
+        PartResponse dto = new PartResponse();
+        dto.setId(entity.getPart_id());
+        dto.setName(entity.getName());
+        dto.setPartNumber(entity.getPartNumber());
+        dto.setPrice(entity.getPrice());
+        return dto;
+    }
+
+    private Part toEntity(PartRequest request) {
+        Part entity = new Part();
+        entity.setPart_id(request.getId());
+        entity.setName(request.getName());
+        entity.setPartNumber(request.getPartNumber());
+        entity.setPrice(request.getPrice());
+        return entity;
+    }
+    /* =====================================
+      CRUD APIs
+    ====================================== */
     // Lấy tất cả linh kiện
     @GetMapping
     public ResponseEntity<List<PartResponse>> getAllParts() {
@@ -94,25 +117,5 @@ public class PartController {
         return ResponseEntity.ok(parts);
     }
 
-    // ======================
-    // Mapper nội bộ (Entity ↔ DTO)
-    // ======================
 
-    private PartResponse toResponse(Part entity) {
-        PartResponse dto = new PartResponse();
-        dto.setId(entity.getPart_id());
-        dto.setName(entity.getName());
-        dto.setPartNumber(entity.getPartNumber());
-        dto.setPrice(entity.getPrice());
-        return dto;
-    }
-
-    private Part toEntity(PartRequest request) {
-        Part entity = new Part();
-        entity.setPart_id(request.getId());
-        entity.setName(request.getName());
-        entity.setPartNumber(request.getPartNumber());
-        entity.setPrice(request.getPrice());
-        return entity;
-    }
 }

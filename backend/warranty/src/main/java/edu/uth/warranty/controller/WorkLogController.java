@@ -25,7 +25,6 @@ public class WorkLogController {
     private final WarrantyClaimRepository claimRepository;
     private final TechnicianRepository technicianRepository;
 
-    // Constructor Injection (khuyến nghị hơn @Autowired)
     public WorkLogController(IWorkLogService workLogService,
                              WarrantyClaimRepository claimRepository,
                              TechnicianRepository technicianRepository) {
@@ -33,7 +32,48 @@ public class WorkLogController {
         this.claimRepository = claimRepository;
         this.technicianRepository = technicianRepository;
     }
+    // ==========================
+    // Mapper nội bộ (chuyển đổi giữa Entity ↔ DTO)
+    // ==========================
 
+    private WorkLogResponse toResponse(WorkLog entity) {
+        WorkLogResponse dto = new WorkLogResponse();
+        dto.setId(entity.getLogId());
+        dto.setClaimId(entity.getClaim().getClaim_id());
+        dto.setTechnicianId(entity.getTechnician().getTechnician_id());
+        dto.setTechnicianName(entity.getTechnician().getName());
+        dto.setStartTime(entity.getStartTime());
+        dto.setEndTime(entity.getEndTime());
+        dto.setLogDate(entity.getLogDate());
+        dto.setDuration(entity.getDuration());
+        dto.setNotes(entity.getNotes());
+        return dto;
+    }
+
+    private WorkLog toEntity(WorkLogRequest request) {
+        WorkLog entity = new WorkLog();
+
+        // Gán quan hệ Claim
+        WarrantyClaim claim = claimRepository.findById(request.getClaimId())
+                .orElseThrow(() -> new IllegalArgumentException("Warranty Claim không tồn tại."));
+        entity.setClaim(claim);
+
+        // Gán quan hệ Technician
+        Technician tech = technicianRepository.findById(request.getTechnicianId())
+                .orElseThrow(() -> new IllegalArgumentException("Technician không tồn tại."));
+        entity.setTechnician(tech);
+
+        // Gán dữ liệu chính
+        entity.setStartTime(request.getStartTime());
+        entity.setEndTime(request.getEndTime());
+        entity.setLogDate(request.getLogDate());
+        entity.setDuration(request.getDuration());
+        entity.setNotes(request.getNotes());
+        return entity;
+    }
+    /* =====================================
+      CRUD APIs
+    ====================================== */
     // Lấy tất cả WorkLog
     @GetMapping
     public ResponseEntity<List<WorkLogResponse>> getAllWorkLogs() {
@@ -83,43 +123,5 @@ public class WorkLogController {
         return ResponseEntity.noContent().build();
     }
 
-    // ==========================
-    // Mapper nội bộ (chuyển đổi giữa Entity ↔ DTO)
-    // ==========================
-
-    private WorkLogResponse toResponse(WorkLog entity) {
-        WorkLogResponse dto = new WorkLogResponse();
-        dto.setId(entity.getLogId());
-        dto.setClaimId(entity.getClaim().getClaim_id());
-        dto.setTechnicianId(entity.getTechnician().getTechnician_id());
-        dto.setTechnicianName(entity.getTechnician().getName());
-        dto.setStartTime(entity.getStartTime());
-        dto.setEndTime(entity.getEndTime());
-        dto.setLogDate(entity.getLogDate());
-        dto.setDuration(entity.getDuration());
-        dto.setNotes(entity.getNotes());
-        return dto;
-    }
-
-    private WorkLog toEntity(WorkLogRequest request) {
-        WorkLog entity = new WorkLog();
-
-        // Gán quan hệ Claim
-        WarrantyClaim claim = claimRepository.findById(request.getClaimId())
-                .orElseThrow(() -> new IllegalArgumentException("Warranty Claim không tồn tại."));
-        entity.setClaim(claim);
-
-        // Gán quan hệ Technician
-        Technician tech = technicianRepository.findById(request.getTechnicianId())
-                .orElseThrow(() -> new IllegalArgumentException("Technician không tồn tại."));
-        entity.setTechnician(tech);
-
-        // Gán dữ liệu chính
-        entity.setStartTime(request.getStartTime());
-        entity.setEndTime(request.getEndTime());
-        entity.setLogDate(request.getLogDate());
-        entity.setDuration(request.getDuration());
-        entity.setNotes(request.getNotes());
-        return entity;
-    }
+   
 }
