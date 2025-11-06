@@ -15,7 +15,7 @@ import lombok.AllArgsConstructor;
 public class Vehicle {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long vehicle_id;
+    private Long vehicleId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)

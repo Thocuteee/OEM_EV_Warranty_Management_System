@@ -51,8 +51,8 @@ public class InvoiceServiceImpl implements IInvoiceService{
         //Kiểm tra các Khóa Ngoại (FK) có tồn tại không
         
         // 1. Kiểm tra Claim
-        if (invoice.getClaim() == null || invoice.getClaim().getClaim_id() == null || 
-            claimRepository.findById(invoice.getClaim().getClaim_id()).isEmpty()) {
+        if (invoice.getClaim() == null || invoice.getClaim().getWarrantyClaimId() == null || 
+            claimRepository.findById(invoice.getClaim().getWarrantyClaimId()).isEmpty()) {
             throw new IllegalArgumentException("Warranty Claim không tồn tại hoặc không hợp lệ.");
         }
         

@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClaimRequest {
+public class WarrantyClaimRequest {
     @NotNull(message = "Staff ID không được để trống")
     private Long staffId;
 

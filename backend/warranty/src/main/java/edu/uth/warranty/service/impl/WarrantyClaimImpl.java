@@ -62,7 +62,7 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
     }
     @Override
     public WarrantyClaim saveWarrantyClaim(WarrantyClaim warrantyClaim){
-        if(vehicleRepository.findById(warrantyClaim.getVehicle().getVehicle_id()).isEmpty()) {
+        if(vehicleRepository.findById(warrantyClaim.getVehicle().getVehicleId()).isEmpty()) {
             throw new IllegalArgumentException("Yêu cầu bảo hành với không tồn tại.");
         }
         if(customerRepository.findById(warrantyClaim.getCustomer().getCustomerId()).isEmpty()) {
@@ -71,7 +71,7 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
         if(serviceCenterRepository.findById(warrantyClaim.getCenter().getCenterId()).isEmpty()) {
             throw new IllegalArgumentException("Trung tâm dịch vụ với ID " + warrantyClaim.getCenter().getCenterId() + " không tồn tại.");
         }
-        if(warrantyClaim.getClaim_id() == null) {
+        if(warrantyClaim.getWarrantyClaimId() == null) {
             warrantyClaim.setCreatedAt(LocalDateTime.now());
             warrantyClaim.setStatus("DRAFT ");
             warrantyClaim.setApprovalStatus("PENDING");

@@ -43,7 +43,7 @@ public class StaffController {
             }
         }
         return new StaffResponse(
-            staff.getStaff_id(),
+            staff.getStaffId(),
             centerId,
             centerName,
             staff.getName(),
@@ -58,7 +58,7 @@ public class StaffController {
         Staff staff = new Staff();
         // ID chỉ được set khi cập nhật (PUT)
         if(request.getId() != null) {
-            staff.setStaff_id(request.getId());
+            staff.setStaffId(request.getId());
         }
         
         // Map Khóa Ngoại (ServiceCenter FK)
