@@ -65,11 +65,11 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
         if(vehicleRepository.findById(warrantyClaim.getVehicle().getVehicle_id()).isEmpty()) {
             throw new IllegalArgumentException("Yêu cầu bảo hành với không tồn tại.");
         }
-        if(customerRepository.findById(warrantyClaim.getCustomer().getCustomer_id()).isEmpty()) {
-            throw new IllegalArgumentException("Khách hàng với ID " + warrantyClaim.getCustomer().getCustomer_id() + " không tồn tại.");
+        if(customerRepository.findById(warrantyClaim.getCustomer().getCustomerId()).isEmpty()) {
+            throw new IllegalArgumentException("Khách hàng với ID " + warrantyClaim.getCustomer().getCustomerId() + " không tồn tại.");
         }
-        if(serviceCenterRepository.findById(warrantyClaim.getCenter().getCenter_id()).isEmpty()) {
-            throw new IllegalArgumentException("Trung tâm dịch vụ với ID " + warrantyClaim.getCenter().getCenter_id() + " không tồn tại.");
+        if(serviceCenterRepository.findById(warrantyClaim.getCenter().getCenterId()).isEmpty()) {
+            throw new IllegalArgumentException("Trung tâm dịch vụ với ID " + warrantyClaim.getCenter().getCenterId() + " không tồn tại.");
         }
         if(warrantyClaim.getClaim_id() == null) {
             warrantyClaim.setCreatedAt(LocalDateTime.now());

@@ -34,8 +34,8 @@ public class StaffController {
         String centerName = null;
         Long centerId = null;
 
-        if(staff.getCenter() != null && staff.getCenter().getCenter_id() != null) {
-            Long actualCenterId = staff.getCenter().getCenter_id();
+        if(staff.getCenter() != null && staff.getCenter().getCenterId() != null) {
+            Long actualCenterId = staff.getCenter().getCenterId();
             Optional<ServiceCenter> centerOpt = serviceCenterService.getServiceCenterById(actualCenterId);
             if(centerOpt.isPresent()) {
                 centerName = centerOpt.get().getName();
@@ -64,7 +64,7 @@ public class StaffController {
         // Map Khóa Ngoại (ServiceCenter FK)
         if(request.getCenterId() != null) {
             ServiceCenter serviceCenter = new ServiceCenter();
-            serviceCenter.setCenter_id(request.getCenterId());
+            serviceCenter.setCenterId(request.getCenterId());
             staff.setCenter(serviceCenter);
         }
 
@@ -134,7 +134,7 @@ public class StaffController {
     @GetMapping("/center{centerId}")
     public ResponseEntity<List<StaffResponse>> getStaffsByCenter(@PathVariable Long centerId) {
         ServiceCenter serviceCenter = new ServiceCenter();
-        serviceCenter.setCenter_id(centerId);
+        serviceCenter.setCenterId(centerId);
 
         List<Staff> staffs = staffService.getStaffsByCenter(serviceCenter);
 

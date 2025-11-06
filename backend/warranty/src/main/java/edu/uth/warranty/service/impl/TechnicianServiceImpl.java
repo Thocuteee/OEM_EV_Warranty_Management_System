@@ -34,19 +34,19 @@ public class TechnicianServiceImpl implements ITechnicianService{
 
     @Override
     public Technician saveTechnician(Technician technician) {
-        if (technician.getCenter() == null || technician.getCenter().getCenter_id() == null) {
+        if (technician.getCenter() == null || technician.getCenter().getCenterId() == null) {
             throw new IllegalArgumentException("Kỹ thuật viên phải được gán cho một Trung tâm Dịch vụ hợp lệ.");
         }
-        if (serviceCenterRepository.findById(technician.getCenter().getCenter_id()).isEmpty()) {
+        if (serviceCenterRepository.findById(technician.getCenter().getCenterId()).isEmpty()) {
             throw new IllegalArgumentException("Trung tâm dịch vụ không tồn tại.");
         }
         Optional<Technician> existingByEmail = technicianRepository.findByEmail(technician.getEmail());
-        if (existingByEmail.isPresent() && (technician.getTechnician_id() == null || !technician.getTechnician_id().equals(existingByEmail.get().getTechnician_id()))) {
+        if (existingByEmail.isPresent() && (technician.getTechnicianId() == null || !technician.getTechnicianId().equals(existingByEmail.get().getTechnicianId()))) {
             throw new IllegalArgumentException("Email đã tồn tại.");
         }
 
         Optional<Technician> existingByPhone = technicianRepository.findByPhone(technician.getPhone());
-        if (existingByPhone.isPresent() && (technician.getTechnician_id() == null || !technician.getTechnician_id().equals(existingByPhone.get().getTechnician_id()))) {
+        if (existingByPhone.isPresent() && (technician.getTechnicianId() == null || !technician.getTechnicianId().equals(existingByPhone.get().getTechnicianId()))) {
             throw new IllegalArgumentException("Số điện thoại đã tồn tại.");
         }
         

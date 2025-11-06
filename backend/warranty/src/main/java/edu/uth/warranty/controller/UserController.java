@@ -89,9 +89,13 @@ public class UserController {
 
     // 5. DELETE /api/users/{id} : Xóa User
     @DeleteMapping("/{id}")
-    public ResponseEntity<UserResponse> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+        if (userService.getUserById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
         userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.noContent().build(); 
     }
 
     // 6. GET /api/users/role?role={role} : Tìm kiếm theo Vai trò

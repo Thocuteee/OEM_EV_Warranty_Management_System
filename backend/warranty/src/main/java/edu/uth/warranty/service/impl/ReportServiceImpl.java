@@ -61,7 +61,7 @@ public class ReportServiceImpl implements IReportService{
         if (report.getClaim() == null || claimRepository.findById(report.getClaim().getClaim_id()).isEmpty()) {
             throw new IllegalArgumentException("Report phải liên kết với một Claim tồn tại.");
         }
-        if (report.getTechnician() == null || technicianRepository.findById(report.getTechnician().getTechnician_id()).isEmpty()) {
+        if (report.getTechnician() == null || technicianRepository.findById(report.getTechnician().getTechnicianId()).isEmpty()) {
             throw new IllegalArgumentException("Technician không tồn tại.");
         }
         //(Kiểm tra tương tự cho Center, Vehicle, Campaign, CreatedBy)

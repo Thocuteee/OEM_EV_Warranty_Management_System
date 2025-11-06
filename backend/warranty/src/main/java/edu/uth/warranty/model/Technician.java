@@ -13,7 +13,7 @@ import lombok.Setter;
 public class Technician {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long technician_id;
+    private Long technicianId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="center_id", nullable = false)

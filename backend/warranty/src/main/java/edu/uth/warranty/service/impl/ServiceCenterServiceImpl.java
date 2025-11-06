@@ -35,7 +35,7 @@ public class ServiceCenterServiceImpl implements IServiceCenterService{
 
         if (existingCenter.isPresent()) {
             // Nếu tên đã tồn tại, chỉ cho phép cập nhật nếu đó là cùng một bản ghi (sửa)
-            if (center.getCenter_id() == null || !center.getCenter_id().equals(existingCenter.get().getCenter_id())) {
+            if (center.getCenterId() == null || !center.getCenterId().equals(existingCenter.get().getCenterId())) {
                 throw new IllegalArgumentException("Tên trung tâm dịch vụ đã tồn tại.");
             }
         }

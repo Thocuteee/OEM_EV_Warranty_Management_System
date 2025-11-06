@@ -31,13 +31,13 @@ public class CustomerServiceImpl implements ICustomerService{
     public Customer saveCustomer(Customer customer) {
         // Kiểm tra Email
         Optional<Customer> existingByEmail = customerRepository.findByEmail(customer.getEmail());
-        if (existingByEmail.isPresent() && (customer.getCustomer_id() == null || !customer.getCustomer_id().equals(existingByEmail.get().getCustomer_id()))) {
+        if (existingByEmail.isPresent() && (customer.getCustomerId() == null || !customer.getCustomerId().equals(existingByEmail.get().getCustomerId()))) {
             throw new IllegalArgumentException("Email đã tồn tại.");
         }
         
         // Kiểm tra Phone
         Optional<Customer> existingByPhone = customerRepository.findByPhone(customer.getPhone());
-        if (existingByPhone.isPresent() && (customer.getCustomer_id() == null || !customer.getCustomer_id().equals(existingByPhone.get().getCustomer_id()))) {
+        if (existingByPhone.isPresent() && (customer.getCustomerId() == null || !customer.getCustomerId().equals(existingByPhone.get().getCustomerId()))) {
             throw new IllegalArgumentException("Số điện thoại đã tồn tại.");
         }
 

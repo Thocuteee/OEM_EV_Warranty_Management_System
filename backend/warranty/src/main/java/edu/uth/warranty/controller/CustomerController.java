@@ -28,7 +28,7 @@ public class CustomerController {
     // Chuyển đổi Entity sang Response DTO
     private CustomerResponse toResponseDTO(Customer customer) {
         return new CustomerResponse(
-            customer.getCustomer_id(),
+            customer.getCustomerId(),
             customer.getName(),
             customer.getPhone(),
             customer.getEmail(),
@@ -39,7 +39,7 @@ public class CustomerController {
     private Customer toEntity(CustomerRequest request) {
         Customer customer = new Customer();
         if (request.getId() != null) {
-            customer.setCustomer_id(request.getId());
+            customer.setCustomerId(request.getId());
         }
         
         customer.setName(request.getName());
@@ -59,7 +59,7 @@ public class CustomerController {
     }
     // 2. GET /api/customers : Lấy tất cả Khách hàng
     @GetMapping
-    public ResponseEntity<List<CustomerResponse>> getAllCustomer() {
+    public ResponseEntity<List<CustomerResponse>> getAllCustomers() { 
         List<Customer> customers = customerService.getAllCustomers();
         List<CustomerResponse> customerResponses = customers.stream().map(this::toResponseDTO).collect(Collectors.toList());
 

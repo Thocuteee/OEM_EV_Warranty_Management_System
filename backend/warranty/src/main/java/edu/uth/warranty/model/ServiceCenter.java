@@ -14,7 +14,7 @@ import lombok.AllArgsConstructor;
 public class ServiceCenter {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long center_id;
+    private Long centerId;
 
     @Column(name = "name", nullable = false, unique = true)
     private String name;

@@ -49,8 +49,8 @@ public class InventoryServiceImpl implements IInventoryService{
             partRepository.findById(inventory.getPart().getPart_id()).isEmpty()) {
             throw new IllegalArgumentException("Linh kiện không tồn tại hoặc không hợp lệ.");
         }
-        if (inventory.getCenter() == null || inventory.getCenter().getCenter_id() == null || 
-            centerRepository.findById(inventory.getCenter().getCenter_id()).isEmpty()) {
+        if (inventory.getCenter() == null || inventory.getCenter().getCenterId() == null || 
+            centerRepository.findById(inventory.getCenter().getCenterId()).isEmpty()) {
             throw new IllegalArgumentException("Trung tâm Dịch vụ không tồn tại hoặc không hợp lệ.");
         }
         

@@ -36,11 +36,11 @@ public class VehicleServiceImpl implements IVehicleService{
     @Override
     public Vehicle saveVehicle(Vehicle vehicle) {
         // Đảm bảo Customer đã tồn tại trước khi đăng ký/cập nhật xe
-        if(vehicle.getCustomer() == null || vehicle.getCustomer().getCustomer_id() == null) {
+        if(vehicle.getCustomer() == null || vehicle.getCustomer().getCustomerId() == null) {
             throw new IllegalArgumentException("Vehicle phải liên kết với một Customer hợp lệ.");
         }
 
-        Optional<Customer> existingCustomer = customerRepository.findById(vehicle.getCustomer().getCustomer_id());
+        Optional<Customer> existingCustomer = customerRepository.findById(vehicle.getCustomer().getCustomerId());
         if(existingCustomer.isEmpty()) {
             throw new IllegalArgumentException("Không tìm thấy Customer trong hệ thống.");
         }

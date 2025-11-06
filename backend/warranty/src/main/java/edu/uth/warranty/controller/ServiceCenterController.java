@@ -26,7 +26,7 @@ public class ServiceCenterController {
 
     private CenterResponse toResponseDTO(ServiceCenter center) {
         return new CenterResponse(
-            center.getCenter_id(), center.getName(), center.getLocation()
+            center.getCenterId(), center.getName(), center.getLocation()
         );
     }
 
@@ -34,7 +34,7 @@ public class ServiceCenterController {
         ServiceCenter center = new ServiceCenter();
         // ID chỉ được set khi cập nhật (PUT)
         if(request.getId() != null) {
-            center.setCenter_id(request.getId());
+            center.setCenterId(request.getId());
         }
         center.setName(request.getName());
         center.setLocation(request.getLocation());
@@ -86,9 +86,8 @@ public class ServiceCenterController {
 
     // 5. DELETE /api/centers/{id} : Xóa Trung tâm
     @DeleteMapping("/{id}")
-    // SỬA LỖI 2: Thay đổi tên phương thức và kiểu trả về thành Void
-    public ResponseEntity<Void> deleteCenters(@PathVariable Long id) { 
-        serviceCenterService.deleteServiceCenter(id);
+    public ResponseEntity<Void> deleteCenter(@PathVariable Long id) { 
+        serviceCenterService.deleteServiceCenter(id); // Gọi Service
         return ResponseEntity.noContent().build();
     }
 
