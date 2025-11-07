@@ -33,5 +33,15 @@ public class User {
     @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Report> reports;
 
+    public String getReport_id() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getReport_id'");
+    }
+
+    public Long getUser_id() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getUser_id'");
+    }
+
     
 }
