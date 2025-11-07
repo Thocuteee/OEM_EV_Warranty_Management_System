@@ -110,7 +110,7 @@ public class TechnicianController {
             return ResponseEntity.notFound().build();
         }
 
-        technicianService.deleteTechnicianById(id);
+        technicianService.deleteTechnician(id);
         return ResponseEntity.noContent().build();
     }
 }    

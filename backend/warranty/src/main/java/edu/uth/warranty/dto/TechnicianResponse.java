@@ -8,6 +8,9 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TechnicianResponse {
+    public TechnicianResponse(Long technician_id, String name2, String phone2, String email2, String specialization2) {
+        //TODO Auto-generated constructor stub
+    }
     private Long id;
     private Long centerId;
     private String centerName;
