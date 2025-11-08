@@ -38,4 +38,8 @@ public class Technician {
         this.email = email;
         this.specialization = specialization;
     }
+    
+    public Technician(Long technicianId) {
+        this.technicianId = technicianId;
+    }
 }

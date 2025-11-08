@@ -30,7 +30,9 @@ public class Vehicle {
     @Column(name = "year", nullable = false)
     private String year;
 
-    
+    public Vehicle(Long vehicleId) {
+        this.vehicleId = vehicleId;
+    }
     
 
 }

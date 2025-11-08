@@ -42,4 +42,7 @@ public class Staff {
     @Column(name = "password", nullable = false)
     private String password;
     
+    public Staff(Long staffId) {
+        this.staffId = staffId;
+    }
 }

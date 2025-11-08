@@ -72,10 +72,8 @@ public class PartController {
             
             Part saved = partService.savePart(entity);
             
-            // ĐIỀU CHỈNH: Trả về 201 Created cho thao tác tạo mới
             return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(saved)); 
         } catch (IllegalArgumentException e) {
-            // BẮT LỖI: Xử lý lỗi nghiệp vụ (ví dụ: duplicate part number)
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage())); 
         }
     }
