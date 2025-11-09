@@ -15,4 +15,5 @@ public class TechnicianResponse {
     private String phone;
     private String email;
     private String specialization;
+    private String username;
 }

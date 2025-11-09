@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClaimResponse {
+public class WarrantyClaimResponse {
     private Long id;
 
     // Thông tin FK

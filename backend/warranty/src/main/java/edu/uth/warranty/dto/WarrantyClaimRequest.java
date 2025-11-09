@@ -1,21 +1,22 @@
 package edu.uth.warranty.dto;
 
 import java.math.BigDecimal;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
+
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ClaimRequest {
+public class WarrantyClaimRequest {
     @NotNull(message = "Staff ID không được để trống")
     private Long staffId;
 
     @NotNull(message = "Vehicle ID là bắt buộc")
-    private Long vehicleId;
+    private Long VehicleId;
 
     @NotNull(message = "Customer ID là bắt buộc")
     private Long customerId;
@@ -30,7 +31,7 @@ public class ClaimRequest {
     private String description;
 
     @NotNull(message = "Tổng chi phí là bắt buộc")
-    private BigDecimal totalCost;
+    private BigDecimal TotalCost;
 
     // Lưu ý: status, created_at, updated_at sẽ do Service tự thiết lập sau -.- 
 }

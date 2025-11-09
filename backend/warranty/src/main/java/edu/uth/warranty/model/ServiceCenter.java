@@ -19,7 +19,7 @@ import lombok.Setter;
 public class ServiceCenter {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long CenterId;
+    private Long centerId;
 
     @Column(name = "name", nullable = false, unique = true)
     private String name;
@@ -27,7 +27,9 @@ public class ServiceCenter {
     @Column(name = "location", nullable = false)
     private String location;
 
-    
+    public ServiceCenter(Long centerId) {
+        this.centerId= centerId;
+    }
 
 
 }

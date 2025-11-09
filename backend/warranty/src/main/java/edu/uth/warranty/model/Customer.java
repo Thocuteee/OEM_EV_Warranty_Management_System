@@ -34,7 +34,9 @@ public class Customer {
     @Column(name = "address", nullable = false)
     private String address;
 
-    
+    public Customer(Long customerId) {
+        this.customerId = customerId;
+    }
 
     
 }

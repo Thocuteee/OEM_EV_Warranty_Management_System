@@ -5,8 +5,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.stereotype.Service;
-
 import edu.uth.warranty.model.Customer;
 import edu.uth.warranty.model.ServiceCenter;
 import edu.uth.warranty.model.Staff;
@@ -15,7 +13,6 @@ import edu.uth.warranty.model.Vehicle;
 import edu.uth.warranty.model.WarrantyClaim;
 
 
-@Service
 
 public interface IWarrantyClaimService {
 

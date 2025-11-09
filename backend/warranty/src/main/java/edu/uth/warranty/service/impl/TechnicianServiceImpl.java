@@ -6,6 +6,7 @@ import edu.uth.warranty.repository.TechnicianRepository;
 import edu.uth.warranty.repository.ServiceCenterRepository;
 import edu.uth.warranty.service.ITechnicianService;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -16,10 +17,12 @@ import java.util.Optional;
 public class TechnicianServiceImpl implements ITechnicianService{
     private final TechnicianRepository technicianRepository;
     private final ServiceCenterRepository serviceCenterRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public TechnicianServiceImpl(TechnicianRepository technicianRepository, ServiceCenterRepository serviceCenterRepository) {
+    public TechnicianServiceImpl(TechnicianRepository technicianRepository, ServiceCenterRepository serviceCenterRepository, PasswordEncoder passwordEncoder) {
         this.technicianRepository = technicianRepository;
         this.serviceCenterRepository = serviceCenterRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -48,6 +51,11 @@ public class TechnicianServiceImpl implements ITechnicianService{
         Optional<Technician> existingByPhone = technicianRepository.findByPhone(technician.getPhone());
         if (existingByPhone.isPresent() && (technician.getTechnicianId() == null || !technician.getTechnicianId().equals(existingByPhone.get().getTechnicianId()))) {
             throw new IllegalArgumentException("Số điện thoại đã tồn tại.");
+        }
+
+        if (technician.getPassword() != null && !technician.getPassword().isEmpty()) {
+            String hashedPassword = passwordEncoder.encode(technician.getPassword());
+            technician.setPassword(hashedPassword);
         }
         
         return technicianRepository.save(technician);
@@ -86,5 +94,10 @@ public class TechnicianServiceImpl implements ITechnicianService{
     @Override
     public List<Technician> getTechniciansBySpecializationAndCenter(String specialization, ServiceCenter center) {
         return technicianRepository.findBySpecializationAndCenter(specialization, center);
+    }
+
+    @Override
+    public Optional<Technician> getTechnicianByUsername(String username) {
+        return technicianRepository.findByUsername(username);
     }
 }

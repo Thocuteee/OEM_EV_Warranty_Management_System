@@ -1,14 +1,12 @@
 package edu.uth.warranty.service;
 
-import edu.uth.warranty.model.ClaimAttachment;
-import edu.uth.warranty.model.WarrantyClaim;
-
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.stereotype.Service;
+import edu.uth.warranty.model.ClaimAttachment;
+import edu.uth.warranty.model.WarrantyClaim;
 
-@Service
+
 public interface IClaimAttachmentService {
     List<ClaimAttachment> getAllAttachment();
     Optional<ClaimAttachment> getAttachmentById(Long id);

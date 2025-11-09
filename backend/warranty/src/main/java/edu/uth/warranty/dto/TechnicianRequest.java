@@ -28,6 +28,13 @@ public class TechnicianRequest {
     @NotBlank(message = "Email là bắt buộc")
     @Email(message = "Email không hợp lệ")
     private String email; 
+
     @NotBlank(message = "Chuyên môn là bắt buộc")
     private String specialization; // Ví dụ: Battery, Motor, Charging
+
+    @NotBlank(message = "Username là bắt buộc")
+    private String username;
+    
+    @NotBlank(message = "Password là bắt buộc khi tạo/cập nhật")
+    private String password;
 }

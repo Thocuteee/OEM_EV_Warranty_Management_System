@@ -39,5 +39,8 @@ public class Vehicle {
     @Column(name = "year", nullable = false)
     private Integer year;
 
+    public Vehicle(Long vehicleId){
+        this.vehicleId = vehicleId;
+    }
 
 }
