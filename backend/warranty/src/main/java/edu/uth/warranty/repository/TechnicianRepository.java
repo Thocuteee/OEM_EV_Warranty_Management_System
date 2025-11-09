@@ -20,4 +20,6 @@ public interface TechnicianRepository extends JpaRepository<Technician, Long>{
 
     //? có nối 1:n center, kiểu chứa Entity sang Reponsitory 
     List<Technician> findBySpecializationAndCenter(String specialization, ServiceCenter center);
+
+    Optional<Technician> findByUsername(String username);
 }

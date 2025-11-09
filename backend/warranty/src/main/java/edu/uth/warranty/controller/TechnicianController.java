@@ -36,7 +36,8 @@ public class TechnicianController {
             technician.getName(),
             technician.getPhone(),
             technician.getEmail(),
-            technician.getSpecialization()
+            technician.getSpecialization(),
+            technician.getUsername()
         ); 
     }
 
@@ -47,15 +48,17 @@ public class TechnicianController {
         }
         
         if (request.getCenterId() != null) {
-            ServiceCenter center = new ServiceCenter();
-            center.setCenterId(request.getCenterId());
-            technician.setCenter(center);
+            ServiceCenter serviceCenter = new ServiceCenter();
+            serviceCenter.setCenterId(request.getCenterId());
+            technician.setCenter(serviceCenter);
         }
         
         technician.setName(request.getName());
         technician.setPhone(request.getPhone());
         technician.setEmail(request.getEmail());
         technician.setSpecialization(request.getSpecialization());
+        technician.setUsername(request.getUsername());
+        technician.setPassword(request.getPassword());
         
         return technician;
     }
@@ -71,6 +74,9 @@ public class TechnicianController {
             return ResponseEntity.status(HttpStatus.CREATED).body(toResponseDTO(savedTechnician));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
+        } catch (Exception e) {
+            String errorMessage = "Lỗi hệ thống khi lưu dữ liệu. Vui lòng kiểm tra tính duy nhất của Username/Email/Phone và sự tồn tại của Service Center ID.";
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse(errorMessage));
         }
     }
     

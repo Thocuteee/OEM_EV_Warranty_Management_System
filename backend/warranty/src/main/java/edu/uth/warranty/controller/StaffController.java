@@ -1,5 +1,6 @@
 package edu.uth.warranty.controller;
 
+import edu.uth.warranty.dto.MessageResponse;
 import edu.uth.warranty.dto.StaffRequest;
 import edu.uth.warranty.dto.StaffResponse;
 import edu.uth.warranty.model.Staff;
@@ -56,15 +57,13 @@ public class StaffController {
 
     private Staff toEntity(StaffRequest request) {
         Staff staff = new Staff();
-        // ID chỉ được set khi cập nhật (PUT)
         if(request.getId() != null) {
             staff.setStaffId(request.getId());
         }
         
         // Map Khóa Ngoại (ServiceCenter FK)
         if(request.getCenterId() != null) {
-            ServiceCenter serviceCenter = new ServiceCenter();
-            serviceCenter.setCenterId(request.getCenterId());
+            ServiceCenter serviceCenter = new ServiceCenter(request.getCenterId());
             staff.setCenter(serviceCenter);
         }
 
@@ -81,10 +80,15 @@ public class StaffController {
 
     // 1. POST /api/staffs : Tạo mới Staff
     @PostMapping
-    public ResponseEntity<StaffResponse> createStaff(@Valid @RequestBody StaffRequest request) {
-        Staff newStaff = toEntity(request);
-        Staff saveStaff = staffService.saveStaff(newStaff);
-        return ResponseEntity.status(HttpStatus.CREATED).body(toResponseDTO(saveStaff));
+    public ResponseEntity<?> createStaff(@Valid @RequestBody StaffRequest request) {
+        try {
+            Staff newStaff = toEntity(request);
+            newStaff.setStaffId(null);
+            Staff saveStaff = staffService.saveStaff(newStaff);
+            return ResponseEntity.status(HttpStatus.CREATED).body(toResponseDTO(saveStaff));
+        } catch(IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
+        }
     }
 
 

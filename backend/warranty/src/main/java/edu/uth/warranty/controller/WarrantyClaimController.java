@@ -79,7 +79,8 @@ public class WarrantyClaimController {
     @PostMapping
     public ResponseEntity<?> createClaim(@Valid @RequestBody WarrantyClaimRequest request) {
         try{
-            WarrantyClaim newClaim = new WarrantyClaim();
+            WarrantyClaim newClaim = toEntity(request);
+            newClaim.setClaimId(null);
             WarrantyClaim saveClaim = warrantyClaimService.saveWarrantyClaim(newClaim);
             return ResponseEntity.status(HttpStatus.CREATED).body(toResponseDTO(saveClaim));
 
@@ -90,7 +91,7 @@ public class WarrantyClaimController {
 
     // 2. GET /api/claims : Lấy tất cả Claims
     @GetMapping
-    public ResponseEntity<List<WarrantyClaimResponse>> etAllClaims() {
+    public ResponseEntity<List<WarrantyClaimResponse>> getAllClaims() {
         List<WarrantyClaim> claims = warrantyClaimService.getAllWarrantyClaims();
         List<WarrantyClaimResponse> responses = claims.stream().map(this::toResponseDTO).collect(Collectors.toList());
         return ResponseEntity.ok(responses);
