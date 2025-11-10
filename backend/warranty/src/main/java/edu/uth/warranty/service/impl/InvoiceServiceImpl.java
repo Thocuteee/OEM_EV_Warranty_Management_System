@@ -1,20 +1,20 @@
 package edu.uth.warranty.service.impl;
 
-import edu.uth.warranty.model.Invoice;
-import edu.uth.warranty.model.WarrantyClaim;
-import edu.uth.warranty.model.Part;
-import edu.uth.warranty.model.ServiceCenter;
-
-import edu.uth.warranty.repository.InvoiceRepository;
-import edu.uth.warranty.repository.WarrantyClaimRepository;
-import edu.uth.warranty.repository.PartRepository;
-import edu.uth.warranty.repository.ServiceCenterRepository;
-import edu.uth.warranty.service.IInvoiceService;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.List;
-import java.util.Optional;
+
+import edu.uth.warranty.model.Invoice;
+import edu.uth.warranty.model.Part;
+import edu.uth.warranty.model.ServiceCenter;
+import edu.uth.warranty.model.WarrantyClaim;
+import edu.uth.warranty.repository.InvoiceRepository;
+import edu.uth.warranty.repository.PartRepository;
+import edu.uth.warranty.repository.ServiceCenterRepository;
+import edu.uth.warranty.repository.WarrantyClaimRepository;
+import edu.uth.warranty.service.IInvoiceService;
 
 @Service
 @Transactional
@@ -57,8 +57,8 @@ public class InvoiceServiceImpl implements IInvoiceService{
         }
         
         // 2. Kiểm tra Part
-        if (invoice.getPart() == null || invoice.getPart().getPart_id() == null || 
-            partRepository.findById(invoice.getPart().getPart_id()).isEmpty()) {
+        if (invoice.getPart() == null || invoice.getPart().getPartId() == null || 
+            partRepository.findById(invoice.getPart().getPartId()).isEmpty()) {
             throw new IllegalArgumentException("Linh kiện (Part) không tồn tại hoặc không hợp lệ.");
         }
 

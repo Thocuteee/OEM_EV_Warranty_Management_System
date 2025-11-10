@@ -1,14 +1,14 @@
 package edu.uth.warranty.service.impl;
 
-import edu.uth.warranty.model.Part;
-import edu.uth.warranty.repository.PartRepository;
-import edu.uth.warranty.service.IPartService;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import edu.uth.warranty.model.Part;
+import edu.uth.warranty.repository.PartRepository;
+import edu.uth.warranty.service.IPartService;
 
 @Service
 public class PartServiceImpl implements IPartService{
@@ -36,7 +36,7 @@ public class PartServiceImpl implements IPartService{
         
         if (existingPart.isPresent()) {
             // Nếu Part Number đã tồn tại, chỉ cho phép cập nhật nếu đó là cùng một bản ghi
-            if (part.getPart_id() == null || !part.getPart_id().equals(existingPart.get().getPart_id())) {
+            if (part.getPartId() == null || !part.getPartId().equals(existingPart.get().getPartId())) {
                 throw new IllegalArgumentException("Mã linh kiện (Part Number) đã tồn tại.");
             }
         }

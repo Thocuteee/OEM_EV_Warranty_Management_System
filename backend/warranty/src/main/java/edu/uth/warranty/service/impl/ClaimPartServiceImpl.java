@@ -1,18 +1,19 @@
 package edu.uth.warranty.service.impl;
 
-import edu.uth.warranty.model.ClaimPart;
-import edu.uth.warranty.model.WarrantyClaim;
-import edu.uth.warranty.model.Part;
-import edu.uth.warranty.repository.ClaimPartRepository;
-import edu.uth.warranty.repository.WarrantyClaimRepository;
-import edu.uth.warranty.repository.PartRepository;
-import edu.uth.warranty.service.IClaimPartService;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import edu.uth.warranty.model.ClaimPart;
+import edu.uth.warranty.model.Part;
+import edu.uth.warranty.model.WarrantyClaim;
+import edu.uth.warranty.repository.ClaimPartRepository;
+import edu.uth.warranty.repository.PartRepository;
+import edu.uth.warranty.repository.WarrantyClaimRepository;
+import edu.uth.warranty.service.IClaimPartService;
 
 @Service
 @Transactional
@@ -45,8 +46,8 @@ public class ClaimPartServiceImpl implements IClaimPartService{
             claimRepository.findById(entity.getClaim().getClaimId()).isEmpty()) {
             throw new IllegalArgumentException("Warranty Claim không tồn tại hoặc không hợp lệ.");
         }
-        if (entity.getPart() == null || entity.getPart().getPart_id() == null || 
-            partRepository.findById(entity.getPart().getPart_id()).isEmpty()) {
+        if (entity.getPart() == null || entity.getPart().getPartId() == null || 
+            partRepository.findById(entity.getPart().getPartId()).isEmpty()) {
             throw new IllegalArgumentException("Linh kiện (Part) không tồn tại hoặc không hợp lệ.");
         }
 

@@ -1,20 +1,28 @@
 package edu.uth.warranty.controller;
 
-import edu.uth.warranty.dto.PartRequest;
-import edu.uth.warranty.dto.PartResponse;
-import edu.uth.warranty.dto.MessageResponse; 
-import edu.uth.warranty.model.Part;
-import edu.uth.warranty.service.IPartService;
-
-import org.springframework.http.HttpStatus; 
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
-
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import edu.uth.warranty.dto.MessageResponse;
+import edu.uth.warranty.dto.PartRequest;
+import edu.uth.warranty.dto.PartResponse;
+import edu.uth.warranty.model.Part;
+import edu.uth.warranty.service.IPartService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/parts")
@@ -28,7 +36,7 @@ public class PartController {
 
     private PartResponse toResponse(Part entity) {
         PartResponse dto = new PartResponse();
-        dto.setId(entity.getPart_id()); 
+        dto.setId(entity.getPartId()); 
         dto.setName(entity.getName());
         dto.setPartNumber(entity.getPartNumber());
         dto.setPrice(entity.getPrice());
@@ -38,7 +46,7 @@ public class PartController {
     private Part toEntity(PartRequest request) {
         Part entity = new Part();
         if(request.getId() != null) {
-            entity.setPart_id(request.getId());
+            entity.setPartId(request.getId());
         }
         entity.setName(request.getName());
         entity.setPartNumber(request.getPartNumber());
@@ -68,7 +76,7 @@ public class PartController {
     public ResponseEntity<?> createPart(@Valid @RequestBody PartRequest request) {
         try {
             Part entity = toEntity(request);
-            entity.setPart_id(null); // Đảm bảo ID là null cho việc tạo mới
+            entity.setPartId(null); // Đảm bảo ID là null cho việc tạo mới
             
             Part saved = partService.savePart(entity);
             
@@ -90,7 +98,7 @@ public class PartController {
         try {
             Part entity = toEntity(request);
             // 2. Ghi đè ID từ PathVariable (đảm bảo cập nhật đúng bản ghi)
-            entity.setPart_id(id); 
+            entity.setPartId(id); 
             
             Part updated = partService.savePart(entity);
             return ResponseEntity.ok(toResponse(updated));

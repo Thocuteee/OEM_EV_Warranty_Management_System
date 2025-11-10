@@ -1,5 +1,13 @@
 package edu.uth.warranty.service.impl;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import edu.uth.warranty.model.Inventory;
 import edu.uth.warranty.model.Part;
 import edu.uth.warranty.model.ServiceCenter;
@@ -7,13 +15,6 @@ import edu.uth.warranty.repository.InventoryRepository;
 import edu.uth.warranty.repository.PartRepository;
 import edu.uth.warranty.repository.ServiceCenterRepository;
 import edu.uth.warranty.service.IInventoryService;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -45,8 +46,8 @@ public class InventoryServiceImpl implements IInventoryService{
     @Override
     public Inventory saveInventory(Inventory inventory) {
         //Kiểm tra Khóa Ngoại (FK) có tồn tại không
-        if (inventory.getPart() == null || inventory.getPart().getPart_id() == null || 
-            partRepository.findById(inventory.getPart().getPart_id()).isEmpty()) {
+        if (inventory.getPart() == null || inventory.getPart().getPartId() == null || 
+            partRepository.findById(inventory.getPart().getPartId()).isEmpty()) {
             throw new IllegalArgumentException("Linh kiện không tồn tại hoặc không hợp lệ.");
         }
         if (inventory.getCenter() == null || inventory.getCenter().getCenterId() == null || 

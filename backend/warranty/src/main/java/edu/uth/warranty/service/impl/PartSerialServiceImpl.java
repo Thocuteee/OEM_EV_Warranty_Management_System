@@ -1,16 +1,17 @@
 package edu.uth.warranty.service.impl;
 
-import edu.uth.warranty.model.PartSerial;
-import edu.uth.warranty.model.Part;
-import edu.uth.warranty.repository.PartSerialRepository;
-import edu.uth.warranty.repository.PartRepository;
-import edu.uth.warranty.service.IPartSerialService;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import edu.uth.warranty.model.Part;
+import edu.uth.warranty.model.PartSerial;
+import edu.uth.warranty.repository.PartRepository;
+import edu.uth.warranty.repository.PartSerialRepository;
+import edu.uth.warranty.service.IPartSerialService;
 
 @Service
 @Transactional
@@ -36,8 +37,8 @@ public class PartSerialServiceImpl implements IPartSerialService{
     @Override
     public PartSerial savePartSerial(PartSerial partSerial) {
         //Kiểm tra Part (Linh kiện) có tồn tại không (FK validation)
-        if (partSerial.getPart() == null || partSerial.getPart().getPart_id() == null || 
-            partRepository.findById(partSerial.getPart().getPart_id()).isEmpty()) {
+        if (partSerial.getPart() == null || partSerial.getPart().getPartId() == null || 
+            partRepository.findById(partSerial.getPart().getPartId()).isEmpty()) {
             throw new IllegalArgumentException("Linh kiện (Part) liên kết không tồn tại hoặc không hợp lệ.");
         }
         
