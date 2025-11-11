@@ -28,7 +28,9 @@ public class RecallCampaign {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    
+    public RecallCampaign(Long campaignId) {
+        this.campaignId = campaignId;
+    }
 
 
 }

@@ -36,8 +36,8 @@ public class PartSerialServiceImpl implements IPartSerialService{
     @Override
     public PartSerial savePartSerial(PartSerial partSerial) {
         //Kiểm tra Part (Linh kiện) có tồn tại không (FK validation)
-        if (partSerial.getPart() == null || partSerial.getPart().getPart_id() == null || 
-            partRepository.findById(partSerial.getPart().getPart_id()).isEmpty()) {
+        if (partSerial.getPart() == null || partSerial.getPart().getPartId() == null || 
+            partRepository.findById(partSerial.getPart().getPartId()).isEmpty()) {
             throw new IllegalArgumentException("Linh kiện (Part) liên kết không tồn tại hoặc không hợp lệ.");
         }
         
@@ -47,7 +47,7 @@ public class PartSerialServiceImpl implements IPartSerialService{
 
         if (existingBySerial.isPresent()) {
             // Nếu serial đã tồn tại, chỉ cho phép cập nhật nếu đó là cùng một bản ghi
-            if (partSerial.getPart_serial_id() == null || !partSerial.getPart_serial_id().equals(existingBySerial.get().getPart_serial_id())) {
+            if (partSerial.getPartSerialId() == null || !partSerial.getPartSerialId().equals(existingBySerial.get().getPartSerialId())) {
                 throw new IllegalArgumentException("Số Serial đã tồn tại trong hệ thống.");
             }
         }

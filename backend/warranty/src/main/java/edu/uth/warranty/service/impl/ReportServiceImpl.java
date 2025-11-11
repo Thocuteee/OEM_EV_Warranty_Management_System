@@ -58,20 +58,43 @@ public class ReportServiceImpl implements IReportService{
 
     @Override
     public Report saveReport(Report report) {
-        if (report.getClaim() == null || claimRepository.findById(report.getClaim().getClaimId()).isEmpty()) {
+
+        // 1. Kiểm tra Claim (WarrantyClaim)
+        if (report.getClaim() == null || report.getClaim().getClaimId() == null || claimRepository.findById(report.getClaim().getClaimId()).isEmpty()) {
             throw new IllegalArgumentException("Report phải liên kết với một Claim tồn tại.");
         }
-        if (report.getTechnician() == null || technicianRepository.findById(report.getTechnician().getTechnicianId()).isEmpty()) {
+        
+        // 2. Kiểm tra Technician
+        if (report.getTechnician() == null || report.getTechnician().getTechnicianId() == null || technicianRepository.findById(report.getTechnician().getTechnicianId()).isEmpty()) {
             throw new IllegalArgumentException("Technician không tồn tại.");
         }
-        //(Kiểm tra tương tự cho Center, Vehicle, Campaign, CreatedBy)
+        
+        // 3. Kiểm tra Service Center (Đã thêm)
+        if (report.getCenter() == null || report.getCenter().getCenterId() == null || centerRepository.findById(report.getCenter().getCenterId()).isEmpty()) {
+            throw new IllegalArgumentException("Service Center không tồn tại.");
+        }
 
-        //Đảm bảo ReportDate được thiết lập
+        // 4. Kiểm tra Vehicle (Đã thêm)
+        if (report.getVehicle() == null || report.getVehicle().getVehicleId() == null || vehicleRepository.findById(report.getVehicle().getVehicleId()).isEmpty()) {
+            throw new IllegalArgumentException("Vehicle không tồn tại.");
+        }
+
+        // 5. Kiểm tra Campaign (Tùy chọn, chỉ kiểm tra nếu ID được cung cấp)
+        if (report.getCampaign() != null && report.getCampaign().getCampaignId() != null && campaignRepository.findById(report.getCampaign().getCampaignId()).isEmpty()) {
+            throw new IllegalArgumentException("Recall Campaign không tồn tại.");
+        }
+
+        // 6. Kiểm tra User (Created By - Đã thêm)
+        if (report.getCreatedBy() == null || report.getCreatedBy().getId() == null || userRepository.findById(report.getCreatedBy().getId()).isEmpty()) {
+            throw new IllegalArgumentException("Người tạo (User ID) không tồn tại.");
+        }
+        
+        // Đảm bảo ReportDate được thiết lập
         if (report.getReportDate() == null) {
             report.setReportDate(LocalDate.now());
         }
         
-        //Cập nhật createdDate nếu là bản ghi mới
+        // Cập nhật createdDate/updatedAt
         if (report.getReportId() == null) {
             report.setCreatedDate(LocalDateTime.now());
         } else {

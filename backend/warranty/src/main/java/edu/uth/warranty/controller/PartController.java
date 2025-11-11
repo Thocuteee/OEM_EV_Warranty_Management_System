@@ -28,7 +28,7 @@ public class PartController {
 
     private PartResponse toResponse(Part entity) {
         PartResponse dto = new PartResponse();
-        dto.setId(entity.getPart_id()); 
+        dto.setId(entity.getPartId()); 
         dto.setName(entity.getName());
         dto.setPartNumber(entity.getPartNumber());
         dto.setPrice(entity.getPrice());
@@ -38,7 +38,7 @@ public class PartController {
     private Part toEntity(PartRequest request) {
         Part entity = new Part();
         if(request.getId() != null) {
-            entity.setPart_id(request.getId());
+            entity.setPartId(request.getId());
         }
         entity.setName(request.getName());
         entity.setPartNumber(request.getPartNumber());
@@ -68,7 +68,7 @@ public class PartController {
     public ResponseEntity<?> createPart(@Valid @RequestBody PartRequest request) {
         try {
             Part entity = toEntity(request);
-            entity.setPart_id(null); // Đảm bảo ID là null cho việc tạo mới
+            entity.setPartId(null); // Đảm bảo ID là null cho việc tạo mới
             
             Part saved = partService.savePart(entity);
             
@@ -90,7 +90,7 @@ public class PartController {
         try {
             Part entity = toEntity(request);
             // 2. Ghi đè ID từ PathVariable (đảm bảo cập nhật đúng bản ghi)
-            entity.setPart_id(id); 
+            entity.setPartId(id); 
             
             Part updated = partService.savePart(entity);
             return ResponseEntity.ok(toResponse(updated));

@@ -15,7 +15,7 @@ import lombok.AllArgsConstructor;
 public class ClaimAttachment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long attachment_id;
+    private Long attachmentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "claim_id", nullable = false)

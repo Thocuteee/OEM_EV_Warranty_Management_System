@@ -14,5 +14,7 @@ public class ClaimAttachmentResponse {
 
     private String fileUrl;
     private String type;
+
+    
     
 }

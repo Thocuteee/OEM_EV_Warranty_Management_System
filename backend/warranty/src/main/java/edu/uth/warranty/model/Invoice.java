@@ -16,7 +16,7 @@ import lombok.AllArgsConstructor;
 public class Invoice {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long invoice_id;
+    private Long invoiceId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "claim_id", nullable = false)

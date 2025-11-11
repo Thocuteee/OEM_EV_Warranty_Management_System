@@ -18,7 +18,7 @@ import lombok.Setter;
 public class Inventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long inventory_id;
+    private Long inventoryId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "part_id", nullable = false)

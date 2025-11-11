@@ -57,8 +57,8 @@ public class InvoiceServiceImpl implements IInvoiceService{
         }
         
         // 2. Kiểm tra Part
-        if (invoice.getPart() == null || invoice.getPart().getPart_id() == null || 
-            partRepository.findById(invoice.getPart().getPart_id()).isEmpty()) {
+        if (invoice.getPart() == null || invoice.getPart().getPartId() == null || 
+            partRepository.findById(invoice.getPart().getPartId()).isEmpty()) {
             throw new IllegalArgumentException("Linh kiện (Part) không tồn tại hoặc không hợp lệ.");
         }
 

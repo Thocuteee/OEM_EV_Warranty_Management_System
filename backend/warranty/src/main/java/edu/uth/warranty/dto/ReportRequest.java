@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReportRequest {
+    private Long id;
     // Khóa Ngoại (Chỉ gửi ID)
     @NotNull(message = "Claim ID là bắt buộc")
     private Long claimId;
