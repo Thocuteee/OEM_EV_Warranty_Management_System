@@ -150,7 +150,7 @@ public class WorkLogController {
     // 7. GET /api/worklogs/search/technician/{technicianId} : Tìm kiếm theo Technician
     @GetMapping("/search/technician/{technicianId}")
     public ResponseEntity<List<WorkLogResponse>> getWorkLogsByTechnician(@PathVariable Long technicianId) {
-        Technician technician = new Technician();
+        Technician technician = new Technician(technicianId);
 
         List<WorkLogResponse> responses = workLogService.getWorkLogsByTechnician(technician).stream().map(this::toReponseDTO).collect(Collectors.toList());
         return ResponseEntity.ok(responses);

@@ -173,7 +173,7 @@ public class ReportController {
     // 6. GET /api/reports/search/technician/{technicianId} : Tìm kiếm theo Technician
     @GetMapping("/search/technician/{technicianId}")
     public ResponseEntity<List<ReportResponse>> getReportsByTechnician(@PathVariable Long technicianId) {
-        Technician technician = new Technician();
+        Technician technician = new Technician(technicianId);
         List<ReportResponse> responses = reportService.getReportsByTechnician(technician).stream().map(this::toResponseDTO).collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }

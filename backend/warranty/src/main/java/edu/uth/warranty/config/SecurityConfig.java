@@ -35,7 +35,7 @@ public class SecurityConfig {
       .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
       // Cho phép mọi request (tránh 401/403 trong giai đoạn dev)
       .authorizeHttpRequests(auth -> auth
-        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()     // preflight
+        .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("Admin", "EVM_Staff")     // preflight
         .anyRequest().permitAll()
       )
       // Tùy chọn: bật basic để test nhanh bằng curl; bỏ nếu không cần
