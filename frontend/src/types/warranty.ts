@@ -34,3 +34,11 @@ export interface OtherSectionItem {
     title: string;
     description: string;
 }
+export interface RegisterRequest { 
+    fullName: string; 
+    username: string; 
+    password: string; 
+}
+export interface RegisterResponse {
+  message?: string; 
+}
