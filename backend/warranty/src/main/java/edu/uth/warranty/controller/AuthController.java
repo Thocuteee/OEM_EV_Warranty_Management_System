@@ -1,15 +1,20 @@
 package edu.uth.warranty.controller;
 
-import edu.uth.warranty.dto.LoginResponse;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import edu.uth.warranty.dto.LoginRequest;
+import edu.uth.warranty.dto.LoginResponse;
 import edu.uth.warranty.dto.MessageResponse;
 import edu.uth.warranty.model.User;
 import edu.uth.warranty.service.IUserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -53,3 +58,4 @@ public class AuthController {
 
     
 }
+// chinh sua
