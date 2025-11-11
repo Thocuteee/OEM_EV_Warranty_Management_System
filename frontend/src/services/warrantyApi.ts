@@ -49,15 +49,22 @@ export const loginUser = async (loginRequest: LoginRequest): Promise<LoginRespon
 export const registerUser = async (registerRequest: RegisterRequest): Promise<RegisterResponse> => {
     try {
         const response: AxiosResponse<RegisterResponse> = await axios.post(
-            `${BASE_URL}/register`, // Endpoint đăng ký (Giả định là /api/auth/register)
-            registerRequest 
+            // SỬ DỤNG BASE_URL ĐÃ ĐỊNH NGHĨA
+            `${BASE_URL}/register`, 
+            {
+                // Dữ liệu tối thiểu cần gửi (Cần khớp với UserRequest.java)
+                username: registerRequest.username,
+                password: registerRequest.password,
+                // LƯU Ý: Phải thêm Role (giả định là SC_Staff theo đề bài của bạn)
+                role: 'SC_Staff' // PHẢI KHỚP VỚI ENUM TRONG JAVA
+            }
         );
         return response.data;
     } catch (error) {
+        // Logic xử lý lỗi: re-throw lỗi để component có thể bắt
         if (axios.isAxiosError(error) && error.response) {
-            // Xử lý lỗi từ Backend (ví dụ: 409 Conflict - Tên đăng nhập đã tồn tại)
             const backendError = error.response.data as { message?: string };
-            throw new Error(backendError.message || 'Đăng ký thất bại. Vui lòng kiểm tra lại thông tin.');
+            throw new Error(backendError.message || 'Đăng ký thất bại.');
         }
         throw new Error('Không thể kết nối đến máy chủ.');
     }

@@ -5,6 +5,7 @@ import Link from "next/link";
 import styles from "../styles/login.module.css"; // Có thể đổi tên thành register.module.css nếu bạn muốn thay đổi style
 // import { registerUser } from "@/services/warrantyApi"; // Tạm thời comment, bạn sẽ cần tạo hàm này sau
 import { useRouter } from "next/router";
+import axios from "axios";
 
 // Tùy chọn: Import kiểu cho hàm đăng ký nếu bạn đã có
 // import { RegisterRequest } from "@/types/warranty";
@@ -58,18 +59,20 @@ export default function Register() {
         }, 3000);
 
     } catch (err) {
-      // Xử lý lỗi API tương tự như file đăng nhập
-        let errorMessage = "Lỗi đăng ký không xác định.";
+        // Xử lý lỗi API tương tự như file đăng nhập
+        let errorMessage: string = "Lỗi đăng ký không xác định."; 
 
-      // if (axios.isAxiosError(err) && err.response) {
-      //   const apiError = err.response.data as { message: string };
-      //   errorMessage = apiError.message || errorMessage;
-      // } else if (err instanceof Error) {
-      //   errorMessage = err.message;
-      // }
+    // MỞ COMMENT CÁC DÒNG NÀY (Giả định bạn đã import axios)
+        if (axios.isAxiosError(err) && err.response) {
+        // Xử lý lỗi từ Backend
+        const apiError = err.response.data as { message: string };
+        errorMessage = apiError.message || errorMessage;
+        } else if (err instanceof Error) {
+        errorMessage = err.message;
+        }
 
-        setError(errorMessage);
-        setSuccess("");
+    setError(errorMessage);
+    setSuccess("");
     } finally {
         setLoading(false);
     }
