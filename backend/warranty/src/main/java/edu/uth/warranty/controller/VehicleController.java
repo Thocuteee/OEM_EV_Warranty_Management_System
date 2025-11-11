@@ -89,9 +89,7 @@ public class VehicleController {
     }
 
 
-    // -----------------------
-    // REST API ENDPOINTS
-    // -----------------------
+
 
     // 1. POST /api/vehicles : Đăng ký/Tạo mới Xe
     @PostMapping
@@ -151,4 +149,3 @@ public class VehicleController {
         return ResponseEntity.noContent().build();
     }
 }
-//new update  chinh sua ne
