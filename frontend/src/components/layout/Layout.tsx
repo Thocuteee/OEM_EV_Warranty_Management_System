@@ -87,11 +87,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </div>
               </div>
           ) : (
-              <Link href="/login" passHref>
-                  <button className="auth-button-primary hover:bg-blue-700 transition-colors">
-                      Đăng nhập
-                  </button>
-              </Link>
+              <div className="flex items-center gap-[3px]">
+            {/* Đăng ký */}
+            <Link href="/register" passHref>
+              <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded-lg transition-colors">
+                Đăng ký
+              </button>
+            </Link>
+            {/* Đăng nhập */}
+            <Link href="/login" passHref>
+              <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded-lg transition-colors">
+                Đăng nhập
+              </button>
+            </Link>
+          </div>
           )}
       </header>
 
