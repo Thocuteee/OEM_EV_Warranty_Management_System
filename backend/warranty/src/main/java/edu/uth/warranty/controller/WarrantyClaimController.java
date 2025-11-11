@@ -24,7 +24,7 @@ public class WarrantyClaimController {
         this.warrantyClaimService = warrantyClaimService;
     }
 
-    public WarrantyClaimResponse toResponseDTO(WarrantyClaim claim) {
+    private WarrantyClaimResponse toResponseDTO(WarrantyClaim claim) {
         String customerName = claim.getCustomer() != null ? claim.getCustomer().getName() : null;
         String vehicleVIN = claim.getVehicle() != null ? claim.getVehicle().getVIN() : null;
 
@@ -45,7 +45,7 @@ public class WarrantyClaimController {
         );
     }
 
-    public WarrantyClaim toEntity(WarrantyClaimRequest request) {
+    private WarrantyClaim toEntity(WarrantyClaimRequest request) {
         WarrantyClaim claim = new WarrantyClaim();
 
         if(request.getStaffId() != null) {
@@ -123,14 +123,17 @@ public class WarrantyClaimController {
 
     // 5. DELETE /api/claims/{id} : Xóa Claim (Chỉ cho phép xóa DRAFT)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteClaim(@PathVariable Long id) {
+    public ResponseEntity<?> deleteClaim(@PathVariable Long id) {
+        if(warrantyClaimService.getWarrantyClaimById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
         try{
             warrantyClaimService.deleteWarrantyClaim(id);
             return ResponseEntity.noContent().build();
         } catch(IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        } catch(Exception e) {
-            return ResponseEntity.notFound().build();
+             // Service sẽ ném lỗi nếu Claim không phải DRAFT
+            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
     }
 

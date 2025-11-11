@@ -38,7 +38,7 @@ public class ClaimAttachmentServiceImp implements IClaimAttachmentService{
         if(claimAttachment.getClaim() == null || claimAttachment.getClaim().getClaimId() == null) {
             throw new IllegalArgumentException("File đính kèm phải liên kết với một Claim hợp lệ.");
         }
-        if(claimAttachmentRepository.findById(claimAttachment.getClaim().getClaimId()).isEmpty()) {
+        if(warrantyClaimRepository.findById(claimAttachment.getClaim().getClaimId()).isEmpty()) {
             throw new IllegalArgumentException("Warranty Claim không tồn tại.");
         }
         return claimAttachmentRepository.save(claimAttachment);

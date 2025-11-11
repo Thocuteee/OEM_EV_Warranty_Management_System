@@ -1,9 +1,7 @@
 package edu.uth.warranty.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
@@ -44,7 +42,7 @@ public class ClaimAttachmentController {
         ClaimAttachment entity = new ClaimAttachment();
 
         if(request.getId() != null) {
-            entity.setAttachmentId(request.getId());;
+            entity.setAttachmentId(request.getId());
         }
 
         if(request.getClaimId() != null) {
@@ -95,7 +93,8 @@ public class ClaimAttachmentController {
     // 4. API: PUT /api/attachments/{id} Cập nhật 1 file đính kèm
     @PutMapping("/{id}")
     public ResponseEntity<?> updateAttachment(@PathVariable Long id, @Valid @RequestBody ClaimAttachmentRequest request) {
-        request.setClaimId(id);
+        request.setId(id); 
+        
         if(claimAttachmentService.getAttachmentById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
@@ -126,7 +125,7 @@ public class ClaimAttachmentController {
             return ResponseEntity.notFound().build();
         }
 
-        WarrantyClaim claim = new WarrantyClaim();
+        WarrantyClaim claim = new WarrantyClaim(claimId);
         List<ClaimAttachment> list = claimAttachmentService.getAttachmentsByClaim(claim);
         List<ClaimAttachmentResponse> responses = list.stream().map(this::toResponseDTO).collect(Collectors.toList());
         return ResponseEntity.ok(responses);

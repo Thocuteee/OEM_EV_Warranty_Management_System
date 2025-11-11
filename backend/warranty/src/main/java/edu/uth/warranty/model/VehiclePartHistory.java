@@ -16,7 +16,7 @@ import lombok.AllArgsConstructor;
 public class VehiclePartHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long history_id;
+    private Long historyId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vehicle_id", nullable = false)
