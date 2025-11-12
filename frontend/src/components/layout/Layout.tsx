@@ -4,7 +4,18 @@ import React, { useState, ReactNode } from "react";
 import Image from "next/image"; 
 import { useAuth } from "../../../context/AuthContext"; // Import useAuth hook
 import { useRouter } from "next/router"; // Import useRouter để xử lý chuyển hướng sau logout
+import React, { useState, ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router"; // Import useRouter để xử lý chuyển hướng sau logout
+import { useAuth } from "../../../context/AuthContext"; // Import useAuth hook
+
+type SidebarItem = {
+  name: string;
+  icon: string;
+  href: string;
+  roles?: Array<"SC Staff" | "SC Technician" | "EVM Staff" | "Admin" | "Customer">;
+};
 
 
 // Giả định kiểu cho các props của Layout
@@ -32,11 +43,28 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const sidebarMenuItems = [
     { name: "Dashboard", icon: "🏠", href: "#" },
+  const sidebarMenuItems: SidebarItem[] = [
+    { name: "Dashboard", icon: "🏠", href: "/" },
     { name: "Quản lý Xe", icon: "🚗", href: "#" },
     { name: "Yêu cầu Bảo hành", icon: "📋", href: "#" },
     { name: "Linh kiện & Phụ tùng", icon: "⚙️", href: "#" },
     { name: "Báo cáo", icon: "📊", href: "#" },
+    {
+      name: "Quản trị Hệ thống",
+      icon: "🛠️",
+      href: "/admin/users",
+      roles: ["Admin", "EVM Staff"],
+    },
   ];
+
+  const userRole = user?.role;
+
+  const filteredMenuItems = sidebarMenuItems.filter((item) => {
+    if (!item.roles) {
+      return true;
+    }
+    return userRole ? item.roles.includes(userRole) : false;
+  });
   
   const openWidth = "w-60";
   const closedWidth = "w-20";
@@ -56,6 +84,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 title={isSidebarOpen ? "Thu gọn trình đơn" : "Mở rộng trình đơn"}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
@@ -81,17 +117,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   onClick={handleLogout}> {/* BƯỚC 2: Gọi hàm handleLogout thực tế */}
                 <span className="text-sm font-semibold text-gray-700 hidden sm:inline">
                   {displayName}
-                </span>
-                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                  {initial} 
-                </div>
-              </div>
-          ) : (
-              <Link href="/login" passHref>
-                  <button className="auth-button-primary hover:bg-blue-700 transition-colors">
-                      Đăng nhập
-                  </button>
-              </Link>
+@@ -90,59 +119,64 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
+              <div className="flex items-center gap-[3px]">
+            {/* Đăng ký */}
+            <Link href="/register" passHref>
+              <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded-lg transition-colors">
+                Đăng ký
+              </button>
+            </Link>
+            {/* Đăng nhập */}
+            <Link href="/login" passHref>
+              <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded-lg transition-colors">
+                Đăng nhập
+              </button>
+            </Link>
+          </div>
           )}
       </header>
 
@@ -112,6 +152,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 <span className="text-xl">{item.icon}</span>
                 {isSidebarOpen && (
                   <span className="text-sm truncate">
+            {filteredMenuItems.map((item) => {
+              const isActive = router.pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`sidebar-menu-item-base group hover:text-blue-600 hover:bg-blue-100 ${
+                    isActive ? "bg-blue-100 text-blue-700" : "text-gray-700"
+                  }`}
+                >
+                  <span className="text-xl">{item.icon}</span>
+                  {isSidebarOpen && (
+                    <span className="text-sm truncate">
+                        {item.name}
+                    </span>
+                  )}
+
+                  {/* Tooltip khi Sidebar đóng */}
+                  {!isSidebarOpen && (
+                    <span className="absolute left-full ml-4 p-2 bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                       {item.name}
                   </span>
                 )}
@@ -124,6 +184,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 )}
               </a>
             ))}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
           </nav>
         </aside>
 
