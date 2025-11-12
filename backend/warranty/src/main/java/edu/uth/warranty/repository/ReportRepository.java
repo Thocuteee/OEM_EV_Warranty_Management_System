@@ -1,5 +1,9 @@
 package edu.uth.warranty.repository;
 
+<<<<<<< HEAD
+import java.time.LocalDate;
+import java.util.List;
+=======
 import edu.uth.warranty.model.Report;
 import edu.uth.warranty.model.WarrantyClaim;
 import edu.uth.warranty.model.Technician;
@@ -7,11 +11,36 @@ import edu.uth.warranty.model.ServiceCenter;
 import edu.uth.warranty.model.Vehicle;
 import edu.uth.warranty.model.RecallCampaign;
 import edu.uth.warranty.model.User;
+>>>>>>> main
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+<<<<<<< HEAD
 import java.math.BigDecimal;
+=======
+<<<<<<< HEAD
+import edu.uth.warranty.model.Report;
+
+@Repository
+public interface ReportRepository extends JpaRepository<Report, Long> {
+
+    // Lấy báo cáo theo claim
+    List<Report> findByClaim_ClaimId(Long claimId);
+
+    // Lấy báo cáo theo kỹ thuật viên
+    List<Report> findByTechnician_TechnicianId(Long technicianId);
+
+    // Lấy báo cáo theo xe
+    List<Report> findByVehicle_VehicleId(Long vehicleId);
+
+    // Lấy báo cáo theo khoảng thời gian tạo
+    List<Report> findByCreatedDateBetween(LocalDate startDate, LocalDate endDate);
+
+    // Lấy báo cáo theo trạng thái
+    List<Report> findByStatus(String status);
+=======
+>>>>>>> 2524f509a70da6fae00d0769f913b1b39a0d5d41
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,6 +67,10 @@ public interface ReportRepository extends JpaRepository<Report, Long>{
     List<Report> findByStartedAtBetween(LocalDateTime start, LocalDateTime end);
 
     List<Report> findByFinishedAtBetween(LocalDateTime start, LocalDateTime end);
+<<<<<<< HEAD
 
     List<Report> findByActualCostGreaterThanEqual(BigDecimal actualCost);
+=======
+>>>>>>> main
+>>>>>>> 2524f509a70da6fae00d0769f913b1b39a0d5d41
 }

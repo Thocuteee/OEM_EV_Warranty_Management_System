@@ -1,11 +1,11 @@
 package edu.uth.warranty.service;
 
-import edu.uth.warranty.model.Customer;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-import java.util.List;
+import edu.uth.warranty.model.Customer;
 
 
 @Service

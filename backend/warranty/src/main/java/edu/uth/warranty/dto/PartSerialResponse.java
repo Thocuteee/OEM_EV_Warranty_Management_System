@@ -9,6 +9,9 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PartSerialResponse {
+    public PartSerialResponse(Long partSerialId, Long partId2, String serialNumber2, LocalDate dateReceived2) {
+        //TODO Auto-generated constructor stub
+    }
     private Long id;
 
     // Thông tin Serial

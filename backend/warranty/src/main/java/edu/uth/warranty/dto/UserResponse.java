@@ -9,6 +9,9 @@ import lombok.AllArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResponse {
+    public UserResponse(Long id2, String username2, String password, Role role2) {
+        //TODO Auto-generated constructor stub
+    }
     private Long id;
     private String username;
     private Role role;
