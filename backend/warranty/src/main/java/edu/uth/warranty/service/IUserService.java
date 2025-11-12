@@ -30,4 +30,6 @@ public interface IUserService {
 
     //Kiểm tra tồn tại User bằng Username.
     Boolean existsByUsername(String username);
+
+    User registerUser(User user);
 }

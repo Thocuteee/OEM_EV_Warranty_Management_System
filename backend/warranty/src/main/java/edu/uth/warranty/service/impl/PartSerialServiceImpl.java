@@ -48,7 +48,7 @@ public class PartSerialServiceImpl implements IPartSerialService{
 
         if (existingBySerial.isPresent()) {
             // Nếu serial đã tồn tại, chỉ cho phép cập nhật nếu đó là cùng một bản ghi
-            if (partSerial.getPart_serial_id() == null || !partSerial.getPart_serial_id().equals(existingBySerial.get().getPart_serial_id())) {
+            if (partSerial.getPartSerialId() == null || !partSerial.getPartSerialId().equals(existingBySerial.get().getPartSerialId())) {
                 throw new IllegalArgumentException("Số Serial đã tồn tại trong hệ thống.");
             }
         }

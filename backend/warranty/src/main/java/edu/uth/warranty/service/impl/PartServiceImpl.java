@@ -11,6 +11,7 @@ import edu.uth.warranty.repository.PartRepository;
 import edu.uth.warranty.service.IPartService;
 
 @Service
+@Transactional
 public class PartServiceImpl implements IPartService{
     private final PartRepository partRepository;
 

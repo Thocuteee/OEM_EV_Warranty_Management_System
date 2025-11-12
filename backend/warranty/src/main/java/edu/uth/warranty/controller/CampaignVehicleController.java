@@ -40,7 +40,7 @@ public class CampaignVehicleController {
     }
 
     private CampaignVehicle toEntity(CampaignVehicleRequest request) {
-        RecallCampaign campaign = new RecallCampaign();
+        RecallCampaign campaign = new RecallCampaign(request.getCampaignId());
         campaign.setCampaignId(campaign.getCampaignId());
 
         Vehicle vehicle = new Vehicle();

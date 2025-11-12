@@ -18,7 +18,7 @@ import lombok.AllArgsConstructor;
 public class WorkLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long log_id;
+    private Long logId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "claim_id", nullable = false)
@@ -42,4 +42,8 @@ public class WorkLog {
     
     @Column(name = "notes")
     private String notes;
+
+    public WorkLog(Long logId) {
+        this.logId = logId;
+    }
 }

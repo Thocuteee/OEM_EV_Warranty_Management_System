@@ -18,7 +18,7 @@ import lombok.AllArgsConstructor;
 public class PartSerial {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long part_serial_id;
+    private Long partSerialId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "part_id", nullable = false)

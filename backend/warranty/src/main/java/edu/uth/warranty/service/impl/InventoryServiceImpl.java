@@ -60,10 +60,10 @@ public class InventoryServiceImpl implements IInventoryService{
 
         if (existingInventory.isPresent()) {
             // Nếu là bản ghi cũ, update ID của object mới để JPA biết đây là update
-            if (inventory.getInventory_id() == null) {
-                inventory.setInventory_id(existingInventory.get().getInventory_id());
+            if (inventory.getInventoryId() == null) {
+                inventory.setInventoryId(existingInventory.get().getInventoryId());
             }
-        } else if (inventory.getInventory_id() != null) {
+        } else if (inventory.getInventoryId() != null) {
             // Nếu có ID nhưng không tìm thấy bản ghi cũ (người dùng cố tình cập nhật bản ghi không tồn tại)
             throw new IllegalArgumentException("Không thể cập nhật bản ghi tồn kho không tồn tại.");
         }
