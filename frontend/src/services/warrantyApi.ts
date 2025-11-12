@@ -1,13 +1,9 @@
-// Logic giao tiếp với Backend API (FE gọi BE)
-// Fetching data, axios calls
-
-// Logic giao tiếp với Backend API (FE gọi BE)
-// Fetching data, axios calls
+// src/services/warrantyApi.ts
 
 import axios, { AxiosResponse } from 'axios';
 
 // URL cơ sở của Backend Spring Boot
-const BASE_URL = 'http://localhost:8080/api/auth';
+const BASE_URL = 'http://localhost:8080/api'; 
 
 // Interface cho LoginRequest (dựa trên backend DTO)
 export interface LoginRequest {
@@ -27,16 +23,61 @@ export interface LoginResponse {
 export const loginUser = async (loginRequest: LoginRequest): Promise<LoginResponse> => {
     try {
         const response: AxiosResponse<LoginResponse> = await axios.post(
-        `${BASE_URL}/login`, // Endpoint được định nghĩa trong AuthController
-        loginRequest 
-    );
-    return response.data;
+            `${BASE_URL}/auth/login`, 
+            loginRequest 
+        );
+        return response.data;
     } catch (error) {
         if (axios.isAxiosError(error) && error.response) {
-        // Xử lý lỗi từ Backend (ví dụ: 401 Unauthorized)
-        throw new Error(error.response.data.message || 'Tên đăng nhập hoặc mật khẩu không đúng.');
+            throw new Error(error.response.data.message || 'Tên đăng nhập hoặc mật khẩu không đúng.');
         }
         throw new Error('Không thể kết nối đến máy chủ.');
     }
 };
 
+
+const handleApiError = (error: unknown, defaultMessage: string): Error => {
+    if (axios.isAxiosError(error) && error.response) {
+        return new Error(error.response.data.message || defaultMessage);
+    }
+    return new Error('Không thể kết nối đến máy chủ: ' + (error as Error).message);
+};
+
+
+
+
+ //Lấy tất cả Parts [GET /api/parts]
+
+export const getParts = async () => {
+    try {
+        // Kiểu "any" sẽ được suy ra tự động
+        const response = await axios.get(`${BASE_URL}/parts`);
+        return response.data;
+    } catch (error) {
+        throw handleApiError(error, 'Lỗi khi tải danh sách linh kiện.');
+    }
+};
+
+
+ //Lấy tất cả Inventory [GET /api/inventory]
+ 
+export const getInventory = async () => {
+    try {
+        const response = await axios.get(`${BASE_URL}/inventory`);
+        return response.data;
+    } catch (error) {
+        throw handleApiError(error, 'Lỗi khi tải danh sách tồn kho.');
+    }
+};
+
+
+ //Lấy tất cả Part Serials [GET /api/part-serials]
+ 
+export const getPartSerials = async () => {
+    try {
+        const response = await axios.get(`${BASE_URL}/part-serials`);
+        return response.data;
+    } catch (error) {
+        throw handleApiError(error, 'Lỗi khi tải danh sách serial.');
+    }
+};
