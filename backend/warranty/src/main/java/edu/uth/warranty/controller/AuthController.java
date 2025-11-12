@@ -17,16 +17,15 @@ import java.util.Optional;
 public class AuthController {
     private final IUserService userService;
 
-    // Sử dụng Constructor Injection để tim Service
+    
     @Autowired
     public AuthController(IUserService userService) {
         this.userService = userService;
     }
 
-    // API: POST /api/auth/login
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest){
-        // 1. Gọi Service để xác thực người dùng
+       
         Optional<User> userOptional = userService.authenticateUser(loginRequest);
         if(userOptional.isPresent()){
             User user = userOptional.get();
@@ -35,8 +34,7 @@ public class AuthController {
             
             String jwtToken = "MOCK_JWT_TOKEN_" + user.getUsername() + "_" + user.getRole();
 
-            // 2. Trả về response thành công (HTTP 200 OK)
-            // FE cần username và token để lưu trữ và hiển thị
+            
             LoginResponse response = new LoginResponse(
                     user.getId(),
                     user.getUsername(),
@@ -45,7 +43,7 @@ public class AuthController {
             );
             return ResponseEntity.ok(response);
         } else {
-            // 3. Xác thực thất bại, trả về lỗi 401 Unauthorized
+            
             return ResponseEntity.status(401).body(new MessageResponse("Tên đăng nhập hoặc mật khẩu không đúng."));
         }
     }

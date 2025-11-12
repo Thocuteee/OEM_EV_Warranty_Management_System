@@ -1,15 +1,26 @@
 package edu.uth.warranty.service;
 
+<<<<<<< HEAD
+=======
+import edu.uth.warranty.model.Technician;
 import edu.uth.warranty.model.User;
 import edu.uth.warranty.common.Role;
 import edu.uth.warranty.dto.LoginRequest;
 
 import org.springframework.stereotype.Service;
 
+>>>>>>> main
 import java.util.Optional;
 import java.util.List;
 
+<<<<<<< HEAD
+import edu.uth.warranty.dto.LoginRequest;
+import edu.uth.warranty.model.User;
+
+
+=======
 @Service
+>>>>>>> main
 public interface IUserService {
     // Nó không có thân code, chỉ có dấu chấm phẩy ở cuối.
     Optional<User> authenticateUser(LoginRequest loginRequest);
@@ -30,4 +41,6 @@ public interface IUserService {
 
     //Kiểm tra tồn tại User bằng Username.
     Boolean existsByUsername(String username);
+
+    List<Technician> findByCenter(Long centerId);
 }

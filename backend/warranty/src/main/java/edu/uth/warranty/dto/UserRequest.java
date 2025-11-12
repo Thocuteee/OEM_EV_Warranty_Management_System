@@ -23,5 +23,10 @@ public class UserRequest {
     @NotNull(message = "Role là bắt buộc")
     private Role role;
 
+    public Object getReportId() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getReportId'");
+    }
+
     //Thêm staff,technician sau 
 }
