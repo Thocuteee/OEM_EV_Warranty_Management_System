@@ -25,4 +25,8 @@ public interface IPartSerialService {
     List<PartSerial> getPartSerialsByPart(Part part);
 
     List<PartSerial> getPartSerialsByDateReceivedBetween(LocalDate startDate, LocalDate endDate);
+    PartSerial save(PartSerial entity);
+    Optional<Part> getAll();
+    Optional<Part> getById(Long id);
+    void delete(Long id);
 }

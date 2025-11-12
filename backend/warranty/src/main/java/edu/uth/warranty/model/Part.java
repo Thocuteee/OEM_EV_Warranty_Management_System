@@ -2,6 +2,7 @@ package edu.uth.warranty.model;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -28,6 +29,21 @@ public class Part {
 
     @Column(name = "price", precision = 10, scale = 2, nullable = false)
     private BigDecimal price;
+
+    public Long getPartId() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getPartId'");
+    }
+
+    public void setPartId(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setPartId'");
+    }
+
+    public LocalDate getDateReceived() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getDateReceived'");
+    }
 
     
 }

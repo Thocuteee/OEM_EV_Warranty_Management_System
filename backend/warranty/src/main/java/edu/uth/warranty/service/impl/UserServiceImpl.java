@@ -1,5 +1,6 @@
 package edu.uth.warranty.service.impl;
 
+import edu.uth.warranty.model.Technician;
 import edu.uth.warranty.model.User;
 import edu.uth.warranty.common.Role;
 import edu.uth.warranty.repository.UserRepository;
@@ -75,5 +76,11 @@ public class UserServiceImpl implements IUserService {
     @Override
     public Boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
+    }
+
+    @Override
+    public List<Technician> findByCenter(Long centerId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findByCenter'");
     }
 }

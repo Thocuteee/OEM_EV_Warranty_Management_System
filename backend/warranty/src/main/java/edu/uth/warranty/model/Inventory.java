@@ -33,4 +33,9 @@ public class Inventory {
 
     @Column(name = "invoice_date", nullable = false)
     private LocalDate invoiceDate;
+
+    public String getInvoice_date() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getInvoice_date'");
+    }
 }

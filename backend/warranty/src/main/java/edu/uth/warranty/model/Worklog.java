@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 @Entity
 @Table(name = "WorkLog")
-public class WorkLog {
+public class Worklog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long log_id;

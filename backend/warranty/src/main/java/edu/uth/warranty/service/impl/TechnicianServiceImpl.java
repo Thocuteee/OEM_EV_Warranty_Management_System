@@ -60,7 +60,7 @@ public class TechnicianServiceImpl implements ITechnicianService{
 
     @Override
     public Optional<Technician> getTechnicianByName(String name) {
-        return technicianRepository.findByName(name);
+        return Optional.empty();
     }
 
     @Override
@@ -86,5 +86,17 @@ public class TechnicianServiceImpl implements ITechnicianService{
     @Override
     public List<Technician> getTechniciansBySpecializationAndCenter(String specialization, ServiceCenter center) {
         return technicianRepository.findBySpecializationAndCenter(specialization, center);
+    }
+
+    @Override
+    public Technician save(Technician technician) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'save'");
+    }
+
+    @Override
+    public List<Technician> findByCenter(Long centerId) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findByCenter'");
     }
 }

@@ -1,6 +1,5 @@
 package edu.uth.warranty.service;
 
-import edu.uth.warranty.model.WorkLog;
 import edu.uth.warranty.model.WarrantyClaim;
 import edu.uth.warranty.model.Technician;
 

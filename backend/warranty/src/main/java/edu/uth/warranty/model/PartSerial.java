@@ -30,6 +30,16 @@ public class PartSerial {
     @Column(name = "date_received", nullable = false)
     private LocalDate dateReceived;
 
+    public void setPartSerialId(Long id) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'setPartSerialId'");
+    }
+
+    public Long getPartSerialId() {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getPartSerialId'");
+    }
+
     
 
 

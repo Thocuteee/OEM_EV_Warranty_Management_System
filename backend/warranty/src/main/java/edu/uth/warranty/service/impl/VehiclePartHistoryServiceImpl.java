@@ -1,7 +1,6 @@
 package edu.uth.warranty.service.impl;
 
 import edu.uth.warranty.model.VehiclePartHistory;
-<<<<<<< HEAD
 import edu.uth.warranty.model.Vehicle;
 import edu.uth.warranty.model.PartSerial;
 import edu.uth.warranty.model.WarrantyClaim;
@@ -95,30 +94,16 @@ public class VehiclePartHistoryServiceImpl implements IVehiclePartHistoryService
         return historyRepository.findByDateInstalledBetween(startDate, endDate);
     }
 
-=======
-import edu.uth.warranty.repository.VehiclePartHistoryRepository;
-import edu.uth.warranty.service.IVehiclePartHistoryService;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-
-@Service
-public class VehiclePartHistoryServiceImpl implements IVehiclePartHistoryService {
-
-    private final VehiclePartHistoryRepository repository;
-
-    public VehiclePartHistoryServiceImpl(VehiclePartHistoryRepository repository) {
-        this.repository = repository;
-    }
-
     @Override
     public List<VehiclePartHistory> findByVehicleId(Long vehicleId) {
-        return repository.findByVehicle_VehicleId(vehicleId);
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findByVehicleId'");
     }
 
     @Override
     public List<VehiclePartHistory> findByPartId(Long partId) {
-        return repository.findByPart_PartId(partId);
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'findByPartId'");
     }
->>>>>>> 2524f509a70da6fae00d0769f913b1b39a0d5d41
+
 }

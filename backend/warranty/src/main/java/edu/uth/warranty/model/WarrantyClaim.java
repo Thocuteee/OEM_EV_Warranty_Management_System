@@ -125,7 +125,7 @@ public class WarrantyClaim
         this.technician_id = technician_id;
     }
 }
-=======
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "staff_id", nullable = false)
     private Staff staff;
@@ -165,6 +165,6 @@ public class WarrantyClaim
     private String approvalStatus;
 
     
->>>>>>> main
+
 
     
