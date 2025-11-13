@@ -86,4 +86,8 @@ public class Report {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false) // FK trỏ về User
     private User createdBy;
+
+    public Report(Long reportId) {
+        this.reportId = reportId;
+    }
 }

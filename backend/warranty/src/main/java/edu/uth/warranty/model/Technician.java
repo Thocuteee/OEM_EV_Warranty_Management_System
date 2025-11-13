@@ -13,7 +13,7 @@ import lombok.Setter;
 public class Technician {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long technician_id;
+    private Long technicianId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="center_id", nullable = false)
@@ -31,11 +31,24 @@ public class Technician {
     @Column(name="specialization",nullable = false)
     private String specialization;
 
-    public Technician(ServiceCenter center, String name, String phone, String email, String specialization) {
+    @Column(name = "username", nullable = false, unique = true)
+    private String username;
+
+    @Column(name = "password", nullable = false)
+    private String password;
+
+    public Technician(Long technicianId, ServiceCenter center, String name, String phone, String email, String specialization, String username, String password) {
+        this.technicianId = technicianId;
         this.center = center;
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.specialization = specialization;
+        this.username = username;
+        this.password = password;
+    }
+    
+    public Technician(Long technicianId) {
+        this.technicianId = technicianId;
     }
 }

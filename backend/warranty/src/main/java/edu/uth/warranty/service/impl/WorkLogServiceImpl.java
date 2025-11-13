@@ -42,10 +42,10 @@ public class WorkLogServiceImpl implements IWorkLogService{
     @Override
     public WorkLog saveWorkLog(WorkLog workLog) {
         //Kiểm tra Khóa Ngoại (FK) có tồn tại không
-        if (workLog.getClaim() == null || claimRepository.findById(workLog.getClaim().getClaim_id()).isEmpty()) {
+        if (workLog.getClaim() == null || claimRepository.findById(workLog.getClaim().getClaimId()).isEmpty()) {
             throw new IllegalArgumentException("Warranty Claim không tồn tại hoặc không hợp lệ.");
         }
-        if (workLog.getTechnician() == null || technicianRepository.findById(workLog.getTechnician().getTechnician_id()).isEmpty()) {
+        if (workLog.getTechnician() == null || technicianRepository.findById(workLog.getTechnician().getTechnicianId()).isEmpty()) {
             throw new IllegalArgumentException("Technician không tồn tại hoặc không hợp lệ.");
         }
 

@@ -49,13 +49,13 @@ public class VehiclePartHistoryServiceImpl implements IVehiclePartHistoryService
     @Override
     public VehiclePartHistory saveHistoryRecord(VehiclePartHistory record) {
         //Kiểm tra Khóa Ngoại (FK) phải tồn tại
-        if (record.getVehicle() == null || vehicleRepository.findById(record.getVehicle().getVehicle_id()).isEmpty()) {
+        if (record.getVehicle() == null || vehicleRepository.findById(record.getVehicle().getVehicleId()).isEmpty()) {
             throw new IllegalArgumentException("Vehicle (Xe) không tồn tại.");
         }
-        if (record.getPartserial() == null || partSerialRepository.findById(record.getPartserial().getPart_serial_id()).isEmpty()) {
+        if (record.getPartserial() == null || partSerialRepository.findById(record.getPartserial().getPartSerialId()).isEmpty()) {
             throw new IllegalArgumentException("Part Serial (Số serial linh kiện) không tồn tại.");
         }
-        if (record.getClaim() == null || claimRepository.findById(record.getClaim().getClaim_id()).isEmpty()) {
+        if (record.getClaim() == null || claimRepository.findById(record.getClaim().getClaimId()).isEmpty()) {
             throw new IllegalArgumentException("Warranty Claim không tồn tại.");
         }
 

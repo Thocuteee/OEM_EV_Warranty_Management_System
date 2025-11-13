@@ -17,7 +17,7 @@ import java.time.LocalDate;
 public class RecallCampaign {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long campaign_id;
+    private Long campaignId;
 
     @Column(name = "title", nullable = false, unique = true)
     private String title;
@@ -28,7 +28,9 @@ public class RecallCampaign {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    
+    public RecallCampaign(Long campaignId) {
+        this.campaignId = campaignId;
+    }
 
 
 }

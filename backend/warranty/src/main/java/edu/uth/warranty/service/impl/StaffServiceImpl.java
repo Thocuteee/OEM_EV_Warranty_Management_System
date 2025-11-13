@@ -39,10 +39,10 @@ public class StaffServiceImpl implements IStaffService{
     @Override
     public Staff saveStaff(Staff staff) {
         //Kiểm tra Service Center có tồn tại không
-        if (staff.getCenter() == null || staff.getCenter().getCenter_id() == null) {
+        if (staff.getCenter() == null || staff.getCenter().getCenterId() == null) {
             throw new IllegalArgumentException("Nhân viên phải được gán cho một Trung tâm Dịch vụ hợp lệ.");
         }
-        if (serviceCenterRepository.findById(staff.getCenter().getCenter_id()).isEmpty()) {
+        if (serviceCenterRepository.findById(staff.getCenter().getCenterId()).isEmpty()) {
             throw new IllegalArgumentException("Trung tâm dịch vụ không tồn tại.");
         }
 
@@ -50,13 +50,13 @@ public class StaffServiceImpl implements IStaffService{
         
         // Kiểm tra Username
         Optional<Staff> existingStaffByUsername = staffRepository.findByUsername(staff.getUsername());
-        if (existingStaffByUsername.isPresent() && (staff.getStaff_id() == null || !staff.getStaff_id().equals(existingStaffByUsername.get().getStaff_id()))) {
+        if (existingStaffByUsername.isPresent() && (staff.getStaffId() == null || !staff.getStaffId().equals(existingStaffByUsername.get().getStaffId()))) {
             throw new IllegalArgumentException("Tên đăng nhập đã tồn tại.");
         }
 
         // Kiểm tra Email
         Optional<Staff> existingStaffByEmail = staffRepository.findByEmail(staff.getEmail());
-        if (existingStaffByEmail.isPresent() && (staff.getStaff_id() == null || !staff.getStaff_id().equals(existingStaffByEmail.get().getStaff_id()))) {
+        if (existingStaffByEmail.isPresent() && (staff.getStaffId() == null || !staff.getStaffId().equals(existingStaffByEmail.get().getStaffId()))) {
             throw new IllegalArgumentException("Email đã tồn tại.");
         }
 

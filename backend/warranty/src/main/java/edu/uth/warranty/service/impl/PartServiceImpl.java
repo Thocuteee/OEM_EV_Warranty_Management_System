@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class PartServiceImpl implements IPartService{
     private final PartRepository partRepository;
 
@@ -36,7 +37,7 @@ public class PartServiceImpl implements IPartService{
         
         if (existingPart.isPresent()) {
             // Nếu Part Number đã tồn tại, chỉ cho phép cập nhật nếu đó là cùng một bản ghi
-            if (part.getPart_id() == null || !part.getPart_id().equals(existingPart.get().getPart_id())) {
+            if (part.getPartId() == null || !part.getPartId().equals(existingPart.get().getPartId())) {
                 throw new IllegalArgumentException("Mã linh kiện (Part Number) đã tồn tại.");
             }
         }

@@ -45,12 +45,12 @@ public class InventoryServiceImpl implements IInventoryService{
     @Override
     public Inventory saveInventory(Inventory inventory) {
         //Kiểm tra Khóa Ngoại (FK) có tồn tại không
-        if (inventory.getPart() == null || inventory.getPart().getPart_id() == null || 
-            partRepository.findById(inventory.getPart().getPart_id()).isEmpty()) {
+        if (inventory.getPart() == null || inventory.getPart().getPartId() == null || 
+            partRepository.findById(inventory.getPart().getPartId()).isEmpty()) {
             throw new IllegalArgumentException("Linh kiện không tồn tại hoặc không hợp lệ.");
         }
-        if (inventory.getCenter() == null || inventory.getCenter().getCenter_id() == null || 
-            centerRepository.findById(inventory.getCenter().getCenter_id()).isEmpty()) {
+        if (inventory.getCenter() == null || inventory.getCenter().getCenterId() == null || 
+            centerRepository.findById(inventory.getCenter().getCenterId()).isEmpty()) {
             throw new IllegalArgumentException("Trung tâm Dịch vụ không tồn tại hoặc không hợp lệ.");
         }
         
@@ -59,10 +59,10 @@ public class InventoryServiceImpl implements IInventoryService{
 
         if (existingInventory.isPresent()) {
             // Nếu là bản ghi cũ, update ID của object mới để JPA biết đây là update
-            if (inventory.getInventory_id() == null) {
-                inventory.setInventory_id(existingInventory.get().getInventory_id());
+            if (inventory.getInventoryId() == null) {
+                inventory.setInventoryId(existingInventory.get().getInventoryId());
             }
-        } else if (inventory.getInventory_id() != null) {
+        } else if (inventory.getInventoryId() != null) {
             // Nếu có ID nhưng không tìm thấy bản ghi cũ (người dùng cố tình cập nhật bản ghi không tồn tại)
             throw new IllegalArgumentException("Không thể cập nhật bản ghi tồn kho không tồn tại.");
         }

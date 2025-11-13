@@ -51,20 +51,20 @@ public class InvoiceServiceImpl implements IInvoiceService{
         //Kiểm tra các Khóa Ngoại (FK) có tồn tại không
         
         // 1. Kiểm tra Claim
-        if (invoice.getClaim() == null || invoice.getClaim().getClaim_id() == null || 
-            claimRepository.findById(invoice.getClaim().getClaim_id()).isEmpty()) {
+        if (invoice.getClaim() == null || invoice.getClaim().getClaimId() == null || 
+            claimRepository.findById(invoice.getClaim().getClaimId()).isEmpty()) {
             throw new IllegalArgumentException("Warranty Claim không tồn tại hoặc không hợp lệ.");
         }
         
         // 2. Kiểm tra Part
-        if (invoice.getPart() == null || invoice.getPart().getPart_id() == null || 
-            partRepository.findById(invoice.getPart().getPart_id()).isEmpty()) {
+        if (invoice.getPart() == null || invoice.getPart().getPartId() == null || 
+            partRepository.findById(invoice.getPart().getPartId()).isEmpty()) {
             throw new IllegalArgumentException("Linh kiện (Part) không tồn tại hoặc không hợp lệ.");
         }
 
         // 3. Kiểm tra Service Center
-        if (invoice.getCenter() == null || invoice.getCenter().getCenter_id() == null || 
-            centerRepository.findById(invoice.getCenter().getCenter_id()).isEmpty()) {
+        if (invoice.getCenter() == null || invoice.getCenter().getCenterId() == null || 
+            centerRepository.findById(invoice.getCenter().getCenterId()).isEmpty()) {
             throw new IllegalArgumentException("Trung tâm Dịch vụ không tồn tại hoặc không hợp lệ.");
         }
         

@@ -28,4 +28,6 @@ public interface ITechnicianService {
     List<Technician> getTechniciansBySpecialization(String specialization);
 
     List<Technician> getTechniciansBySpecializationAndCenter(String specialization, ServiceCenter center);
+
+    Optional<Technician> getTechnicianByUsername(String username);
 }

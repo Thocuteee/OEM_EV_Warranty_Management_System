@@ -33,5 +33,7 @@ public class User {
     @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Report> reports;
 
-    
+    public User(Long id) {
+        this.id = id;
+    }
 }

@@ -2,63 +2,65 @@ package edu.uth.warranty.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder; 
-import org.springframework.security.crypto.password.PasswordEncoder; 
+import java.util.List;
 
-import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-    
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
+  @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(AbstractHttpConfigurer::disable)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll() // Cho phép tất cả các request, không cần xác thực
-            );
-        return http.build();
-    }
+  @Bean
+  public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+      // REST dev: tắt CSRF, CORS do ta cấu hình riêng
+      .csrf(csrf -> csrf.disable())
+      .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+      // Không tạo session
+      .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+      // Cho phép mọi request (tránh 401/403 trong giai đoạn dev)
+      .authorizeHttpRequests(auth -> auth
+        .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("Admin", "EVM_Staff")     // preflight
+        .anyRequest().permitAll()
+      )
+      // Tùy chọn: bật basic để test nhanh bằng curl; bỏ nếu không cần
+      .httpBasic(Customizer.withDefaults());
 
+    return http.build();
+  }
 
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration config = new CorsConfiguration();
+    // KHÔNG dùng setAllowedOrigins("*") khi allowCredentials=true
+    // Dùng patterns để cho phép localhost các cổng phổ biến
+    config.setAllowedOriginPatterns(List.of(
+      "http://localhost:*",
+      "http://127.0.0.1:*",
+      "http://192.168.*:*"
+    ));
+    config.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+    config.setAllowedHeaders(List.of("*"));
+    config.setExposedHeaders(List.of("Authorization","Location"));
+    config.setAllowCredentials(true); // cho phép gửi cookie/Authorization từ FE
 
-
-    /*@Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable) // Vô hiệu hóa CSRF cho API
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Cấu hình CORS
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login").permitAll() // Cho phép truy cập không cần xác thực đến /login
-                        .anyRequest().authenticated() // Yêu cầu xác thực cho các yêu cầu khác
-                );
-        return http.build();
-    } */
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // Thay đổi theo nguồn gốc của FE
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
-    }
-    
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", config);
+    return source;
+  }
 }

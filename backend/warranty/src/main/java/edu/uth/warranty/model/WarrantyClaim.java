@@ -17,7 +17,7 @@ import lombok.AllArgsConstructor;
 public class WarrantyClaim {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long claim_id;
+    private Long claimId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "staff_id", nullable = false)
@@ -57,7 +57,9 @@ public class WarrantyClaim {
     @Column(name = "approval_status")
     private String approvalStatus;
 
-    
+    public WarrantyClaim(Long claimId) {
+        this.claimId = claimId;
+    }
 
 
 }   
