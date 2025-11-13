@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Spring Boot](https://img.shields.io/badge/Backend-Spring_Boot_3-6DB33F?logo=spring)](https://spring.io/projects/spring-boot)
 [![Next.js](https://img.shields.io/badge/Frontend-Next.js_15-000000?logo=next.js)](https://nextjs.org/)
-[![Database](https://img.shields.io/badge/Database-MySQL%20|%20PostgreSQL-4169E1?logo=mysql)](https://www.mysql.com/)
+[![Database](https://img.shields.io/badge/Database-MySQL-4169E1?logo=mysql)](https://www.mysql.com/)
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF?logo=githubactions)]()
 
 ---
