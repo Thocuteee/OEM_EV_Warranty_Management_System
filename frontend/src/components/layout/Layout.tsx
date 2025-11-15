@@ -30,13 +30,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       router.push('/login'); // Chuyển hướng về trang đăng nhập sau khi logout
   };
 
-  const sidebarMenuItems = [
-    { name: "Dashboard", icon: "🏠", href: "#" },
-    { name: "Quản lý Xe", icon: "🚗", href: "#" },
-    { name: "Yêu cầu Bảo hành", icon: "📋", href: "#" },
-    { name: "Linh kiện & Phụ tùng", icon: "⚙️", href: "#" },
-    { name: "Báo cáo", icon: "📊", href: "#" },
-  ];
+ const sidebarMenuItems = [
+  { name: "Dashboard", icon: "🏠", href: "/" },
+  { name: "Quản lý Xe", icon: "🚗", href: "/vehicles" },
+  { name: "Yêu cầu Bảo hành", icon: "📋", href: "/warranty-request" },
+  { name: "Linh kiện & Phụ tùng", icon: "⚙️", href: "/parts" },
+  { name: "Báo cáo", icon: "📊", href: "/reports" },
+];
   
   const openWidth = "w-60";
   const closedWidth = "w-20";

@@ -62,3 +62,17 @@ export const registerUser = async (registerRequest: RegisterRequest): Promise<Re
         throw new Error('Không thể kết nối đến máy chủ.');
     }
 };
+
+export const fetchClaims = async () => {
+  const response = await fetch('/api/claims');
+  return response.json();
+};
+
+export const createClaim = async (claimData) => {
+  const response = await fetch('/api/claims', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(claimData),
+  });
+  return response.json();
+};
