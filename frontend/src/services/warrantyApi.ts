@@ -271,17 +271,17 @@ export const updateClaimApprovalStatus = async (
 
 
 // Hàm gọi API tạo User
-export const createNewUser = async(userData::CreateUserRequest): Promise<UserResponse> => {
+export const createNewUser = async (userData: CreateUserRequest): Promise<UserResponse> => {
   try {
-    const response: AxiosResponse<UserResponse> = await axios.post(`${BASE_URL}/users`,userData);
+    const response: AxiosResponse<UserResponse> = await axios.post(`${BASE_URL}/users`, userData);
     return response.data;
-  } catch(error) {
-    if(axios.isAxiosError(error) && error.response) {
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
       const backendError = error.response.data as { message?: string };
       throw new Error(backendError.message || 'Tạo tài khoản thất bại.');
     }
     throw new Error('Không thể kết nối đến máy chủ.');
   }
-}
+};
 
 
