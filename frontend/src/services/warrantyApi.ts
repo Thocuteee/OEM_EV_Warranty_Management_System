@@ -1,89 +1,4 @@
-    // import axios, { AxiosResponse } from 'axios';
-    // import {
-    // LoginRequest, LoginResponse,
-    // UserRequest, UserResponse,
-    // RecallCampaignRequest, RecallCampaignResponse,
-    // ClaimApprovalResponse
-    // } from "@/types/warranty";
-
-    // const API_BASE_URL = 'http://localhost:8080/api';
-    
-
-    // const apiClient = axios.create({
-    // baseURL: API_BASE_URL,
-    // headers: {
-    //     'Content-Type': 'application/json',
-    // },
-    // });
-
-    // export const loginUser = async (loginRequest: LoginRequest): Promise<LoginResponse> => {
-    // try {
-    //     const response: AxiosResponse<LoginResponse> = await axios.post(
-    //     `${API_BASE_URL}/auth/login`,
-    //     loginRequest
-    //     );
-    //     return response.data;
-    // } catch (error) {
-    //     if (axios.isAxiosError(error) && error.response) {
-    //     const backendError = error.response.data as { message?: string };
-    //     throw new Error(backendError.message || 'Tên đăng nhập hoặc mật khẩu không đúng.');
-    //     }
-    //     throw new Error('Không thể kết nối đến máy chủ.');
-    // }
-    // };
-
-    // export const getUsers = async (): Promise<UserResponse[]> => {
-    // const response = await apiClient.get<UserResponse[]>('/users');
-    // return response.data;
-    // };
-
-    // export const createUser = async (userData: UserRequest): Promise<UserResponse> => {
-    // const response = await apiClient.post<UserResponse>('/users', userData);
-    // return response.data;
-    // };
-
-    // export const deleteUser = async (id: number): Promise<void> => {
-    // await apiClient.delete(`/users/${id}`);
-    // };
-
-    // export const getCampaigns = async (): Promise<RecallCampaignResponse[]> => {
-    // const response = await apiClient.get<RecallCampaignResponse[]>('/campaigns');
-    // return response.data;
-    // };
-
-    // export const createCampaign = async (campaignData: RecallCampaignRequest): Promise<RecallCampaignResponse> => {
-    // const response = await apiClient.post<RecallCampaignResponse>('/campaigns', campaignData);
-    // return response.data;
-    // };
-
-    // export const getPendingClaims = async (): Promise<ClaimApprovalResponse[]> => {
-    // try {
-    //     const response = await apiClient.get<ClaimApprovalResponse[]>('/claims/search', {
-    //     params: { approvalStatus: 'PENDING' }
-    //     });
-    //     return response.data.filter(claim => claim.status === 'SENT');
-    // } catch (error) {
-    //     console.error("Lỗi khi lấy danh sách claim chờ duyệt:", error);
-    //     throw new Error('Không thể tải danh sách claim.');
-    // }
-    // };
-
-    // export const updateClaimApprovalStatus = async (
-    // claimId: number,
-    // newStatus: 'APPROVED' | 'REJECTED'
-    // ): Promise<ClaimApprovalResponse> => {
-    // try {
-    //     const response = await apiClient.put<ClaimApprovalResponse>(
-    //     `/claims/${claimId}/status`,
-    //     { status: newStatus }
-    //     );
-    //     return response.data;
-    // } catch (error) {
-    //     console.error(`Lỗi khi ${newStatus} claim ${claimId}:`, error);
-    //     throw new Error('Không thể cập nhật trạng thái claim.');
-    // }
-    // };
-    import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import {
   LoginRequest, LoginResponse,
   UserRequest, UserResponse,
@@ -353,3 +268,20 @@ export const updateClaimApprovalStatus = async (
     throw new Error('Không thể cập nhật trạng thái claim.');
   }
 };
+
+
+// Hàm gọi API tạo User
+export const createNewUser = async(userData::CreateUserRequest): Promise<UserResponse> => {
+  try {
+    const response: AxiosResponse<UserResponse> = await axios.post(`${BASE_URL}/users`,userData);
+    return response.data;
+  } catch(error) {
+    if(axios.isAxiosError(error) && error.response) {
+      const backendError = error.response.data as { message?: string };
+      throw new Error(backendError.message || 'Tạo tài khoản thất bại.');
+    }
+    throw new Error('Không thể kết nối đến máy chủ.');
+  }
+}
+
+
