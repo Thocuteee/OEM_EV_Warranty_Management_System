@@ -4,6 +4,8 @@ import React from 'react';
 // Sửa 1: Dùng đường dẫn tương đối và import đúng kiểu
 import { UserResponse } from '../types/warranty'; 
 
+import { getAllUsers } from '@/services/warrantyApi';
+
 interface UserManagementTableProps {
   users: UserResponse[];
   onView: (user: UserResponse) => void;
