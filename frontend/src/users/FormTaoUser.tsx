@@ -1,61 +1,70 @@
 'use client';
-
 import React, { useState } from 'react';
-// Sửa 1: Dùng đường dẫn tương đối
-import { UserRequest, UserRole } from '../../types/warranty';
+import { UserRequest, UserRole } from '../types/warranty'; // Đảm bảo đường dẫn đúng
+import { createNewUser } from '@/services/warrantyApi';
+// Cần import CreateUserRequest nếu nó là DTO riêng
+import { CreateUserRequest, UserRoleBackend } from '@/types/admin'; // Giả định import từ file types/admin.ts
 
 interface FormTaoUserProps {
-  onSubmit: (payload: UserRequest) => Promise<void> | void;
+  // Thêm onSuccess vào props
+  onSuccess: (message: string) => void;
   onClose: () => void;
 }
 
 const roleOptions: { label: string; value: UserRole }[] = [
-  { label: 'Admin', value: 'Admin' },
-  { label: 'EVM Staff', value: 'EVM_Staff' },
-  { label: 'SC Staff', value: 'SC_Staff' },
-  { label: 'SC Technician', value: 'SC_Technician' },
+  { label: 'Admin', value: 'ADMIN' as UserRole }, // SỬ DỤNG ENUM CHÍNH XÁC
+  { label: 'EVM Staff', value: 'EVM_STAFF' as UserRole },
+  { label: 'SC Staff', value: 'SC_STAFF' as UserRole },
+  { label: 'SC Technician', value: 'SC_TECHNICIAN' as UserRole },
 ];
 
-const FormTaoUser: React.FC<FormTaoUserProps> = ({ onSubmit, onClose }) => {
-  const [formState, setFormState] = useState<Omit<UserRequest, 'id'>>({
+// FIX 1: Thêm kiểu dữ liệu cho props (onSuccess, onClose)
+const FormTaoUser: React.FC<FormTaoUserProps> = ({ onSuccess, onClose }) => {
+  // FIX 2: Khởi tạo state với kiểu dữ liệu chính xác
+  const [formState, setFormState] = useState<CreateUserRequest>({
     username: '',
     password: '',
-    role: 'SC_Staff',
-  });
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setSubmitting] = useState(false);
+    role: 'SC_STAFF', // Mặc định SC Staff
+  }); // Ép kiểu an toàn
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, ) => {
     const { name, value } = event.target;
-    if (name === 'role') {
-      setFormState((prev) => ({ ...prev, role: value as UserRole }));
-    } else {
-      setFormState((prev) => ({ ...prev, [name]: value }));
-    }
+    setFormState((prev) => {
+      if (name === 'role') {
+          return { ...prev, role: value as UserRoleBackend }; 
+      }
+      
+      return { ...prev, [name]: value };
+    });
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!formState.username || !formState.password) {
-      setError('Vui lòng nhập Tên đăng nhập và Mật khẩu.');
-      return;
-    }
+  const handleSubmit = async (e: React.FormEvent) => {  
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
     try {
-      setSubmitting(true);
-      setError(null);
-      // Sửa 2: Ép kiểu rõ ràng
-      await onSubmit({ ...formState, id: undefined } as UserRequest);
-    } catch (submitError) {
-      setError(
-        submitError instanceof Error
-          ? submitError.message
-          : 'Không thể tạo tài khoản mới. Vui lòng thử lại.',
-      );
+      await createNewUser(formState);
+      
+      onSuccess("Tài khoản đã được tạo thành công!");
+      onClose(); // Đóng form
+    } catch (err: unknown) {
+      
+      let errorMessage: string = "Lỗi tạo người dùng không xác định.";
+      
+      if(err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'object' && err !== null && 'message' in err) {
+        errorMessage = (err as { message: string }).message;
+      }
+
+      setError(errorMessage);
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
 
@@ -126,10 +135,10 @@ const FormTaoUser: React.FC<FormTaoUserProps> = ({ onSubmit, onClose }) => {
         </button>
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={loading} // FIX: Sử dụng loading state
           className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {isSubmitting ? 'Đang tạo...' : 'Tạo người dùng'}
+          {loading ? 'Đang tạo...' : 'Tạo người dùng'}
         </button>
       </div>
     </form>
