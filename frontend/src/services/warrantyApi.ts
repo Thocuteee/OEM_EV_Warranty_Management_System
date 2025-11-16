@@ -69,3 +69,88 @@ export const registerUser = async (registerRequest: RegisterRequest): Promise<Re
         throw new Error('Không thể kết nối đến máy chủ.');
     }
 };
+
+import { Part, InventoryItem, SerialPart, ReportResponse, ReportStats, TopPart } from "@/types/warranty";
+
+// --- Parts & Inventory APIs ---
+const PARTS_BASE_URL = 'http://localhost:8080/api/parts'; // Giả định endpoint từ ảnh 2
+const INVENTORY_BASE_URL = 'http://localhost:8080/api/inventory';
+const REPORT_BASE_URL = 'http://localhost:8080/api/reports';
+
+// GET Danh sách Parts
+export const getParts = async (): Promise<Part[]> => {
+  try {
+    const response: AxiosResponse<Part[]> = await axios.get(PARTS_BASE_URL);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      const backendError = error.response.data as { message?: string };
+      throw new Error(backendError.message || 'Lỗi tải danh sách linh kiện.');
+    }
+    throw new Error('Không thể kết nối đến máy chủ.');
+  }
+};
+
+// POST Tạo Part Mới
+export const createPart = async (partData: Omit<Part, 'id'>): Promise<Part> => {
+  try {
+    const response: AxiosResponse<Part> = await axios.post(PARTS_BASE_URL, partData);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response) {
+      const backendError = error.response.data as { message?: string };
+      throw new Error(backendError.message || 'Tạo linh kiện thất bại.');
+    }
+    throw new Error('Không thể kết nối đến máy chủ.');
+  }
+};
+
+// GET Inventory
+export const getInventory = async (): Promise<InventoryItem[]> => {
+  try {
+    const response: AxiosResponse<InventoryItem[]> = await axios.get(INVENTORY_BASE_URL);
+    return response.data;
+  } catch (error) {
+    throw new Error('Lỗi tải tồn kho.');
+  }
+};
+
+// GET Serial Parts
+export const getSerialParts = async (): Promise<SerialPart[]> => {
+  try {
+    const response: AxiosResponse<SerialPart[]> = await axios.get(`${PARTS_BASE_URL}/serial`);
+    return response.data;
+  } catch (error) {
+    throw new Error('Lỗi tải serial parts.');
+  }
+};
+
+// GET Report Stats (cho Dashboard ảnh 3)
+export const getReportStats = async (): Promise<ReportStats> => {
+  try {
+    const response: AxiosResponse<ReportStats> = await axios.get(`${REPORT_BASE_URL}/stats`);
+    return response.data;
+  } catch (error) {
+    throw new Error('Lỗi tải thống kê báo cáo.');
+  }
+};
+
+// GET Top 5 Parts (ảnh 3)
+export const getTopParts = async (): Promise<TopPart[]> => {
+  try {
+    const response: AxiosResponse<TopPart[]> = await axios.get(`${REPORT_BASE_URL}/top-parts`);
+    return response.data;
+  } catch (error) {
+    throw new Error('Lỗi tải top linh kiện.');
+  }
+};
+
+// GET Detailed Reports (ảnh 4, cho Admin/EVM)
+export const getDetailedReports = async (): Promise<ReportResponse[]> => {
+  try {
+    const response: AxiosResponse<ReportResponse[]> = await axios.get(REPORT_BASE_URL);
+    return response.data;
+  } catch (error) {
+    throw new Error('Lỗi tải báo cáo chi tiết.');
+  }
+};

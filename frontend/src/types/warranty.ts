@@ -42,3 +42,56 @@ export interface RegisterRequest {
 export interface RegisterResponse {
   message?: string; 
 }
+
+// Types cho Parts & Inventory
+export interface Part {
+  id: number;
+  partName: string;
+  description: string;
+  price: number;
+  quantity: number;
+  serialNumber?: string; // Optional cho serial parts
+}
+
+export interface InventoryItem {
+  id: number;
+  partId: number;
+  partName: string;
+  stockQuantity: number;
+  location: string;
+  lastUpdated: string;
+}
+
+export interface SerialPart {
+  id: number;
+  serialNumber: string;
+  partName: string;
+  assignedTo: string; // e.g., VIN or Claim ID
+  status: 'Available' | 'Assigned' | 'Used';
+}
+
+export interface ReportResponse {
+  id: number;
+  claimId: number;
+  status: 'COMPLETED' | 'IN REVIEW';
+  reportDate: string;
+  technicianName: string;
+  partCost: number;
+  actualCost: number;
+  totalCalculatedCost: number;
+  actionToken: string;
+}
+
+// Types cho Report Dashboard (ảnh 3)
+export interface ReportStats {
+  totalClaims: number;
+  completedClaims: number;
+  inReview: number;
+  totalCost: number;
+}
+
+export interface TopPart {
+  partName: string;
+  usageCount: number;
+  cost: number;
+}
