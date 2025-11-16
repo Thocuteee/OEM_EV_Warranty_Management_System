@@ -4,13 +4,13 @@ import React, { useState, ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 
 type SidebarItem = {
   name: string;
   icon: string;
   href: string;
-  roles?: Array<"SC Staff" | "SC Technician" | "EVM Staff" | "Admin" | "Customer">;
+  roles?: Array<"SC_Staff" | "SC_Technician" | "EVM_Staff" | "Admin" | "Customer">;
 };
 
 interface LayoutProps {
@@ -40,7 +40,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       name: "Quản trị Hệ thống",
       icon: "🛠️",
       href: "/admin/users",
-      roles: ["Admin", "EVM Staff"],
+      roles: ["Admin", "EVM_Staff"],
     },
   ];
 
@@ -53,18 +53,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     return userRole ? item.roles.includes(userRole) : false;
   });
 
-  const openWidth = "w-60";
-  const closedWidth = "w-20";
-
   return (
     <div className="flex h-screen bg-gray-100 text-gray-900">
-      
-      {/* --------------------- Navbar (Thanh ngang trên cùng) --------------------- */}
-      <header className="app-navbar shadow-md">
-          
-        {/* Logo và Nút Toggle Sidebar */}
+      {/* Navbar */}
+      <header className="fixed top-0 left-0 right-0 h-16 bg-white flex items-center justify-between px-4 z-50 shadow-md">
         <div className="flex items-center space-x-3">
-          {/* NÚT THU GỌN VỚI ICON BA GẠCH */}
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="p-2 rounded-md text-blue-600 hover:bg-gray-200 transition-colors"
@@ -82,43 +75,35 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </svg>
           </button>
           
-          {/* VỊ TRÍ CHÈN LOGO - Dùng placeholder Image */}
           <div className="flex items-center space-x-2">
-            <Image
-              src="/logo.png" 
-              alt="Logo"
-              width={30}
-              height={30}
-              className="rounded-full bg-blue-500 p-1"
-            />
+            <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
+              <span className="text-white font-bold">EV</span>
+            </div>
             <span className="text-xl font-bold text-blue-600">
               EV Warranty System
             </span>
           </div>
         </div>
         
-        {/* Tên User/Đăng nhập ở góc phải */}
         {isAuthenticated ? (
           <div 
-            className="auth-user-info-base bg-blue-50 hover:bg-blue-100 cursor-pointer transition-colors"
+            className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 cursor-pointer transition-colors"
             onClick={handleLogout}
           >
             <span className="text-sm font-semibold text-gray-700 hidden sm:inline">
               {displayName}
             </span>
-            <div className="user-avatar bg-blue-500 text-white text-sm font-semibold">
+            <div className="w-8 h-8 rounded-full bg-blue-500 text-white text-sm font-semibold flex items-center justify-center">
               {initial}
             </div>
           </div>
         ) : (
           <div className="flex items-center gap-[3px]">
-            {/* Đăng ký */}
             <Link href="/register" passHref>
               <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded-lg transition-colors">
                 Đăng ký
               </button>
             </Link>
-            {/* Đăng nhập */}
             <Link href="/login" passHref>
               <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded-lg transition-colors">
                 Đăng nhập
@@ -128,21 +113,22 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         )}
       </header>
 
-      {/* --------------------- Container chính (Sidebar + Nội dung) --------------------- */}
+      {/* Container chính */}
       <div className="pt-16 flex flex-1 overflow-hidden"> 
         {/* Sidebar */}
         <aside
-          className={`app-sidebar ${isSidebarOpen ? openWidth : closedWidth} transition-all duration-300 ease-in-out shadow-lg`} 
+          className={`fixed top-16 bottom-0 left-0 bg-white overflow-hidden flex flex-col ${
+            isSidebarOpen ? "w-60" : "w-20"
+          } transition-all duration-300 ease-in-out shadow-lg z-40`} 
         >
-          {/* Menu Items */}
-          <nav className="space-y-1 mt-4">
+          <nav className="space-y-1 mt-4 p-4">
             {filteredMenuItems.map((item) => {
               const isActive = router.pathname === item.href;
               return (
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`sidebar-menu-item-base group hover:text-blue-600 hover:bg-blue-100 ${
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors relative group hover:text-blue-600 hover:bg-blue-100 ${
                     isActive ? "bg-blue-100 text-blue-700" : "text-gray-700"
                   }`}
                 >
@@ -153,7 +139,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     </span>
                   )}
 
-                  {/* Tooltip khi Sidebar đóng */}
                   {!isSidebarOpen && (
                     <span className="absolute left-full ml-4 p-2 bg-gray-700 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                       {item.name}
@@ -165,8 +150,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </nav>
         </aside>
 
-        {/* Nội dung Chính (Có thể cuộn) */}
-        <main className={`flex-1 overflow-y-auto p-6 md:p-8 bg-gray-50`}>
+        {/* Nội dung Chính */}
+        <main className={`flex-1 overflow-y-auto p-6 md:p-8 bg-gray-50 transition-all duration-300 ${
+          isSidebarOpen ? "ml-60" : "ml-20"
+        }`}>
           {children}
         </main>
       </div>

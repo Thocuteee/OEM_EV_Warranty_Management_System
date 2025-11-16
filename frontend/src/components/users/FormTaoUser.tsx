@@ -1,26 +1,26 @@
 'use client';
 
 import React, { useState } from 'react';
-import { AdminRole, CreateAdminUserPayload } from '@/types/admin';
+// Sửa 1: Dùng đường dẫn tương đối
+import { UserRequest, UserRole } from '../../types/warranty';
 
 interface FormTaoUserProps {
-  onSubmit: (payload: CreateAdminUserPayload) => Promise<void> | void;
+  onSubmit: (payload: UserRequest) => Promise<void> | void;
   onClose: () => void;
 }
 
-const roleOptions: { label: string; value: AdminRole }[] = [
+const roleOptions: { label: string; value: UserRole }[] = [
   { label: 'Admin', value: 'Admin' },
-  { label: 'EVM Staff', value: 'EVM Staff' },
-  { label: 'SC Staff', value: 'SC Staff' },
-  { label: 'SC Technician', value: 'SC Technician' },
+  { label: 'EVM Staff', value: 'EVM_Staff' },
+  { label: 'SC Staff', value: 'SC_Staff' },
+  { label: 'SC Technician', value: 'SC_Technician' },
 ];
 
 const FormTaoUser: React.FC<FormTaoUserProps> = ({ onSubmit, onClose }) => {
-  const [formState, setFormState] = useState<CreateAdminUserPayload>({
-    fullName: '',
+  const [formState, setFormState] = useState<Omit<UserRequest, 'id'>>({
     username: '',
     password: '',
-    role: 'SC Staff',
+    role: 'SC_Staff',
   });
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setSubmitting] = useState(false);
@@ -29,20 +29,25 @@ const FormTaoUser: React.FC<FormTaoUserProps> = ({ onSubmit, onClose }) => {
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = event.target;
-    setFormState((prev) => ({ ...prev, [name]: value }));
+    if (name === 'role') {
+      setFormState((prev) => ({ ...prev, role: value as UserRole }));
+    } else {
+      setFormState((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!formState.fullName || !formState.username || !formState.password) {
-      setError('Vui lòng nhập đầy đủ Họ tên, Tên đăng nhập và Mật khẩu.');
+    if (!formState.username || !formState.password) {
+      setError('Vui lòng nhập Tên đăng nhập và Mật khẩu.');
       return;
     }
 
     try {
       setSubmitting(true);
       setError(null);
-      await onSubmit(formState);
+      // Sửa 2: Ép kiểu rõ ràng
+      await onSubmit({ ...formState, id: undefined } as UserRequest);
     } catch (submitError) {
       setError(
         submitError instanceof Error
@@ -56,20 +61,6 @@ const FormTaoUser: React.FC<FormTaoUserProps> = ({ onSubmit, onClose }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-1">
-          Họ và tên
-        </label>
-        <input
-          name="fullName"
-          value={formState.fullName}
-          onChange={handleChange}
-          placeholder="Ví dụ: Nguyễn Văn A"
-          className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-          autoComplete="name"
-        />
-      </div>
-
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-1">
@@ -87,7 +78,7 @@ const FormTaoUser: React.FC<FormTaoUserProps> = ({ onSubmit, onClose }) => {
 
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-1">
-            Mật khẩu tạm
+            Mật khẩu
           </label>
           <input
             type="password"

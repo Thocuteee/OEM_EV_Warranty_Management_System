@@ -1,25 +1,19 @@
 'use client';
 
 import React from 'react';
-import { AdminUser } from '@/types/admin';
+// Sửa 1: Dùng đường dẫn tương đối và import đúng kiểu
+import { UserResponse } from '../../types/warranty'; 
 
 interface UserManagementTableProps {
-  users: AdminUser[];
-  onView: (user: AdminUser) => void;
-  onToggleStatus: (user: AdminUser) => void;
-  onDelete: (user: AdminUser) => void;
+  users: UserResponse[];
+  onView: (user: UserResponse) => void;
+  // Sửa 2: Xóa onToggleStatus vì UserResponse không có 'status'
+  onDelete: (user: UserResponse) => void;
 }
-
-const statusColorMap: Record<AdminUser['status'], string> = {
-  Active: 'bg-green-100 text-green-700',
-  Inactive: 'bg-gray-200 text-gray-600',
-  Pending: 'bg-yellow-100 text-yellow-700',
-};
 
 const UserManagementTable: React.FC<UserManagementTableProps> = ({
   users,
   onView,
-  onToggleStatus,
   onDelete,
 }) => {
   return (
@@ -31,20 +25,12 @@ const UserManagementTable: React.FC<UserManagementTableProps> = ({
               ID
             </th>
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Người dùng
+              Người dùng (Username)
             </th>
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
               Vai trò
             </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Ngày tạo
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Lần đăng nhập cuối
-            </th>
-            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
-              Trạng thái
-            </th>
+            {/* Sửa 3: Xóa cột Trạng thái */}
             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
               Thao tác
             </th>
@@ -58,32 +44,16 @@ const UserManagementTable: React.FC<UserManagementTableProps> = ({
               </td>
               <td className="px-4 py-3">
                 <div className="flex flex-col">
+                  {/* Sửa 4: Chỉ dùng user.username */}
                   <span className="text-sm font-semibold text-gray-900">
-                    {user.fullName}
+                    @{user.username}
                   </span>
-                  <span className="text-xs text-gray-500">@{user.username}</span>
                 </div>
               </td>
               <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700">
                 {user.role}
               </td>
-              <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
-                {user.createdAt}
-              </td>
-              <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-500">
-                {user.lastLogin ?? '--'}
-              </td>
-              <td className="whitespace-nowrap px-4 py-3">
-                <span
-                  className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${statusColorMap[user.status]}`}
-                >
-                  {user.status === 'Active'
-                    ? 'Đang hoạt động'
-                    : user.status === 'Inactive'
-                    ? 'Đã khóa'
-                    : 'Chờ kích hoạt'}
-                </span>
-              </td>
+              {/* Sửa 5: Xóa ô Trạng thái */}
               <td className="whitespace-nowrap px-4 py-3 text-sm">
                 <div className="flex items-center gap-2">
                   <button
@@ -92,12 +62,7 @@ const UserManagementTable: React.FC<UserManagementTableProps> = ({
                   >
                     Xem
                   </button>
-                  <button
-                    onClick={() => onToggleStatus(user)}
-                    className="rounded-md border border-amber-100 px-3 py-1 text-xs font-semibold text-amber-600 transition-colors hover:bg-amber-50"
-                  >
-                    {user.status === 'Active' ? 'Khóa' : 'Kích hoạt'}
-                  </button>
+                  {/* Sửa 6: Xóa nút Khóa/Kích hoạt */}
                   <button
                     onClick={() => onDelete(user)}
                     className="rounded-md border border-red-100 px-3 py-1 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50"
@@ -111,10 +76,10 @@ const UserManagementTable: React.FC<UserManagementTableProps> = ({
           {users.length === 0 && (
             <tr>
               <td
-                colSpan={7}
+                colSpan={4} // Sửa 7: Giảm colSpan
                 className="px-4 py-6 text-center text-sm text-gray-500"
               >
-                Hiện chưa có người dùng nào phù hợp với bộ lọc.
+                Hiện chưa có người dùng nào.
               </td>
             </tr>
           )}

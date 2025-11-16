@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
+
+
 // Cần đảm bảo các type này đã được định nghĩa trong types/warranty.ts
 interface WarrantyClaimData {
   id: number;
