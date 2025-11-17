@@ -45,12 +45,12 @@ public class CampaignVehicle {
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "campaign_id", nullable = false, insertable = false, updatable = false) 
+    @JoinColumn(name = "campaign_id", nullable = false)
     private RecallCampaign campaign; 
 
     @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vehicle_id", nullable = false, insertable = false, updatable = false) 
+    @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle; 
 
     @Column(name = "status", nullable = false)

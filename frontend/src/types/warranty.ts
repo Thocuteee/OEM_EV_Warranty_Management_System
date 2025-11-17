@@ -1,44 +1,88 @@
-// Định nghĩa TypeScript cho DTOs (PHẦN VẬT LÝ I trong FE)
-// Định nghĩa type/interface cho WarrantyClaim, LoginResponse
+    export type UserRole = 'SC_Staff' | 'SC_Technician' | 'EVM_Staff' | 'Admin' | 'Customer';
 
-// Các interface đã có trước đó...
+    export interface LoginRequest {
+    username: string;
+    password: string;
+    }
 
-// Interface cho Thông tin Người dùng (User Profile)
-export interface UserProfile {
+    export interface LoginResponse {
     id: number;
     username: string;
-    name: string; // Tên hiển thị đầy đủ
-    role: 'SC Staff' | 'SC Technician' | 'EVM Staff' | 'Admin' | 'Customer';
+    role: UserRole;
     token: string;
-}
+    }
 
-// Interface cho Auth Context Type
-export interface AuthContextType {
+    export interface UserProfile {
+    id: number;
+    username: string;
+    name: string;
+    role: UserRole;
+    token: string;
+    }
+
+    export interface AuthContextType {
     user: UserProfile | null;
     isAuthenticated: boolean;
     login: (userData: UserProfile) => void;
     logout: () => void;
-}
+    }
 
-// Interface cho Dữ liệu Bảng
-export interface WarrantyClaimData {
+    export interface RegisterRequest {
+    fullName: string;
+    username: string;
+    password: string;
+    }
+
+    export interface RegisterResponse {
+    message?: string;
+    }
+
+    export interface UserRequest {
+    id?: number;
+    username: string;
+    password?: string;
+    role: UserRole;
+    }
+
+    export interface UserResponse {
     id: number;
-    vin: string;
-    model: string;
-    customer: string;
-    status: 'Đang chờ duyệt' | 'Đã duyệt' | 'Đã hoàn thành' | 'Đang xử lý';
-}
+    username: string;
+    role: UserRole;
+    fullName?: string;
+    status?: 'Active' | 'Inactive' | 'Pending';
+    createdAt?: string;
+    lastLogin?: string;
+    }
 
-// Interface cho Dữ liệu Thẻ
-export interface OtherSectionItem {
+    export type AdminUser = UserResponse;
+
+    export interface RecallCampaignRequest {
+    id?: number;
     title: string;
+    startDate: string;
+    endDate?: string;
+    }
+
+    export interface RecallCampaignResponse {
+    id: number;
+    title: string;
+    startDate: string;
+    endDate?: string;
+    campaignStatus: string;
+    }
+
+    export interface ClaimApprovalResponse {
+    id: number;
+    vehicleId: number;
+    vehicleVIN: string;
+    customerId: number;
+    customerName: string;
+    centerId: number;
+    technicianId: number;
+    status: string;
+    approvalStatus: string;
+    totalCost: number;
+    createdAt: string;
+    updatedAt: string;
     description: string;
-}
-export interface RegisterRequest { 
-    fullName: string; 
-    username: string; 
-    password: string; 
-}
-export interface RegisterResponse {
-  message?: string; 
-}
+    }
