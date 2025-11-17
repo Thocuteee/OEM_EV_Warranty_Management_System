@@ -54,7 +54,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/register")
+    /*@PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody UserRequest registerRequest) {
         try {
             // Tái sử dụng toEntity từ UserController nếu cần, hoặc tạo logic chuyển đổi tại đây
@@ -72,6 +72,6 @@ public class AuthController {
             // Bắt lỗi nghiệp vụ (ví dụ: Username đã tồn tại)
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
-    }
+    } */
     
-}
+} 
