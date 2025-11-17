@@ -7,13 +7,8 @@ import {
   RecallCampaignResponse, 
   ClaimApprovalResponse, 
   UserResponse, 
-  UserRole,
-  RegisterResponse, 
-  UserRequest, // UserRequest và RegisterResponse cần cho chức năng đăng ký
-  RegisterRequest // Cần import RegisterRequest nếu hàm registerUser dùng nó
+  UserRequest,
 } from '@/types/warranty';
-
-import { CreateUserPayload } from '@/types/admin';
 
 const BASE_URL = 'http://localhost:8080/api';
 
@@ -38,25 +33,6 @@ export const loginUser = async (loginRequest: LoginRequest): Promise<LoginRespon
   }
 };
 
-export const registerUser = async (registerRequest: RegisterRequest): Promise<RegisterResponse> => {
-  try {
-    const payload: UserRequest = {
-      username : registerRequest.username,
-      password : registerRequest.password,
-      role: "SC_Staff" as UserRole
-
-    };
-    const response: AxiosResponse<RegisterResponse> = await apiClient.post(`${BASE_URL}/auth/register`, payload);
-    return response.data;
-  } catch(error) {
-    if(axios.isAxiosError(error) && error.response) {
-      const backendError = error.response.data as {message?: string};
-      throw new Error(backendError.message || 'Lỗi đăng ký người dùng.');
-    }
-    throw new Error('Không thể kết nối đến máy chủ.');
-  }
-};
-
 
 // 1. GET: Lấy tất cả User
 export const getAllUsers = async (): Promise<UserResponse[]> => {
@@ -66,8 +42,8 @@ export const getAllUsers = async (): Promise<UserResponse[]> => {
 };
 
 // 2. POST: Tạo User mới (Dành cho Admin)
-export const createNewUser = async (userData: CreateUserPayload): Promise<UserResponse[]> => {
-  const response = await apiClient.post<UserResponse[]>('/users', userData);
+export const createNewUser = async (userData: UserRequest): Promise<UserResponse> => {
+  const response = await apiClient.post<UserResponse>('/users', userData);
   return response.data;
 
 };

@@ -81,11 +81,11 @@ export default function Login() {
             {/* Username */}
             <div className="mb-5">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Tên đăng nhập
+                Email
               </label>
               <input
                 type="text"
-                placeholder="Tên đăng nhập"
+                placeholder="Email"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 bg-gray-50 hover:bg-white transition text-gray-800 placeholder-gray-400"

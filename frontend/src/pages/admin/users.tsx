@@ -2,11 +2,15 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
-import { UserRequest, UserResponse, UserRole } from "@/types/warranty";
-import { getUsers, deleteUser, createUser } from "@/services/warrantyApi";
+import { UserRequest, UserResponse, UserRole } from "@/types/warranty"; 
+// THÊM: Import axios để xử lý lỗi HTTP
+import axios from "axios"; 
+import { getAllUsers, deleteUser, createNewUser } from "@/services/warrantyApi";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
-import { FormTaoUser, UserManagementTable } from "@/components/users";
+import { FormTaoUser, UserManagementTable } from "@/users";
+
+
 
 export default function AdminUsersPage() {
   const { user, isAuthenticated } = useAuth();
@@ -42,7 +46,7 @@ export default function AdminUsersPage() {
     const load = async () => {
       setIsLoading(true);
       try {
-        const data = await getUsers();
+        const data = await getAllUsers();
         setUsers(data);
       } catch {
         setToast("Không thể tải danh sách người dùng");
@@ -66,13 +70,21 @@ export default function AdminUsersPage() {
   // Tạo tài khoản
   // ---------------------------------------
   const handleCreateUser = async (payload: UserRequest) => {
+    let errorMessage = "Lỗi tạo tài khoản không xác định.";
     try {
-      const newUser = await createUser(payload);
+      const newUser = await createNewUser(payload);
       setUsers((prev) => [...prev, newUser]);
       setModalOpen(false);
       setToast("Tạo tài khoản thành công");
-    } catch (err) {
+    } catch (err : unknown) {
       setToast("Lỗi khi tạo tài khoản");
+      if (err instanceof Error) {
+            errorMessage = err.message;
+        } else if (axios.isAxiosError(err) && err.response) { // Cần import axios
+             // Lỗi từ backend thường nằm trong response.data
+            const apiError = err.response.data as { message: string };
+            errorMessage = apiError.message || errorMessage;
+        }
     }
   };
 

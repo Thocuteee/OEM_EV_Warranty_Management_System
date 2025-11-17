@@ -1,12 +1,12 @@
 'use client';
 import React, { useState } from 'react';
 // FIX: Đảm bảo import đúng hai kiểu dữ liệu này từ file types/admin.ts
-import { CreateUserPayload, UserRoleBackend } from '@/types/admin'; 
-import { createNewUser } from '@/services/warrantyApi';
-// Cần import React.FC nếu bạn sử dụng nó
+
+import { UserRoleBackend } from '@/types/admin'; 
+import { UserRequest} from '@/types/warranty';
 
 interface FormTaoUserProps {
-  onSuccess: (message: string) => void;
+  onSubmit: (payload: UserRequest) => Promise<void>;
   onClose: () => void;
 }
 
@@ -17,28 +17,35 @@ const roleOptions: { label: string; value: UserRoleBackend }[] = [
   { label: 'SC Technician', value: 'SC_TECHNICIAN' },
 ];
 
-const FormTaoUser: React.FC<FormTaoUserProps> = ({ onSuccess, onClose }) => {
-  const [formState, setFormState] = useState<CreateUserPayload>({
+const FormTaoUser: React.FC<FormTaoUserProps> = ({ onSubmit, onClose }) => {
+  const [formState, setFormState] = useState<UserRequest>({
     username: '',
     password: '',
-    role: 'SC_STAFF' as UserRoleBackend, 
-  } as CreateUserPayload);
+    role: 'SC_Staff'  
+  } as UserRequest);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [centerId, setCenterId] = useState<string>('');
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, 
   ) => {
     const { name, value } = event.target;
+
+    if (name === 'name') setName(value);
+    if (name === 'phone') setPhone(value);
+    if (name === 'email') setEmail(value);
+    if (name === 'centerId') setCenterId(value);
     
     setFormState((prev) => {
         // FIX 3: Xử lý trường 'role' (ép kiểu có điều kiện)
-        if (name === 'role') {
-            return { ...prev, role: value as UserRoleBackend }; 
-        }
-
-        return { ...prev, [name as keyof CreateUserPayload]: value };
+        
+        return { ...prev, [name as keyof UserRequest]: value };
     });
   };
 
@@ -48,10 +55,22 @@ const FormTaoUser: React.FC<FormTaoUserProps> = ({ onSuccess, onClose }) => {
     setLoading(true);
 
     try {
+      const payloadToSend: FullUserCreationRequest = {
+        username: formState.username,
+        password: formState.password,
+        role: formState.role as any, // Cần ép kiểu nếu role là string literal
+
+        // GIẢ ĐỊNH các biến name, phone, email, centerId đã được quản lý bằng useState
+        name: name,
+        phone: phone,
+        email: email,
+        centerId: parseInt(centerId), // Chuyển đổi an toàn
+        // specialization: specialization
+
       // Gửi formState (kiểu CreateUserPayload)
-      await createNewUser(formState); 
+      await onSubmit(formState); 
       
-      onSuccess("Tài khoản đã được tạo thành công!");
+      
       onClose(); 
     } catch (err: unknown) {
       

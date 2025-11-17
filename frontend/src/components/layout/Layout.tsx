@@ -99,11 +99,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         ) : (
           <div className="flex items-center gap-[3px]">
-            <Link href="/register" passHref>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded-lg transition-colors">
-                Đăng ký
-              </button>
-            </Link>
+            
             <Link href="/login" passHref>
               <button className="bg-blue-600 hover:bg-blue-700 text-white text-sm py-1.5 px-3 rounded-lg transition-colors">
                 Đăng nhập
