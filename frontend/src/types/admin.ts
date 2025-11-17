@@ -1,20 +1,20 @@
-export type AdminRole = 'Admin' | 'EVM Staff' | 'SC Staff' | 'SC Technician';
+export type UserRoleBackend = 'ADMIN' | 'EVM_STAFF' | 'SC_STAFF' | 'SC_TECHNICIAN';
 
-export type UserStatus = 'Active' | 'Inactive' | 'Pending';
+export type UserStatus = 'Active' | 'Inactive' ;
 
 export interface AdminUser {
   id: number;
   username: string;
   fullName: string;
-  role: AdminRole;
+  role: UserRoleBackend;
   status: UserStatus;
   createdAt: string;
   lastLogin?: string;
 }
 
-export interface CreateAdminUserPayload {
+export interface CreateUserPayload {
   username: string;
   password: string;
   fullName: string;
-  role: AdminRole;
+  role: UserRoleBackend;
 }
