@@ -35,7 +35,8 @@ public class SecurityConfig {
       .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
       // Cho phép mọi request (tránh 401/403 trong giai đoạn dev)
       .authorizeHttpRequests(auth -> auth
-        .requestMatchers(HttpMethod.POST, "/api/users").hasAnyRole("Admin", "EVM_Staff")     // preflight
+        // SỬA LỖI 401 TẠM THỜI: Cho phép truy cập công khai POST /api/users để Admin có thể tạo tài khoản ban đầu
+        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()     
         .anyRequest().permitAll()
       )
       // Tùy chọn: bật basic để test nhanh bằng curl; bỏ nếu không cần

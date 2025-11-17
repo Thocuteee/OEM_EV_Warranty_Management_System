@@ -19,6 +19,23 @@ const apiClient = axios.create({
     },
 });
 
+// THÊM INTERCEPTOR ĐỂ GỬI TOKEN TỰ ĐỘNG
+apiClient.interceptors.request.use((config) => {
+    // Lấy token từ localStorage (nơi bạn lưu trong AuthContext)
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+        const user = JSON.parse(savedUser);
+        const token = user.token; 
+        
+        if (token && config.url !== `${BASE_URL}/auth/login`) { // Không gửi token khi login
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+    }
+    return config;
+}, (error) => {
+    return Promise.reject(error);
+});
+
 // --- Auth API ---
 export const loginUser = async (loginRequest: LoginRequest): Promise<LoginResponse> => {
   try {

@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { UserRequest, UserResponse, UserRole } from "@/types/warranty"; 
+import { FullUserCreationRequest } from "@/types/admin";
 // THÊM: Import axios để xử lý lỗi HTTP
 import axios from "axios"; 
 import { getAllUsers, deleteUser, createNewUser } from "@/services/warrantyApi";
@@ -69,10 +70,10 @@ export default function AdminUsersPage() {
   // ---------------------------------------
   // Tạo tài khoản
   // ---------------------------------------
-  const handleCreateUser = async (payload: UserRequest) => {
+  const handleCreateUser = async (payload: FullUserCreationRequest) => {
     let errorMessage = "Lỗi tạo tài khoản không xác định.";
     try {
-      const newUser = await createNewUser(payload);
+      const newUser = await createNewUser(payload as UserRequest);
       setUsers((prev) => [...prev, newUser]);
       setModalOpen(false);
       setToast("Tạo tài khoản thành công");
@@ -85,6 +86,7 @@ export default function AdminUsersPage() {
             const apiError = err.response.data as { message: string };
             errorMessage = apiError.message || errorMessage;
         }
+      throw new Error(errorMessage);
     }
   };
 

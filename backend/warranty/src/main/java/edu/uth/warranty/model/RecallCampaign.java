@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Getter
@@ -27,6 +28,9 @@ public class RecallCampaign {
     
     @Column(name = "end_date")
     private LocalDate endDate;
+
+    @OneToMany(mappedBy = "campaign", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<CampaignVehicle> vehiclesInCampaign;
 
     public RecallCampaign(Long campaignId) {
         this.campaignId = campaignId;
