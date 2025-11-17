@@ -2,10 +2,9 @@ package edu.uth.warranty.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,7 +29,6 @@ public class VehicleRequest {
     private String model;
 
     @NotNull(message = "Năm sản xuất là bắt buộc")
-    @Min(value = 1900, message = "Năm sản xuất không hợp lệ")
-    @Max(value = 2100, message = "Năm sản xuất không hợp lệ")
+    @Pattern(regexp = "^(19[0-9]{2}|20[0-9]{2}|2100)$", message = "Năm sản xuất phải từ 1900 đến 2100")
     private String year;
 }
