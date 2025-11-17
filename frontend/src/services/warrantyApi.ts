@@ -1,8 +1,19 @@
 import axios, { AxiosResponse } from 'axios';
 
-import { LoginRequest, LoginResponse, RecallCampaignRequest, RecallCampaignResponse, ClaimApprovalResponse, UserResponse } from '@/types/warranty';
+import { 
+  LoginRequest, 
+  LoginResponse, 
+  RecallCampaignRequest, 
+  RecallCampaignResponse, 
+  ClaimApprovalResponse, 
+  UserResponse, 
+  UserRole,
+  RegisterResponse, 
+  UserRequest, // UserRequest và RegisterResponse cần cho chức năng đăng ký
+  RegisterRequest // Cần import RegisterRequest nếu hàm registerUser dùng nó
+} from '@/types/warranty';
 
-import { CreateUserPayload, UserRoleBackend } from '@/types/admin';
+import { CreateUserPayload } from '@/types/admin';
 
 const BASE_URL = 'http://localhost:8080/api';
 
@@ -22,6 +33,25 @@ export const loginUser = async (loginRequest: LoginRequest): Promise<LoginRespon
     if(axios.isAxiosError(error) && error.response) {
       const backendError = error.response.data as {message?: string};
       throw new Error(backendError.message || 'Tên đăng nhập hoặc mật khẩu không đúng.');
+    }
+    throw new Error('Không thể kết nối đến máy chủ.');
+  }
+};
+
+export const registerUser = async (registerRequest: RegisterRequest): Promise<RegisterResponse> => {
+  try {
+    const payload: UserRequest = {
+      username : registerRequest.username,
+      password : registerRequest.password,
+      role: "SC_Staff" as UserRole
+
+    };
+    const response: AxiosResponse<RegisterResponse> = await apiClient.post(`${BASE_URL}/auth/register`, payload);
+    return response.data;
+  } catch(error) {
+    if(axios.isAxiosError(error) && error.response) {
+      const backendError = error.response.data as {message?: string};
+      throw new Error(backendError.message || 'Lỗi đăng ký người dùng.');
     }
     throw new Error('Không thể kết nối đến máy chủ.');
   }
@@ -81,3 +111,4 @@ export const updateClaimApprovalStatus = async (claimId: number, newStatus: 'APP
       throw new Error('Không thể cập nhật trạng thái claim.');
   }
 };
+

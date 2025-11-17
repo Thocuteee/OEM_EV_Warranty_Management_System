@@ -23,7 +23,7 @@ public class User {
     @Column(name = "username", nullable = false, unique = true)
     private String username;
 
-    @Column(name = "user_password", nullable = false, unique = true)
+    @Column(name = "user_password", nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)

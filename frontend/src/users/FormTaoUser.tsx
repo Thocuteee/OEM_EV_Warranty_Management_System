@@ -10,7 +10,6 @@ interface FormTaoUserProps {
   onClose: () => void;
 }
 
-// FIX 1: Khai báo roleOptions sử dụng kiểu UserRoleBackend chính xác
 const roleOptions: { label: string; value: UserRoleBackend }[] = [
   { label: 'Admin', value: 'ADMIN' },
   { label: 'EVM Staff', value: 'EVM_STAFF' },
@@ -38,13 +37,8 @@ const FormTaoUser: React.FC<FormTaoUserProps> = ({ onSuccess, onClose }) => {
         if (name === 'role') {
             return { ...prev, role: value as UserRoleBackend }; 
         }
-        
-        // FIX 4: Xử lý các trường string còn lại ('username', 'password')
-        // Sử dụng 'as keyof CreateUserPayload' để thông báo cho TypeScript rằng 'name' là khóa hợp lệ
-        return { 
-            ...prev, 
-            [name as keyof CreateUserPayload]: value 
-        };
+
+        return { ...prev, [name as keyof CreateUserPayload]: value };
     });
   };
 

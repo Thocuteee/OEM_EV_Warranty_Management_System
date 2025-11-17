@@ -48,10 +48,14 @@ export default function Register() {
 
     // 2. Gọi API đăng ký (BƯỚC NÀY CẦN BẠN TẠO HÀM `registerUser` TRONG `warrantyApi.ts`)
     try {
-      // Ví dụ: Giả định bạn có hàm registerUser
-      // await registerUser({ fullName, username, password });
+        const userToRegister = {
+            username: username,
+            password: password,
+            // Giả định role là SC_STAFF cho người dùng tự đăng ký. 
+            // Bạn có thể cần chỉnh sửa tuỳ theo nghiệp vụ
+            role: 'SC_STAFF', 
+        };
 
-      // Nếu thành công:
         setSuccess("Đăng ký thành công! Bạn sẽ được chuyển hướng đến trang đăng nhập.");
         // Chuyển hướng sau 3 giây
         setTimeout(() => {
