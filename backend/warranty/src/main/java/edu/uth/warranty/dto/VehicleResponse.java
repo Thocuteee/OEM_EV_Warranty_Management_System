@@ -11,7 +11,7 @@ public class VehicleResponse {
     private Long id;
     private String VIN;
     private String model;
-    private Integer year;
+    private String year;
 
     // Thông tin Chủ sở hữu (ID và Tên để hiển thị)
     private Long customerId;

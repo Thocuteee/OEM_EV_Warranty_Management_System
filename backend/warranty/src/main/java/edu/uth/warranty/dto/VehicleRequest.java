@@ -32,5 +32,5 @@ public class VehicleRequest {
     @NotNull(message = "Năm sản xuất là bắt buộc")
     @Min(value = 1900, message = "Năm sản xuất không hợp lệ")
     @Max(value = 2100, message = "Năm sản xuất không hợp lệ")
-    private Integer year;
+    private String year;
 }
