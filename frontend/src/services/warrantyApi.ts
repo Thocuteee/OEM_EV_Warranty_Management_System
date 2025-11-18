@@ -1,34 +1,32 @@
-import axios, { AxiosResponse } from 'axios';
+// frontend/src/services/warrantyApi.ts
+// FILE NÀY CHỈ GIỮ LẠI KHAI BÁO CLIENT VÀ INTERCEPTOR
 
-import { 
-  LoginRequest, 
-  LoginResponse, 
-  RecallCampaignRequest, 
-  RecallCampaignResponse, 
-  ClaimApprovalResponse, 
-  UserResponse, 
-  UserRequest,
-} from '@/types/warranty';
+import axios, { AxiosResponse } from 'axios';
+import { LoginRequest, LoginResponse, UserResponse } from '@/types/warranty'; 
 
 const BASE_URL = 'http://localhost:8080/api';
 
-const apiClient = axios.create({
+// 1. KHỞI TẠO INSTANCE CÓ INTERCEPTOR
+export const apiClient = axios.create({
     baseURL: BASE_URL, 
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
-// THÊM INTERCEPTOR ĐỂ GỬI TOKEN TỰ ĐỘNG
+// 2. THÊM INTERCEPTOR ĐỂ GỬI TOKEN TỰ ĐỘNG
 apiClient.interceptors.request.use((config) => {
-    // Lấy token từ localStorage (nơi bạn lưu trong AuthContext)
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
-        const user = JSON.parse(savedUser);
-        const token = user.token; 
-        
-        if (token && config.url !== `${BASE_URL}/auth/login`) { // Không gửi token khi login
-            config.headers.Authorization = `Bearer ${token}`;
+        try {
+            const user = JSON.parse(savedUser);
+            const token = user.token; 
+            
+            if (token && !config.url?.includes('/auth/login')) { 
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+        } catch (e) {
+            console.error("Lỗi parse user từ localStorage:", e);
         }
     }
     return config;
@@ -36,9 +34,11 @@ apiClient.interceptors.request.use((config) => {
     return Promise.reject(error);
 });
 
-// --- Auth API ---
+
+// 3. API: POST /api/auth/login
 export const loginUser = async (loginRequest: LoginRequest): Promise<LoginResponse> => {
   try {
+    // Dùng axios TRỰC TIẾP để tránh vòng lặp interceptor và lỗi BASE_URL
     const response: AxiosResponse<LoginResponse> = await axios.post(`${BASE_URL}/auth/login`, loginRequest);
     return response.data;
   } catch(error) {
@@ -50,58 +50,21 @@ export const loginUser = async (loginRequest: LoginRequest): Promise<LoginRespon
   }
 };
 
-
-// 1. GET: Lấy tất cả User
+// 4. API: GET /api/users (Vẫn giữ ở đây hoặc chuyển sang userService)
 export const getAllUsers = async (): Promise<UserResponse[]> => {
-  const response = await apiClient.get<UserResponse[]>('/users');
-  return response.data;
-
+    const response = await apiClient.get<UserResponse[]>('/users');
+    return response.data;
 };
 
-// 2. POST: Tạo User mới (Dành cho Admin)
-export const createNewUser = async (userData: UserRequest): Promise<UserResponse> => {
-  const response = await apiClient.post<UserResponse>('/users', userData);
-  return response.data;
-
-};
-
-// 3. DELETE: Xóa User
-export const deleteUser = async (id: number): Promise<void> => {
-  await apiClient.delete(`/users/${id}`);
-};
-
-// Campaign API
-// 1. GET: Lấy tất cả RecallCampaign
-export const getCampaign = async (): Promise<RecallCampaignResponse[]> => {
-  const response = await apiClient.get<RecallCampaignResponse[]>('/campaigns');
-  return response.data;
-};
-
-// 1. POST: Tạo RecallCampaign mới
-export const createCampaign = async (campaignData:RecallCampaignRequest): Promise<RecallCampaignResponse[]> => {
-  const response = await apiClient.post<RecallCampaignResponse[]>('/campaigns', campaignData);
-  return response.data;
+// 5. API: POST /api/users (Vẫn giữ ở đây hoặc chuyển sang userService)
+export const createNewUser = async (userData: any): Promise<UserResponse> => {
+    // Ép kiểu UserRequest hoặc FullUserCreationRequest đã có
+    const response = await apiClient.post<UserResponse>('/users', userData);
+    return response.data;
 }
 
-// Claim Approval API
-export const getPendingClaims = async (): Promise<ClaimApprovalResponse[]> => {
-  try {
-    const response = await apiClient.get<ClaimApprovalResponse[]>('/claims/search', {params: { approvalStatus: 'PENDING' }});
-    // LƯU Ý: Vẫn cần lọc Claim có status là 'SENT' (đã gửi)
-    return response.data.filter(claim => claim.status === 'SENT'); 
-  } catch (error) {
-      console.error("Lỗi khi lấy danh sách claim chờ duyệt:", error);
-      throw new Error('Không thể tải danh sách claim.');
-  }
-};
-
-export const updateClaimApprovalStatus = async (claimId: number, newStatus: 'APPROVED' | 'REJECTED'): Promise<ClaimApprovalResponse> => {
-  try {
-    const response = await apiClient.put<ClaimApprovalResponse>(`/claims/${claimId}/status/approve`, { status: newStatus } );
-      return response.data;
-  } catch (error) {
-      console.error(`Lỗi khi ${newStatus} claim ${claimId}:`, error);
-      throw new Error('Không thể cập nhật trạng thái claim.');
-  }
+// 6. DELETE: Xóa User (Vẫn giữ ở đây hoặc chuyển sang userService)
+export const deleteUser = async (id: number): Promise<void> => {
+  await apiClient.delete(`/users/${id}`);
 };
 
