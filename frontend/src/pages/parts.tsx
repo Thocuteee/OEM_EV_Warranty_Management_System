@@ -108,7 +108,7 @@ export default function PartsPage() {
   const handleCreateSerial = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // TODO: Gọi API POST /api/part-serials
+      //: Gọi API POST /api/part-serials
       console.log('Tạo serial mới:', newSerial);
       // Giả sử thành công, thêm vào state (cần update mock hoặc API)
       const newSerialItem: SerialPart = {
@@ -131,7 +131,7 @@ export default function PartsPage() {
   const handleCreateInventory = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // TODO: Gọi API POST /api/inventory
+      //: Gọi API POST /api/inventory
       console.log('Nhập tồn kho mới:', newInventory);
       // Giả sử thành công, thêm vào state (cần update mock hoặc API)
       const newInventoryItem: InventoryItem = {
