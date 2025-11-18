@@ -16,4 +16,9 @@ public class VehicleResponse {
     // Thông tin Chủ sở hữu (ID và Tên để hiển thị)
     private Long customerId;
     private String customerName;
+
+    //Trạng thái và thông tin người đăng ký
+    private String registrationStatus;
+    private Long registeredByUserId;
+    private String registeredByUsername;
 }

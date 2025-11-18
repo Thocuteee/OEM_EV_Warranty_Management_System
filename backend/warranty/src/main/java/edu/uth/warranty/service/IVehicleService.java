@@ -27,4 +27,6 @@ public interface IVehicleService {
     Optional<Vehicle> getVehicleByModel(String model);
 
     List<Vehicle> getVehiclesByYear(String year);
+
+    Vehicle updateRegistrationStatus(Long vehicleId, String newStatus, Long approverUserId);
 }

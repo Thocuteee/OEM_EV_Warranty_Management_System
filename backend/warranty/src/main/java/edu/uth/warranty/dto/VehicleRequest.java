@@ -28,4 +28,7 @@ public class VehicleRequest {
     @NotBlank(message = "Năm sản xuất là bắt buộc")
     @Pattern(regexp = "^(19|20)\\d{2}$", message = "Năm sản xuất không hợp lệ") 
     private String year;
+
+    @NotNull(message = "ID người đăng ký là bắt buộc")
+    private Long registeredByUserId;
 }

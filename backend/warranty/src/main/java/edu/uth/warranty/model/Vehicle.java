@@ -26,7 +26,7 @@ public class Vehicle {
     @Column(name = "VIN", nullable = false, unique = true)
     private String VIN;
 
-    @Column(name = "model", nullable = false, unique = true)
+    @Column(name = "model", nullable = false)
     private String model;
     
     @Column(name = "year", nullable = false)
@@ -39,5 +39,12 @@ public class Vehicle {
         this.vehicleId = vehicleId;
     }
     
+    @Column(name = "registration_status", nullable = false)
+    private String registrationStatus = "PENDING";
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "registered_by_user_id") // Người đã tạo yêu cầu đăng ký
+    private User registeredBy;
+
+    
 }
