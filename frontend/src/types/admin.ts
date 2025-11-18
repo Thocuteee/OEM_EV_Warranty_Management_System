@@ -1,4 +1,4 @@
-import { UserRequest } from '@/types/warranty';
+import { UserRequest } from '@/types/user';
 
 
 export type UserRoleBackend = 'ADMIN' | 'EVM_STAFF' | 'SC_STAFF' | 'SC_TECHNICIAN';

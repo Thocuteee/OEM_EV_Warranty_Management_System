@@ -74,7 +74,7 @@ export default function AdminVehiclesPage() {
     const handleSaveVehicle = async (payload: VehicleRequest) => {
         let errorMessage = "Lỗi tạo/cập nhật xe không xác định.";
         try {
-            let savedVehicle;
+            let savedVehicle:VehicleResponse;
             if (payload.id) {
                 // Cập nhật
                 savedVehicle = await updateVehicle(payload.id as number, payload);

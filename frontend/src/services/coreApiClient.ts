@@ -1,7 +1,7 @@
 // frontend/src/services/coreApiClient.ts (Đổi tên từ warrantyApi.ts)
 
 import axios, { AxiosResponse } from 'axios';
-import { LoginRequest, LoginResponse } from '@/types/warranty'; 
+import { LoginRequest, LoginResponse } from '@/types/auth'; 
 
 export const BASE_URL = 'http://localhost:8080/api';
 

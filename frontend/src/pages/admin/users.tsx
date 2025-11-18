@@ -2,7 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
-import { UserRequest, UserResponse, UserRole } from "@/types/warranty";
+import { UserRequest, UserResponse} from "@/types/user";
+import {UserRole} from "@/types/auth";
 import { FullUserCreationRequest } from "@/types/admin";
 // THÊM: Import axios để xử lý lỗi HTTP
 import axios from "axios";
@@ -10,7 +11,7 @@ import {
   getAllUsers,
   deleteUser,
   createNewUser,
-} from "@/services/coreApiClient";
+} from "@/services/modules/userService";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
 import { FormTaoUser, UserManagementTable } from "@/users";

@@ -4,7 +4,7 @@ import React from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
-import { UserRole } from "@/types/warranty";
+import { UserRole } from "@/types/auth";
 
 export default function AdminDashboard() {
   const { user, isAuthenticated } = useAuth();
