@@ -46,5 +46,13 @@ public class Vehicle {
     @JoinColumn(name = "registered_by_user_id") // Người đã tạo yêu cầu đăng ký
     private User registeredBy;
 
-    
+    public Vehicle(Long vehicleId, Customer customer, String VIN, String model, String year, String registrationStatus, User registeredBy) {
+    this.vehicleId = vehicleId;
+    this.customer = customer;
+    this.VIN = VIN;
+    this.model = model;
+    this.year = year;
+    this.registrationStatus = registrationStatus;
+    this.registeredBy = registeredBy;
+}
 }
