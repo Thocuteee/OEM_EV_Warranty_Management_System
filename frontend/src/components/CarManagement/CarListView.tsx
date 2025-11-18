@@ -4,50 +4,55 @@
 
 import React, { useState, useMemo, ChangeEvent, useEffect } from 'react';
 import Link from 'next/link';
-
+// Import types đã tách
 import { VehicleResponse } from '@/types/vehicle'; 
-
+// Import service thực tế
 import { getAllVehicles } from '@/services/modules/vehicleService'; 
 import axios from 'axios';
 
-
+// FIX 1: Định nghĩa CarFilter (hoặc import từ types/index nếu có)
 interface CarFilter {
     vin: string;
     customer: string;
-    model?: string;
-    year?: string;
 }
 
 const CarListView: React.FC = () => {
+    // 💡 SỬ DỤNG STATE THỰC TẾ
     const [vehicles, setVehicles] = useState<VehicleResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
+    // FIX 2: Dùng CarFilter thay vì any
     const [searchTerm, setSearchTerm] = useState<CarFilter>({
         vin: '',
         customer: '',
-        model: '', 
-        year: ''
-    } as CarFilter); 
-    
+    }); 
+
+    // FIX 3: THÊM HÀM handleSearchChange BỊ THIẾU
     const handleSearchChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-
+        // Cập nhật state tìm kiếm động (FIX LỖI 'any' trong hàm)
         setSearchTerm(prev => ({ 
             ...prev, 
             [name as keyof CarFilter]: value 
         } as CarFilter));
     };
 
+
+    // ---------------------------------------
+    // LOAD DATA THỰC TẾ TỪ BACKEND
+    // ---------------------------------------
     useEffect(() => {
         const loadData = async () => {
             setIsLoading(true);
             setError(null);
             try {
+                // SỬ DỤNG SERVICE ĐÃ HOÀN THIỆN
                 const data = await getAllVehicles(); 
                 setVehicles(data);
             } catch (err) {
                 console.error("Lỗi tải danh sách xe:", err);
+                // Xử lý lỗi API để hiển thị thông báo
                 let errorMessage = "Không thể tải dữ liệu xe từ máy chủ.";
                 if (axios.isAxiosError(err) && err.response && err.response.data.message) {
                     errorMessage = err.response.data.message;
@@ -66,9 +71,8 @@ const CarListView: React.FC = () => {
         const customerKeyword = searchTerm.customer.toLowerCase();
     
         return vehicles.filter(car => 
-            // Lọc theo VIN, Model (Thêm cả Model vào lọc)
+            // Lọc theo VIN hoặc CustomerName
             car.VIN.toLowerCase().includes(vinKeyword) || 
-            (car.model && car.model.toLowerCase().includes(searchTerm.model?.toLowerCase() || '')) ||
             (car.customerName && car.customerName.toLowerCase().includes(customerKeyword))
         );
     
