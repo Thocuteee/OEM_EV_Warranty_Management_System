@@ -76,3 +76,21 @@ export const createClaim = async (claimData) => {
   });
   return response.json();
 };
+
+// Chuyển từ DRAFT → SENT
+export const sendClaimToEVM = async (claimId: number) => {
+  const res = await fetch(`/api/claims/${claimId}/status/send`, {
+    method: "PUT",
+  });
+  if (!res.ok) throw new Error("Không thể gửi Claim");
+  return res.json();
+};
+
+// Chuyển từ IN_PROCESS → COMPLETED
+export const completeClaimRepair = async (claimId: number) => {
+  const res = await fetch(`/api/claims/${claimId}/status/complete`, {
+    method: "PUT",
+  });
+  if (!res.ok) throw new Error("Không thể hoàn tất Claim");
+  return res.json();
+};

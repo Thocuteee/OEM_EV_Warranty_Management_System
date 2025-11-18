@@ -33,6 +33,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
  const sidebarMenuItems = [
   { name: "Dashboard", icon: "🏠", href: "/" },
   { name: "Quản lý Xe", icon: "🚗", href: "/vehicles" },
+  { name: "Khách hàng", icon: "👥", href: "/customers" },
   { name: "Yêu cầu Bảo hành", icon: "📋", href: "/warranty-request" },
   { name: "Linh kiện & Phụ tùng", icon: "⚙️", href: "/parts" },
   { name: "Báo cáo", icon: "📊", href: "/reports" },
