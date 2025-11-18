@@ -74,7 +74,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit,
             VIN: formState.VIN,
             model: formState.model,
             customerId: formState.customerId as number,
-            registeredByUserId: initialData?.registeredByUserId || currentUserId,
+            registeredByUserId: (initialData?.registeredByUserId || currentUserId) as number,
         };
 
         // Kiểm tra xem customerId có tồn tại hay không

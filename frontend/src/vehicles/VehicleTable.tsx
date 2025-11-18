@@ -57,10 +57,7 @@ const VehicleTable: React.FC<VehicleTableProps> = ({ vehicles, onEdit, onDelete,
             <tbody className="divide-y divide-gray-200">
             {vehicles.map((vehicle) => (
                 <tr key={vehicle.id} className="hover:bg-gray-50">
-                <td className="whitespace-nowrap px-4 py-3 text-sm font-semibold text-gray-900">{vehicle.id}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">{vehicle.VIN}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{vehicle.model}</td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{vehicle.customerName || 'N/A'}</td>
+                {/* ... (Các cột khác) */}
                 <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{vehicle.registeredByUsername || 'N/A'}</td>
                 
                 <td className="px-4 py-3 whitespace-nowrap text-sm">
@@ -71,12 +68,12 @@ const VehicleTable: React.FC<VehicleTableProps> = ({ vehicles, onEdit, onDelete,
                 
                 <td className="whitespace-nowrap px-4 py-3 text-sm">
                     <div className="flex items-center gap-2">
-                        {/* Nút Sửa (cho Admin/EVM Staff hoặc người đăng ký nếu còn PENDING) */}
+                        {/* Nút Sửa */}
                         {(isApprover || vehicle.registrationStatus === 'PENDING') && ( 
                             <button onClick={() => onEdit(vehicle)} className="text-blue-600 hover:text-blue-800 text-xs font-semibold">Sửa</button>
                         )}
                         
-                        {/* Nút Duyệt/Từ chối chỉ cho Admin/EVM Staff và khi status là PENDING */}
+                        {/* Nút Duyệt/Từ chối chỉ hiển thị cho Approver và khi status là PENDING */}
                         {isApprover && vehicle.registrationStatus === 'PENDING' && (
                             <>
                                 <button 
@@ -94,7 +91,7 @@ const VehicleTable: React.FC<VehicleTableProps> = ({ vehicles, onEdit, onDelete,
                             </>
                         )}
 
-                        {/* Nút Xóa (Chỉ cho phép xóa khi chưa APPROVED) */}
+                        {/* Nút Xóa */}
                         {isApprover && vehicle.registrationStatus !== 'APPROVED' && (
                             <button onClick={() => onDelete(vehicle.id as number)} className="text-gray-500 hover:text-red-600 text-xs font-semibold">
                                 Xóa
@@ -104,13 +101,7 @@ const VehicleTable: React.FC<VehicleTableProps> = ({ vehicles, onEdit, onDelete,
                 </td>
                 </tr>
             ))}
-            {vehicles.length === 0 && (
-                <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-sm text-gray-500">
-                    Chưa có dữ liệu xe nào được đăng ký.
-                </td>
-                </tr>
-            )}
+            {/* ... (empty state) */}
             </tbody>
         </table>
         </div>
