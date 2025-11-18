@@ -31,9 +31,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const sidebarMenuItems: SidebarItem[] = [
     { name: "Dashboard", icon: "🏠", href: "/" },
-    { name: "Quản lý Xe", icon: "🚗", href: "/cars" },
+
+    { 
+      name: "Quản lý Xe", 
+      icon: "🚗", 
+      href: "/cars", 
+      roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"], 
+        },
+
     { name: "Yêu cầu Bảo hành", icon: "📋", href: "#" },
+
     { name: "Linh kiện & Phụ tùng", icon: "⚙️", href: "#" },
+
     { name: "Báo cáo", icon: "📊", href: "#" },
     {
       name: "Quản trị Hệ thống",
