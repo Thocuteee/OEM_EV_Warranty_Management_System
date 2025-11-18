@@ -56,9 +56,6 @@ export default function AdminVehiclesPage() {
         loadVehicles();
     }, [user]);
 
-    // ---------------------------------------
-    // Lọc xe
-    // ---------------------------------------
     const filteredVehicles = useMemo(() => {
         const keyword = searchKeyword.toLowerCase();
         return vehicles.filter(v => 
@@ -67,10 +64,6 @@ export default function AdminVehiclesPage() {
         );
     }, [vehicles, searchKeyword]);
 
-
-    // ---------------------------------------
-    // Xử lý tạo/cập nhật (Save/Update Handler)
-    // ---------------------------------------
     const handleSaveVehicle = async (payload: VehicleRequest) => {
         let errorMessage = "Lỗi tạo/cập nhật xe không xác định.";
         try {
@@ -148,6 +141,7 @@ export default function AdminVehiclesPage() {
                     vehicles={filteredVehicles}
                     onEdit={(v) => { setEditingVehicle(v); setModalOpen(true); }}
                     onDelete={handleDeleteVehicle}
+                    onRefresh={loadVehicles}
                 />
             )}
 
@@ -155,13 +149,12 @@ export default function AdminVehiclesPage() {
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
                     <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl">
-                        <h2 className="text-2xl font-bold mb-4">
-                            {editingVehicle ? "Cập nhật Thông tin Xe" : "Đăng ký Xe mới"}
-                        </h2>
+                        {/* ... */}
                         <VehicleForm
                             initialData={editingVehicle}
                             onSubmit={handleSaveVehicle}
                             onClose={() => { setModalOpen(false); setEditingVehicle(null); }}
+                            currentUserId={user.id} // <--- THÊM PROP QUAN TRỌNG NÀY
                         />
                     </div>
                 </div>

@@ -1,3 +1,5 @@
+// frontend/src/vehicles/VehicleForm.tsx
+
 import React, { useState, useEffect } from 'react';
 import { VehicleRequest, VehicleResponse } from '@/types/vehicle'; 
 import { CustomerResponse } from '@/types/customer';
@@ -7,9 +9,10 @@ interface VehicleFormProps {
     initialData?: VehicleRequest | null;
     onSubmit: (payload: VehicleRequest) => Promise<void>;
     onClose: () => void;
+    currentUserId: number;
 }
 
-const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit, onClose }) => {
+const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit, onClose, currentUserId }) => {
     const isEditing = initialData && initialData.id !== undefined;
     const [customers, setCustomers] = useState<CustomerResponse[]>([]);
     const [loadingCustomers, setLoadingCustomers] = useState(true);
@@ -19,6 +22,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit,
     const [formState, setFormState] = useState<VehicleRequest>({
         id: initialData?.id || undefined,
         customerId: initialData?.customerId || undefined,
+        registeredByUserId: initialData?.registeredByUserId || currentUserId,
         VIN: initialData?.VIN || '',
         model: initialData?.model || '',
         year: initialData?.year || '',
@@ -50,6 +54,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit,
         
         let processedValue: string | number | undefined = value;
         if (name === 'customerId' || name === 'id') {
+            // Chuyển string value thành number, hoặc undefined nếu rỗng
             processedValue = value ? parseInt(value) : undefined;
         }
 
@@ -68,11 +73,12 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit,
             ...formState,
             VIN: formState.VIN,
             model: formState.model,
-            // Nếu customerId là undefined, nó sẽ bị bắt ở validation
-            customerId: formState.customerId as number
+            customerId: formState.customerId as number,
+            registeredByUserId: initialData?.registeredByUserId || currentUserId,
         };
 
-        if(payloadtoSend.customerId) {
+        // Kiểm tra xem customerId có tồn tại hay không
+        if (!payloadtoSend.customerId) { // Nếu customerId là undefined/null/0
             setError("Vui lòng chọn Chủ sở hữu xe.");
             setLoading(false);
             return;
@@ -133,8 +139,9 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit,
                         required
                         disabled={loadingCustomers}
                     >
-                        {loadingCustomers && <option value="">Đang tải khách hàng...</option>}
-                        {!loadingCustomers && customers.length === 0 && <option value="">Chưa có khách hàng nào</option>}
+                        <option value="">-- Chọn Chủ sở hữu --</option>
+                        {loadingCustomers && <option value="" disabled>Đang tải khách hàng...</option>}
+                        {!loadingCustomers && customers.length === 0 && <option value="" disabled>Chưa có khách hàng nào</option>}
                         {customers.map(c => (
                             <option key={c.id} value={c.id}>
                                 {c.name} ({c.email})

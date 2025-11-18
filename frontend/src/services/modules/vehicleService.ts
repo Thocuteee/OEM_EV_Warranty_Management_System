@@ -29,3 +29,8 @@ export const getVehicleById = async (id: number): Promise<VehicleResponse> => {
   const response = await apiClient.get<VehicleResponse>(`/vehicles/${id}`);
   return response.data;
 };
+
+export const updateVehicleRegistrationStatus = async (id: number, newStatus: 'APPROVED' | 'REJECTED', approverUserId: number): Promise<VehicleResponse> => {
+  const response = await apiClient.put<VehicleResponse>(`/vehicles/${id}/status?newStatus=${newStatus}&approverUserId=${approverUserId}`);
+  return response.data;
+};

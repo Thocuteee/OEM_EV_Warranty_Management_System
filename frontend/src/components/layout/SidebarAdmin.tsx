@@ -12,6 +12,7 @@
     const menu = [
         { name: "Dashboard", href: "/admin", icon: "📊" },
         { name: "Quản lý Users", href: "/admin/users", icon: "👤" },
+        { name: "Quản lý Khách hàng", href: "/admin/customers", icon: "👥" },
         { name: "Quản lý Xe", href: "/admin/vehicles", icon: "🚗" },
         { name: "Chiến dịch", href: "/admin/campaigns", icon: "🚗" },
         { name: "Claim", href: "/admin/claims", icon: "📩" },
