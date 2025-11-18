@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, ReactNode } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
@@ -32,7 +31,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   const sidebarMenuItems: SidebarItem[] = [
     { name: "Dashboard", icon: "🏠", href: "/" },
-    { name: "Quản lý Xe", icon: "🚗", href: "#" },
+    { name: "Quản lý Xe", icon: "🚗", href: "/cars" },
     { name: "Yêu cầu Bảo hành", icon: "📋", href: "#" },
     { name: "Linh kiện & Phụ tùng", icon: "⚙️", href: "#" },
     { name: "Báo cáo", icon: "📊", href: "#" },
