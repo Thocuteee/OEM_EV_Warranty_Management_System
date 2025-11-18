@@ -1,5 +1,5 @@
 import { apiClient } from '../coreApiClient';
-import { CustomerResponse } from '@/types/warranty';
+import { CustomerResponse } from '@/types/customer';
 
 // GET: Lấy tất cả Khách hàng (Cần cho dropdown trong VehicleForm)
 export const getAllCustomers = async (): Promise<CustomerResponse[]> => {

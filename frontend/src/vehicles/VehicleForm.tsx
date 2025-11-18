@@ -1,7 +1,6 @@
-// frontend/src/vehicles/VehicleForm.tsx
-
 import React, { useState, useEffect } from 'react';
-import { VehicleRequest, CustomerResponse } from '@/types/warranty';
+import { VehicleRequest, VehicleResponse } from '@/types/vehicle'; 
+import { CustomerResponse } from '@/types/customer';
 import { getAllCustomers } from '@/services/modules/customerService'; 
 
 interface VehicleFormProps {
@@ -9,7 +8,6 @@ interface VehicleFormProps {
     onSubmit: (payload: VehicleRequest) => Promise<void>;
     onClose: () => void;
 }
-
 
 const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit, onClose }) => {
     const isEditing = initialData && initialData.id !== undefined;
@@ -52,7 +50,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit,
         
         let processedValue: string | number | undefined = value;
         if (name === 'customerId' || name === 'id') {
-            processedValue = parseInt(value) || undefined;
+            processedValue = value ? parseInt(value) : undefined;
         }
 
         setFormState(prev => ({
@@ -66,17 +64,34 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit,
         setError('');
         setLoading(true);
 
-        if (!formState.customerId) {
+        const payloadtoSend : VehicleRequest = {
+            ...formState,
+            VIN: formState.VIN,
+            model: formState.model,
+            // Nếu customerId là undefined, nó sẽ bị bắt ở validation
+            customerId: formState.customerId as number
+        };
+
+        if(payloadtoSend.customerId) {
             setError("Vui lòng chọn Chủ sở hữu xe.");
             setLoading(false);
             return;
         }
         
         try {
-            await onSubmit(formState);
+            await onSubmit(payloadtoSend);
             onClose();
-        } catch (err: any) {
-            setError(err.message || "Lỗi không xác định khi lưu dữ liệu xe.");
+        } catch (err: unknown) {
+            let errorMessage = "Lỗi không xác định khi lưu dữ liệu xe.";
+
+            if(err instanceof Error) {
+                errorMessage = err.message;
+            } else if (typeof err === 'object' && err !== null && 'message' in err) {
+                errorMessage = (err as { message: string }).message || errorMessage;
+            } else {
+                errorMessage = "Lỗi kết nối hoặc lỗi Backend không xác định.";
+            }
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }

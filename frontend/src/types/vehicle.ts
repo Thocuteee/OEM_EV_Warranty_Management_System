@@ -1,6 +1,6 @@
 export interface VehicleRequest {
     id?: number; 
-    customerId: number; // FK
+    customerId?: number; // FK
     VIN: string;
     model: string;
     year: string;

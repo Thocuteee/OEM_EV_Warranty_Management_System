@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
 
 // IMPORT SERVICE MỚI
-import { getAllVehicles, createVehicle, updateVehicle, deleteVehicle } from "@/services/vehicleService";
+import { getAllVehicles, createVehicle, updateVehicle, deleteVehicle } from "@/services/modules/vehicleService";
 // IMPORT COMPONENTS MỚI
 import VehicleForm from "@/vehicles/VehicleForm";
 import VehicleTable from "@/vehicles/VehicleTable";
@@ -25,9 +25,6 @@ export default function AdminVehiclesPage() {
     const [isModalOpen, setModalOpen] = useState(false);
     const [editingVehicle, setEditingVehicle] = useState<VehicleResponse | null>(null);
 
-    // ---------------------------------------
-    // Bảo vệ route (Admin/EVM Staff)
-    // ---------------------------------------
     useEffect(() => {
         if (!isAuthenticated) {
             router.push("/login");
@@ -65,9 +62,9 @@ export default function AdminVehiclesPage() {
     const filteredVehicles = useMemo(() => {
         const keyword = searchKeyword.toLowerCase();
         return vehicles.filter(v => 
-             v.VIN.toLowerCase().includes(keyword) || 
-             v.model.toLowerCase().includes(keyword)
-         );
+            v.VIN.toLowerCase().includes(keyword) || 
+            v.model.toLowerCase().includes(keyword)
+        );
     }, [vehicles, searchKeyword]);
 
 
@@ -128,7 +125,7 @@ export default function AdminVehiclesPage() {
 
             <div className="flex justify-between mb-4">
                  {/* Search bar */}
-                 <input 
+                <input 
                     placeholder="Tìm theo VIN, Model..." 
                     className="border rounded px-3 py-2 w-1/3"
                     value={searchKeyword}
