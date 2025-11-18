@@ -1,6 +1,4 @@
-// frontend/src/services/customerService.ts
-
-import { apiClient } from './warrantyApi';
+import { apiClient } from '../coreApiClient';
 import { CustomerResponse } from '@/types/warranty';
 
 // GET: Lấy tất cả Khách hàng (Cần cho dropdown trong VehicleForm)

@@ -1,18 +1,17 @@
-// frontend/src/pages/admin/vehicles.tsx
-
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
-import { VehicleRequest, VehicleResponse } from "@/types/warranty"; 
+import { VehicleRequest, VehicleResponse } from "@/types/vehicle"; 
 import axios from "axios"; 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
+
 // IMPORT SERVICE MỚI
 import { getAllVehicles, createVehicle, updateVehicle, deleteVehicle } from "@/services/vehicleService";
 // IMPORT COMPONENTS MỚI
-import VehicleForm from "@/vehicles/VehicleForm"; // Đảm bảo bạn đặt Form vào thư mục vehicles/
-import VehicleTable from "@/vehicles/VehicleTable"; // Đảm bảo bạn đặt Table vào thư mục vehicles/
+import VehicleForm from "@/vehicles/VehicleForm";
+import VehicleTable from "@/vehicles/VehicleTable";
 
 
 export default function AdminVehiclesPage() {
@@ -21,6 +20,7 @@ export default function AdminVehiclesPage() {
 
     const [vehicles, setVehicles] = useState<VehicleResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [searchKeyword, setSearchKeyword] = useState("");
     const [toast, setToast] = useState<string | null>(null);
     const [isModalOpen, setModalOpen] = useState(false);
     const [editingVehicle, setEditingVehicle] = useState<VehicleResponse | null>(null);
@@ -46,7 +46,7 @@ export default function AdminVehiclesPage() {
         if (!user) return;
         setIsLoading(true);
         try {
-            const data = await getAllVehicles();
+            const data = await getAllVehicles(); // Gọi service đã tách
             setVehicles(data);
         } catch {
             setToast("Không thể tải danh sách xe.");
@@ -59,12 +59,23 @@ export default function AdminVehiclesPage() {
         loadVehicles();
     }, [user]);
 
+    // ---------------------------------------
+    // Lọc xe
+    // ---------------------------------------
+    const filteredVehicles = useMemo(() => {
+        const keyword = searchKeyword.toLowerCase();
+        return vehicles.filter(v => 
+             v.VIN.toLowerCase().includes(keyword) || 
+             v.model.toLowerCase().includes(keyword)
+         );
+    }, [vehicles, searchKeyword]);
+
 
     // ---------------------------------------
-    // Tạo/Cập nhật xe mới
+    // Xử lý tạo/cập nhật (Save/Update Handler)
     // ---------------------------------------
     const handleSaveVehicle = async (payload: VehicleRequest) => {
-        let errorMessage = "Lỗi tạo xe không xác định.";
+        let errorMessage = "Lỗi tạo/cập nhật xe không xác định.";
         try {
             let savedVehicle;
             if (payload.id) {
@@ -89,7 +100,7 @@ export default function AdminVehiclesPage() {
             } else if (err instanceof Error) {
                 errorMessage = err.message;
             }
-            // Ném lỗi cho form hiển thị
+            // Ném lỗi cho form hiển thị (quan trọng)
             throw new Error(errorMessage); 
         }
     };
@@ -109,7 +120,6 @@ export default function AdminVehiclesPage() {
         }
     };
 
-
     if (!user) return null;
 
     return (
@@ -117,8 +127,13 @@ export default function AdminVehiclesPage() {
             <h1 className="text-3xl font-bold mb-4">Quản lý Xe</h1>
 
             <div className="flex justify-between mb-4">
-                 {/* Search bar sẽ được thêm vào sau */}
-                <input placeholder="Tìm theo VIN, Model..." className="border rounded px-3 py-2 w-1/3" disabled/>
+                 {/* Search bar */}
+                 <input 
+                    placeholder="Tìm theo VIN, Model..." 
+                    className="border rounded px-3 py-2 w-1/3"
+                    value={searchKeyword}
+                    onChange={(e) => setSearchKeyword(e.target.value)}
+                />
 
                 <button
                     onClick={() => { setEditingVehicle(null); setModalOpen(true); }}
@@ -133,7 +148,7 @@ export default function AdminVehiclesPage() {
                 <p>Đang tải danh sách xe...</p>
             ) : (
                 <VehicleTable
-                    vehicles={vehicles}
+                    vehicles={filteredVehicles}
                     onEdit={(v) => { setEditingVehicle(v); setModalOpen(true); }}
                     onDelete={handleDeleteVehicle}
                 />

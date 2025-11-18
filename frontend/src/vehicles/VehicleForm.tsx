@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { VehicleRequest, CustomerResponse } from '@/types/warranty';
-import { getAllCustomers } from '@/services/customerService'; 
+import { getAllCustomers } from '@/services/modules/customerService'; 
 
 interface VehicleFormProps {
     initialData?: VehicleRequest | null;
@@ -10,9 +10,6 @@ interface VehicleFormProps {
     onClose: () => void;
 }
 
-// FIX: Thêm class input-base và select-base vào globals.css nếu chưa có
-// Nếu không, bạn cần thay thế chúng bằng class Tailwind CSS tương ứng:
-// input-base: w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none
 
 const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit, onClose }) => {
     const isEditing = initialData && initialData.id !== undefined;
