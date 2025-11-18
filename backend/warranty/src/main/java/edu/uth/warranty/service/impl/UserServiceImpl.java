@@ -62,7 +62,7 @@ public class UserServiceImpl implements IUserService {
             }
         }
         
-        // 2. FIX LOGIC: Mã hóa mật khẩu nếu nó được cung cấp và KHÔNG rỗng
+        // 2. Mã hóa mật khẩu nếu nó được cung cấp và KHÔNG rỗng
         // [Lưu ý: Mật khẩu luôn được cung cấp trong RegisterRequest và UserRequest]
         if (user.getPassword() != null && !user.getPassword().isEmpty() && !user.getPassword().startsWith("$2a$")) { 
             // Kiểm tra thêm: nếu nó chưa được mã hóa (bắt đầu bằng $2a$ là đã mã hóa)
@@ -71,6 +71,15 @@ public class UserServiceImpl implements IUserService {
         }
     
         return userRepository.save(user);
+    }
+
+    @Override
+    public User registerUser(User user) {
+        if (user.getId() != null) {
+            throw new IllegalArgumentException("Lỗi đăng ký: User không thể có ID đã tồn tại.");
+        }
+        
+        return saveUser(user);
     }
 
     @Override
@@ -88,14 +97,4 @@ public class UserServiceImpl implements IUserService {
         return userRepository.existsByUsername(username);
     }
 
-    @Override
-    public User registerUser(User user) {
-        // Logic đăng ký: Đảm bảo User đang được tạo mới (không có ID)
-        if (user.getId() != null) {
-            throw new IllegalArgumentException("Lỗi đăng ký: User không thể có ID đã tồn tại.");
-        }
-        
-        // Tận dụng logic mã hóa mật khẩu và kiểm tra trùng lặp từ saveUser
-        return saveUser(user);
-    }
 }

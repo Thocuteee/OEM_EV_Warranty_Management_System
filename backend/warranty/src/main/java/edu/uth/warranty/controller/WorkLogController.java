@@ -8,11 +8,9 @@ import edu.uth.warranty.model.Technician;
 import edu.uth.warranty.model.WarrantyClaim;
 import edu.uth.warranty.service.IWorkLogService;
 import edu.uth.warranty.service.ITechnicianService;
-import edu.uth.warranty.service.IWarrantyClaimService;
 
 import org.springframework.http.HttpStatus; 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.method.P;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 

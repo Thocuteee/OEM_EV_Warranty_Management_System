@@ -1,5 +1,7 @@
 package edu.uth.warranty.model;
 
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,6 +31,9 @@ public class Vehicle {
     
     @Column(name = "year", nullable = false)
     private String year;
+
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<CampaignVehicle> campaignVehicles;
 
     public Vehicle(Long vehicleId) {
         this.vehicleId = vehicleId;

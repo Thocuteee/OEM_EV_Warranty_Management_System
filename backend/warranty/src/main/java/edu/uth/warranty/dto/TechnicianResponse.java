@@ -1,4 +1,4 @@
-ppackage edu.uth.warranty.dto;
+package edu.uth.warranty.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

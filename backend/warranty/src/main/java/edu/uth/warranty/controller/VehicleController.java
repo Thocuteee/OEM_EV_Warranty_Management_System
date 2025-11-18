@@ -42,12 +42,12 @@ public class VehicleController {
         }
         
         return new VehicleResponse(
-            vehicle.getVehicleId(), 
+            vehicle.getVehicleId(),
             vehicle.getVIN(),
             vehicle.getModel(),
             vehicle.getYear(),
             customerId,
-            customerName 
+            customerName
         );
     }
 

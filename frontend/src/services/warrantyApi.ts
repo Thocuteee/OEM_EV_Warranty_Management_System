@@ -1,43 +1,108 @@
-// Logic giao tiếp với Backend API (FE gọi BE)
-// Fetching data, axios calls
-
 import axios, { AxiosResponse } from 'axios';
-// Đảm bảo bạn đã định nghĩa RegisterRequest và RegisterResponse trong '@/types/warranty'
-import { RegisterRequest, RegisterResponse } from "@/types/warranty"; 
 
-// URL cơ sở của Backend Spring Boot
-// BASE_URL cho tất cả các endpoint liên quan đến xác thực (auth)
-const BASE_URL = 'http://localhost:8080/api/auth';
+import { 
+  LoginRequest, 
+  LoginResponse, 
+  RecallCampaignRequest, 
+  RecallCampaignResponse, 
+  ClaimApprovalResponse, 
+  UserResponse, 
+  UserRequest,
+} from '@/types/warranty';
 
-// --- Login Interfaces ---
-export interface LoginRequest {
-    username: string;
-    password: string;
-}
+const BASE_URL = 'http://localhost:8080/api';
 
-export interface LoginResponse {
-    id: number;
-    username: string;
-    role: string;
-    token: string;
-}
+const apiClient = axios.create({
+    baseURL: BASE_URL, 
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
 
-// --- Hàm gửi yêu cầu đăng nhập (Giữ nguyên) ---
-export const loginUser = async (loginRequest: LoginRequest): Promise<LoginResponse> => {
-    try {
-        const response: AxiosResponse<LoginResponse> = await axios.post(
-        `${BASE_URL}/login`, // Endpoint được định nghĩa trong AuthController
-        loginRequest 
-    );
-    return response.data;
-    } catch (error) {
-        if (axios.isAxiosError(error) && error.response) {
-        // Giả định lỗi backend trả về một object có trường message hoặc lỗi mặc định
-        const backendError = error.response.data as { message?: string };
-        throw new Error(backendError.message || 'Tên đăng nhập hoặc mật khẩu không đúng.');
+// THÊM INTERCEPTOR ĐỂ GỬI TOKEN TỰ ĐỘNG
+apiClient.interceptors.request.use((config) => {
+    // Lấy token từ localStorage (nơi bạn lưu trong AuthContext)
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+        const user = JSON.parse(savedUser);
+        const token = user.token; 
+        
+        if (token && config.url !== `${BASE_URL}/auth/login`) { // Không gửi token khi login
+            config.headers.Authorization = `Bearer ${token}`;
         }
-        throw new Error('Không thể kết nối đến máy chủ.');
     }
+    return config;
+}, (error) => {
+    return Promise.reject(error);
+});
+
+// --- Auth API ---
+export const loginUser = async (loginRequest: LoginRequest): Promise<LoginResponse> => {
+  try {
+    const response: AxiosResponse<LoginResponse> = await axios.post(`${BASE_URL}/auth/login`, loginRequest);
+    return response.data;
+  } catch(error) {
+    if(axios.isAxiosError(error) && error.response) {
+      const backendError = error.response.data as {message?: string};
+      throw new Error(backendError.message || 'Tên đăng nhập hoặc mật khẩu không đúng.');
+    }
+    throw new Error('Không thể kết nối đến máy chủ.');
+  }
+};
+
+
+// 1. GET: Lấy tất cả User
+export const getAllUsers = async (): Promise<UserResponse[]> => {
+  const response = await apiClient.get<UserResponse[]>('/users');
+  return response.data;
+
+};
+
+// 2. POST: Tạo User mới (Dành cho Admin)
+export const createNewUser = async (userData: UserRequest): Promise<UserResponse> => {
+  const response = await apiClient.post<UserResponse>('/users', userData);
+  return response.data;
+
+};
+
+// 3. DELETE: Xóa User
+export const deleteUser = async (id: number): Promise<void> => {
+  await apiClient.delete(`/users/${id}`);
+};
+
+// Campaign API
+// 1. GET: Lấy tất cả RecallCampaign
+export const getCampaign = async (): Promise<RecallCampaignResponse[]> => {
+  const response = await apiClient.get<RecallCampaignResponse[]>('/campaigns');
+  return response.data;
+};
+
+// 1. POST: Tạo RecallCampaign mới
+export const createCampaign = async (campaignData:RecallCampaignRequest): Promise<RecallCampaignResponse[]> => {
+  const response = await apiClient.post<RecallCampaignResponse[]>('/campaigns', campaignData);
+  return response.data;
+}
+
+// Claim Approval API
+export const getPendingClaims = async (): Promise<ClaimApprovalResponse[]> => {
+  try {
+    const response = await apiClient.get<ClaimApprovalResponse[]>('/claims/search', {params: { approvalStatus: 'PENDING' }});
+    // LƯU Ý: Vẫn cần lọc Claim có status là 'SENT' (đã gửi)
+    return response.data.filter(claim => claim.status === 'SENT'); 
+  } catch (error) {
+      console.error("Lỗi khi lấy danh sách claim chờ duyệt:", error);
+      throw new Error('Không thể tải danh sách claim.');
+  }
+};
+
+export const updateClaimApprovalStatus = async (claimId: number, newStatus: 'APPROVED' | 'REJECTED'): Promise<ClaimApprovalResponse> => {
+  try {
+    const response = await apiClient.put<ClaimApprovalResponse>(`/claims/${claimId}/status/approve`, { status: newStatus } );
+      return response.data;
+  } catch (error) {
+      console.error(`Lỗi khi ${newStatus} claim ${claimId}:`, error);
+      throw new Error('Không thể cập nhật trạng thái claim.');
+  }
 };
 
 // --- Hàm gửi yêu cầu đăng ký (MỚI) ---

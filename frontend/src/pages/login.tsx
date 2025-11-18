@@ -3,13 +3,14 @@ import React from "react";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import styles from "../styles/login.module.css";
-import { loginUser } from "@/services/warrantyApi";
-import { useAuth } from "../../context/AuthContext";
+// SỬA 1: Dùng đường dẫn ../ (đi lên 1 cấp)
+import { loginUser } from "../services/warrantyApi"; 
+import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/router";
 
-// BƯỚC SỬA 1: Import kiểu UserProfile để lấy kiểu Role chính xác
-import { UserProfile } from "@/types/warranty";
-import axios from "axios"; // Cần import axios cho việc xử lý lỗi
+// SỬA 1: Dùng đường dẫn ../ (đi lên 1 cấp)
+import { UserProfile, UserRole } from "../types/warranty"; 
+import axios from "axios"; 
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,23 +31,29 @@ export default function Login() {
     try {
       const data = await loginUser({ username, password });
 
-      // SỬA LỖI 2: Ép kiểu trực tiếp sang union type UserProfile['role']
+      const userRole = data.role as UserRole;
+
       login({
         id: data.id,
         username: data.username,
-        name: data.username,
-        // Ép kiểu an toàn hơn, chuyển string từ BE sang union type của FE
-        role: data.role as UserProfile["role"],
+        name: data.username, 
+        role: userRole,
         token: data.token,
       });
 
-      router.push("/");
+      // SỬA 2: Logic chuyển hướng dựa trên vai trò
+      const adminRoles: UserRole[] = ['Admin', 'EVM_Staff'];
+      
+      if (adminRoles.includes(userRole)) {
+        router.push("/admin"); 
+      } else {
+        router.push("/"); 
+      }
+
     } catch (err) {
-      // SỬA LỖI 3: Xử lý lỗi mà không cần 'err: any'
       let errorMessage = "Lỗi đăng nhập không xác định.";
 
       if (axios.isAxiosError(err) && err.response) {
-        // Giả định backend trả về { message: string } khi lỗi
         const apiError = err.response.data as { message: string };
         errorMessage = apiError.message || errorMessage;
       } else if (err instanceof Error) {
@@ -74,11 +81,11 @@ export default function Login() {
             {/* Username */}
             <div className="mb-5">
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Tên đăng nhập
+                Email
               </label>
               <input
                 type="text"
-                placeholder="Tên đăng nhập"
+                placeholder="Email"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 bg-gray-50 hover:bg-white transition text-gray-800 placeholder-gray-400"
