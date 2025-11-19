@@ -1,5 +1,3 @@
-// frontend/src/pages/admin/customers.tsx
-
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
@@ -58,10 +56,10 @@ export default function AdminCustomersPage() {
     const filteredCustomers = useMemo(() => {
         const keyword = searchKeyword.toLowerCase();
         return customers.filter(c => 
-             c.name.toLowerCase().includes(keyword) || 
-             c.email.toLowerCase().includes(keyword) ||
-             c.phone.includes(keyword)
-         );
+            c.name.toLowerCase().includes(keyword) || 
+            c.email.toLowerCase().includes(keyword) ||
+            c.phone.includes(keyword)
+        );
     }, [customers, searchKeyword]);
 
 

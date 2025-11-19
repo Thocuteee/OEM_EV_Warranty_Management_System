@@ -70,11 +70,14 @@ const CarListView: React.FC = () => {
         const vinKeyword = searchTerm.vin.toLowerCase();
         const customerKeyword = searchTerm.customer.toLowerCase();
     
-        return vehicles.filter(car => 
-            // Lọc theo VIN hoặc CustomerName
-            car.VIN.toLowerCase().includes(vinKeyword) || 
-            (car.customerName && car.customerName.toLowerCase().includes(customerKeyword))
-        );
+        return vehicles.filter(car => {
+            if (!car) return false; 
+
+            const vinMatches = car.vin?.toLowerCase().includes(vinKeyword);
+            const customerMatches = car.customerName?.toLowerCase().includes(customerKeyword);
+
+            return vinMatches || customerMatches;
+        });
     
     }, [vehicles, searchTerm]);
     
@@ -133,10 +136,10 @@ const CarListView: React.FC = () => {
                     <tbody className="bg-white divide-y divide-gray-100">
                         {filteredVehicles.length > 0 ? (
                             filteredVehicles.map((car) => (
-                                <tr key={car.VIN} className="hover:bg-indigo-50/50 transition duration-100">
+                                <tr key={car.vin} className="hover:bg-indigo-50/50 transition duration-100">
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
-                                        <Link href={`/cars/${car.VIN}`} className="hover:text-blue-800">
-                                            {car.VIN}
+                                        <Link href={`/cars/${car.vin}`} className="hover:text-blue-800">
+                                            {car.vin}
                                         </Link>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{car.model}</td>
@@ -145,7 +148,7 @@ const CarListView: React.FC = () => {
                                     
                                     <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                         {/* Nút hành động chính cho SC Staff/Tech */}
-                                        <Link href={`/claims/new?vin=${car.VIN}`}>
+                                        <Link href={`/claims/new?vin=${car.vin}`}>
                                             <button className="text-green-600 hover:text-green-800 font-semibold text-sm">
                                                 Tạo Yêu cầu Bảo hành
                                             </button>

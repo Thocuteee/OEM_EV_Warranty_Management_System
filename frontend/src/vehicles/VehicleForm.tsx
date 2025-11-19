@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { VehicleRequest, VehicleResponse } from '@/types/vehicle'; 
 import { CustomerResponse } from '@/types/customer';
 import { getAllCustomers } from '@/services/modules/customerService'; 
+import axios from 'axios';
 
 interface VehicleFormProps {
     initialData?: VehicleRequest | null;
@@ -23,7 +24,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit,
         id: initialData?.id || undefined,
         customerId: initialData?.customerId || undefined,
         registeredByUserId: initialData?.registeredByUserId || currentUserId,
-        VIN: initialData?.VIN || '',
+        vin: initialData?.vin || '',
         model: initialData?.model || '',
         year: initialData?.year || '',
     });
@@ -71,14 +72,14 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit,
 
         const payloadtoSend : VehicleRequest = {
             ...formState,
-            VIN: formState.VIN,
+            vin: formState.vin,
             model: formState.model,
             customerId: formState.customerId as number,
             registeredByUserId: (initialData?.registeredByUserId || currentUserId) as number,
         };
 
         // Kiểm tra xem customerId có tồn tại hay không
-        if (!payloadtoSend.customerId) { // Nếu customerId là undefined/null/0
+        if (!payloadtoSend.customerId) { 
             setError("Vui lòng chọn Chủ sở hữu xe.");
             setLoading(false);
             return;
@@ -92,8 +93,21 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit,
 
             if(err instanceof Error) {
                 errorMessage = err.message;
-            } else if (typeof err === 'object' && err !== null && 'message' in err) {
-                errorMessage = (err as { message: string }).message || errorMessage;
+            } else if (axios.isAxiosError(err) && err.response) {
+                // Thử trích xuất lỗi nghiệp vụ (MessageResponse / ErrorResponse)
+                const apiError = err.response.data as { message?: string, error?: string };
+                
+                if (apiError.message) {
+                    errorMessage = apiError.message; // Lỗi nghiệp vụ từ Service
+                } else if (err.response.data && typeof err.response.data === 'object') {
+                    // Xử lý lỗi Validation (MethodArgumentNotValidException) - thường trả về Map<String, String>
+                    const validationErrors = err.response.data as Record<string, string>;
+                    if (Object.keys(validationErrors).length > 0) {
+                        const firstField = Object.keys(validationErrors)[0];
+                        // THAY ĐỔI: Hiển thị lỗi validation cụ thể
+                        errorMessage = `Lỗi Validation: Trường '${firstField}' - ${validationErrors[firstField]}`;
+                    }
+                }
             } else {
                 errorMessage = "Lỗi kết nối hoặc lỗi Backend không xác định.";
             }
@@ -113,7 +127,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit,
                 {/* VIN */}
                 <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">VIN (17 ký tự)</label>
-                    <input name="VIN" value={formState.VIN} onChange={handleChange} placeholder="VIN1234567890ABCDE" className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none" required minLength={17} maxLength={17} />
+                    <input name="VIN" value={formState.vin} onChange={handleChange} placeholder="VIN1234567890ABCDE" className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none" required minLength={17} maxLength={17} />
                 </div>
                 {/* Model */}
                 <div>

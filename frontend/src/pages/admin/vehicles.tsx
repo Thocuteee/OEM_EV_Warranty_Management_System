@@ -59,8 +59,12 @@ export default function AdminVehiclesPage() {
     const filteredVehicles = useMemo(() => {
         const keyword = searchKeyword.toLowerCase();
         return vehicles.filter(v => 
-            v.VIN.toLowerCase().includes(keyword) || 
-            v.model.toLowerCase().includes(keyword)
+            // Bỏ qua các đối tượng null/undefined
+            v && (
+                // Kiểm tra v.VIN/v.model có tồn tại trước khi gọi .toLowerCase()
+                (v.vin && v.vin.toLowerCase().includes(keyword)) || 
+                (v.model && v.model.toLowerCase().includes(keyword))
+            )
         );
     }, [vehicles, searchKeyword]);
 

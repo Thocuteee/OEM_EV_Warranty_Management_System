@@ -18,7 +18,7 @@ const VehicleTable: React.FC<VehicleTableProps> = ({ vehicles, onEdit, onDelete,
 
     const handleUpdateStatus = async (vehicleId: number, newStatus: 'APPROVED' | 'REJECTED') => {
         if (!user || !user.id) return;
-        if (!confirm(`Bạn có chắc muốn ${newStatus === 'APPROVED' ? 'PHÊ DUYỆT' : 'TỪ CHỐI'} đăng ký xe VIN ${vehicles.find(v => v.id === vehicleId)?.VIN}?`)) return;
+        if (!confirm(`Bạn có chắc muốn ${newStatus === 'APPROVED' ? 'PHÊ DUYỆT' : 'TỪ CHỐI'} đăng ký xe VIN ${vehicles.find(v => v.id === vehicleId)?.vin}?`)) return;
 
         try {
             await updateVehicleRegistrationStatus(vehicleId, newStatus, user.id);
