@@ -31,6 +31,8 @@ public interface IWarrantyClaimService {
 
     WarrantyClaim updateWarrantyClaimsStatus(Long id , String status);
 
+    WarrantyClaim updateClaimPrimaryStatus(Long claimId, String newStatus);
+
     List<WarrantyClaim> getWarrantyClaimsByVehicle(Vehicle vehicle);
     List<WarrantyClaim> getWarrantyClaimsByCustomer(Customer customer);
     List<WarrantyClaim> getWarrantyClaimsByCenter(ServiceCenter center);

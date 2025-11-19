@@ -147,4 +147,21 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
     public List<WarrantyClaim> getWarrantyClaimsByMinTotalCost(BigDecimal totalCost) {
         return warrantyClaimRepository.findByTotalCostGreaterThanEqual(totalCost);
     }
+
+    @Override
+public WarrantyClaim updateClaimPrimaryStatus(Long claimId, String newStatus) {
+    WarrantyClaim claim = warrantyClaimRepository.findById(claimId)
+            .orElseThrow(() -> new IllegalArgumentException("Claim không tồn tại."));
+
+    if (newStatus.equalsIgnoreCase("SENT")) {
+        if (!claim.getStatus().equalsIgnoreCase("DRAFT")) {
+            throw new IllegalArgumentException("Chỉ có thể gửi Claim ở trạng thái DRAFT.");
+        }
+        claim.setStatus("SENT");
+        claim.setUpdatedAt(LocalDateTime.now());
+    } else {
+        throw new IllegalArgumentException("Trạng thái chuyển đổi không hợp lệ.");
+    }
+    return warrantyClaimRepository.save(claim);
+}
 }

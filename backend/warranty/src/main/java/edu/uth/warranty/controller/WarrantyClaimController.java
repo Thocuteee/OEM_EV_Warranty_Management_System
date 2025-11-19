@@ -149,5 +149,13 @@ public class WarrantyClaimController {
         }
     }
 
-    
+    @PutMapping("/{id}/send")
+    public ResponseEntity<?> sendClaimForApproval(@PathVariable Long id) {
+        try {
+            WarrantyClaim sentClaim = warrantyClaimService.updateClaimPrimaryStatus(id, "SENT");
+            return ResponseEntity.ok(toResponseDTO(sentClaim));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
+        }
+    }
 }

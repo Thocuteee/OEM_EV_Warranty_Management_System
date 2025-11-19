@@ -49,7 +49,7 @@ public class VehicleServiceImpl implements IVehicleService{
         }
         
         // Kiểm tra tính duy nhất của VIN (ĐÃ SỬA: dùng getVin())
-        Optional<Vehicle> exitstingVehicle = vehicleRepository.findByVin(vehicle.getVIN()); 
+        Optional<Vehicle> exitstingVehicle = vehicleRepository.findByVIN(vehicle.getVIN()); 
         if(exitstingVehicle.isPresent()) {
             if (vehicle.getVehicleId() == null || !vehicle.getVehicleId().equals(exitstingVehicle.get().getVehicleId())) {
                 throw new IllegalArgumentException("Số VIN đã tồn tại trong hệ thống.");
@@ -115,12 +115,12 @@ public class VehicleServiceImpl implements IVehicleService{
 
     @Override
     public Optional<Vehicle> getVehicleByVIN(String vin) {
-        return vehicleRepository.findByVin(vin);
+        return vehicleRepository.findByVIN(vin);
     }
 
     @Override
     public boolean isVINUnique(String vin) {
-        return vehicleRepository.findByVin(vin).isEmpty();
+        return vehicleRepository.findByVIN(vin).isEmpty();
     }
 
     @Override
