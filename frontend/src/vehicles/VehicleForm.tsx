@@ -90,6 +90,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit,
             onClose();
         } catch (err: unknown) {
             let errorMessage = "Lỗi không xác định khi lưu dữ liệu xe.";
+            console.error("Axios/API Error Details:", err); // <--- THÊM LOG NÀY
 
             if(err instanceof Error) {
                 errorMessage = err.message;
@@ -98,20 +99,22 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit,
                 const apiError = err.response.data as { message?: string, error?: string };
                 
                 if (apiError.message) {
-                    errorMessage = apiError.message; // Lỗi nghiệp vụ từ Service
-                } else if (err.response.data && typeof err.response.data === 'object') {
-                    // Xử lý lỗi Validation (MethodArgumentNotValidException) - thường trả về Map<String, String>
+                    // Nếu Backend trả về MessageResponse
+                    errorMessage = apiError.message; 
+                } else if (err.response.data && typeof err.response.data === 'object' && Object.keys(err.response.data).length > 0) {
+                    // Xử lý lỗi Validation (MethodArgumentNotValidException)
                     const validationErrors = err.response.data as Record<string, string>;
-                    if (Object.keys(validationErrors).length > 0) {
-                        const firstField = Object.keys(validationErrors)[0];
-                        // THAY ĐỔI: Hiển thị lỗi validation cụ thể
-                        errorMessage = `Lỗi Validation: Trường '${firstField}' - ${validationErrors[firstField]}`;
-                    }
+                    const firstField = Object.keys(validationErrors)[0];
+                    errorMessage = `Lỗi Validation: Trường '${firstField}' - ${validationErrors[firstField]}`;
+                } else {
+                    // Lỗi HTTP Status code khác không có body message
+                    errorMessage = `Lỗi máy chủ HTTP ${err.response.status}. Kiểm tra console để biết thêm chi tiết.`;
                 }
             } else {
                 errorMessage = "Lỗi kết nối hoặc lỗi Backend không xác định.";
             }
             setError(errorMessage);
+            throw new Error(errorMessage); // Ném lại lỗi để form có thể hiển thị
         } finally {
             setLoading(false);
         }
@@ -127,7 +130,7 @@ const VehicleForm: React.FC<VehicleFormProps> = ({ initialData = null, onSubmit,
                 {/* VIN */}
                 <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">VIN (17 ký tự)</label>
-                    <input name="VIN" value={formState.vin} onChange={handleChange} placeholder="VIN1234567890ABCDE" className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none" required minLength={17} maxLength={17} />
+                    <input name="vin" value={formState.vin} onChange={handleChange} placeholder="VIN1234567890ABCDE" className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none" required minLength={17} maxLength={17} />
                 </div>
                 {/* Model */}
                 <div>
