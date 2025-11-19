@@ -19,14 +19,14 @@ import lombok.AllArgsConstructor;
 @IdClass(CampaignVehicle.CampaignVehicleId.class)
 public class CampaignVehicle {
     public static class CampaignVehicleId implements Serializable {
-        private Long campaign; 
-        private Long vehicle;  
+        private Long campaignId; 
+        private Long vehicleId;  
 
         public CampaignVehicleId() {}
 
-        public CampaignVehicleId(Long campaign, Long vehicle) {
-            this.campaign = campaign;
-            this.vehicle = vehicle;
+        public CampaignVehicleId(Long campaignId, Long vehicleId) {
+            this.campaignId = campaignId;
+            this.vehicleId = vehicleId;
         }
 
         @Override
@@ -34,12 +34,12 @@ public class CampaignVehicle {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             CampaignVehicleId id = (CampaignVehicleId) o;
-            return Objects.equals(campaign, id.campaign) && Objects.equals(vehicle, id.vehicle);
+            return Objects.equals(campaignId, id.campaignId) && Objects.equals(vehicleId, id.vehicleId);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(campaign, vehicle);
+            return Objects.hash(campaignId, vehicleId);
         }
     }
 
