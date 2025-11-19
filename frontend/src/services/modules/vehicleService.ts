@@ -30,6 +30,14 @@ export const getVehicleById = async (id: number): Promise<VehicleResponse> => {
   return response.data;
 };
 
+// 6. GET: Lấy chi tiết Xe theo VIN (Cần thiết cho Claim Creation)
+export const getVehicleByVIN = async (vin: string): Promise<VehicleResponse> => {
+  const response = await apiClient.get<VehicleResponse>(`/vehicles/search?vin=${vin}`);
+  return response.data;
+};
+
+
+// 7. PUT: Cập nhật Trạng thái Đăng ký
 export const updateVehicleRegistrationStatus = async (id: number, newStatus: 'APPROVED' | 'REJECTED', approverUserId: number): Promise<VehicleResponse> => {
   const response = await apiClient.put<VehicleResponse>(`/vehicles/${id}/status?newStatus=${newStatus}&approverUserId=${approverUserId}`);
   return response.data;
