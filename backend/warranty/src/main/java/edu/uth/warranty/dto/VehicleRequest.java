@@ -20,7 +20,7 @@ public class VehicleRequest {
     // Thông tin Xe
     @NotBlank(message = "Số VIN là bắt buộc")
     @Size(min = 17, max = 17, message = "VIN phải có đúng 17 ký tự")
-    private String VIN;
+    private String vin;
 
     @NotBlank(message = "Model xe là bắt buộc")
     private String model;

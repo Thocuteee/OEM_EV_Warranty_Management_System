@@ -80,7 +80,7 @@ public class VehicleController {
             vehicle.setRegisteredBy(new User(request.getRegisteredByUserId()));
         }
 
-        vehicle.setVIN(request.getVIN());
+        vehicle.setVIN(request.getVin());
         vehicle.setModel(request.getModel());
         vehicle.setYear(request.getYear());
         

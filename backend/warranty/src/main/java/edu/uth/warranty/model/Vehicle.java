@@ -23,7 +23,7 @@ public class Vehicle {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    @Column(name = "VIN", nullable = false, unique = true)
+    @Column(name = "vin", nullable = false, unique = true)
     private String VIN;
 
     @Column(name = "model", nullable = false)
@@ -50,7 +50,7 @@ public class Vehicle {
     this.vehicleId = vehicleId;
     this.customer = customer;
     this.VIN = VIN;
-    this.model = model;
+    this.model = model; // <--- DÒNG NÀY ĐANG BỊ THIẾU THAM SỐ TRONG DỊNH NGHĨA CONSTRUCTOR
     this.year = year;
     this.registrationStatus = registrationStatus;
     this.registeredBy = registeredBy;
