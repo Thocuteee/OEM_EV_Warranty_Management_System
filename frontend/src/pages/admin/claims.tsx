@@ -68,16 +68,14 @@ export default function AdminClaimsPage() {
     // ---------------------------------------
 
     const handleSendClaim = async (claimId: number) => {
-        if (!confirm("Bạn chắc chắn muốn GỬI yêu cầu bảo hành này lên Hãng? (Trạng thái sẽ chuyển sang SENT)")) return;
+        if(!confirm("Bạn chắc chắn muốn GỬI yêu cầu bảo hành này lên Hãng? (Trạng thái sẽ chuyển sang SENT)")) return;
         setToast(null);
         try {
             await sendClaimToEVM(claimId);
             setToast("Đã gửi Claim thành công!");
             loadClaims();
-        } catch (err: unknown) {
-            const errorMessage = axios.isAxiosError(err) && err.response?.data?.message
-                ? err.response.data.message
-                : "Lỗi khi xóa Claim. Đảm bảo Claim ở trạng thái DRAFT.";
+        } catch(err:unknown) {
+            const errorMessage = axios.isAxiosError(err) && err.response?.data?.message? err.response.data.message : "Lỗi khi gửi Claim.";
             setToast(errorMessage);
         }
     }
@@ -86,13 +84,12 @@ export default function AdminClaimsPage() {
         if (!confirm("Bạn chỉ có thể xóa các Claim ở trạng thái DRAFT. Bạn có chắc muốn xóa?")) return;
         setToast(null);
         try {
-            // Thêm API deleteClaim vào service nếu cần. Hiện tại chỉ là placeholder.
-            // await deleteClaim(claimId);
-            setClaims(prev => prev.filter(c => c.id !== claimId));
+            await deleteWarrantyClaim(claimId);
             setToast("Đã xóa Claim thành công.");
             loadClaims();
-        } catch {
-            setToast("Lỗi khi xóa Claim.");
+        } catch(err:unknown) {
+            const errorMessage = axios.isAxiosError(err) && err.response?.data?.message? err.response.data.message: "Lỗi khi xóa Claim. Đảm bảo Claim ở trạng thái DRAFT.";
+            setToast(errorMessage);
         }
     };
 

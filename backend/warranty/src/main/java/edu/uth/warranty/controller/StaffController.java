@@ -51,7 +51,8 @@ public class StaffController {
             staff.getRole(),
             staff.getPhone(),
             staff.getEmail(),
-            staff.getUsername()
+            staff.getUsername(),
+            staff.getAddress()
         );
     }
 
@@ -71,6 +72,7 @@ public class StaffController {
         staff.setRole(request.getRole());
         staff.setPhone(request.getPhone());
         staff.setEmail(request.getEmail());
+        staff.setAddress(request.getAddress());
         staff.setUsername(request.getUsername());
         staff.setPassword(request.getPassword());
         return staff;
@@ -84,7 +86,7 @@ public class StaffController {
         try {
             Staff newStaff = toEntity(request);
             newStaff.setStaffId(null);
-            Staff saveStaff = staffService.saveStaff(newStaff);
+            Staff saveStaff = staffService.saveStaff(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(toResponseDTO(saveStaff));
         } catch(IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
@@ -120,7 +122,7 @@ public class StaffController {
         if(staffService.getStaffById(id).isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        Staff updadedStaff = staffService.saveStaff(toEntity(request));
+        Staff updadedStaff = staffService.saveStaff(request);
         return ResponseEntity.ok(toResponseDTO(updadedStaff));
     }
 

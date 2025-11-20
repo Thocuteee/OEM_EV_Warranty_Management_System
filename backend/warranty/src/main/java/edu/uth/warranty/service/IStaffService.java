@@ -3,6 +3,7 @@ package edu.uth.warranty.service;
 import edu.uth.warranty.model.Staff;
 import edu.uth.warranty.model.ServiceCenter;
 import edu.uth.warranty.common.Role;
+import edu.uth.warranty.dto.StaffRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +15,7 @@ public interface IStaffService {
     List<Staff> getAllStaffs();
     Optional<Staff> getStaffById(Long id);
 
-    Staff saveStaff(Staff staff);
+    Staff saveStaff(StaffRequest request);
     
     void deleteStaff(Long id);
 

@@ -33,6 +33,9 @@ public class Staff {
     @Column(name = "phone", nullable = false, unique = true)
     private String phone;
 
+    @Column(name = "address")
+    private String address;
+
     @Column(name = "email", nullable = false, unique = true)
     private String email;
 

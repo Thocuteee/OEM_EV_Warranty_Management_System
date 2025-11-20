@@ -1,11 +1,13 @@
+// frontend/src/components/layout/SidebarAdmin.tsx (Đã sửa đổi mảng menu)
+
 "use client";
 
-    import React from "react";
-    import Link from "next/link";
-    import { useRouter } from "next/router";
-    import { useAuth } from "@/context/AuthContext";
+import React from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { useAuth } from "@/context/AuthContext";
 
-    export default function SidebarAdmin() {
+export default function SidebarAdmin() {
     const router = useRouter();
     const { logout } = useAuth();
 
@@ -13,9 +15,17 @@
         { name: "Dashboard", href: "/admin", icon: "📊" },
         { name: "Quản lý Users", href: "/admin/users", icon: "👤" },
         { name: "Quản lý Khách hàng", href: "/admin/customers", icon: "👥" },
+        
+        // --- CHUỖI NGHIỆP VỤ (CLAIMS & PARTS) ---
         { name: "Quản lý Xe", href: "/admin/vehicles", icon: "🚗" },
-        { name: "Chiến dịch", href: "/admin/campaigns", icon: "🚗" },
-        { name: "Claim", href: "/admin/claims", icon: "📩" },
+        { name: "Yêu cầu Bảo hành (Claims)", href: "/admin/claims", icon: "📄" }, // Biểu tượng Claims rõ hơn
+        
+        // --- MODULE HỖ TRỢ VÀ TỒN KHO ---
+        { name: "Quản lý Linh kiện/Tồn kho", href: "/admin/parts", icon: "🔧" }, // Module tiếp theo
+        { name: "Chiến dịch", href: "/admin/campaigns", icon: "📣" }, // Sửa Icon cho Chiến dịch
+        { name: "Quản lý Hóa đơn", href: "/admin/invoices", icon: "🧾" }, // Thêm Hóa đơn
+        
+        // --- KHÁC ---
         { name: "Cấu hình", href: "/admin/system", icon: "⚙️" },
     ];
 
@@ -34,7 +44,7 @@
                 key={m.href}
                 href={m.href}
                 className={`flex items-center gap-3 px-4 py-2 rounded-lg
-                    ${active ? "bg-blue-100 text-blue-700" : "text-gray-700"}
+                    ${active ? "bg-blue-100 text-blue-700 font-semibold" : "text-gray-700"}
                     hover:bg-blue-50`}
                 >
                 <span>{m.icon}</span>

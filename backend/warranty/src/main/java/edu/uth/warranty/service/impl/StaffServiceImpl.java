@@ -3,6 +3,7 @@ package edu.uth.warranty.service.impl;
 import edu.uth.warranty.model.Staff;
 import edu.uth.warranty.model.ServiceCenter;
 import edu.uth.warranty.common.Role;
+import edu.uth.warranty.dto.StaffRequest;
 import edu.uth.warranty.repository.StaffRepository;
 import edu.uth.warranty.repository.ServiceCenterRepository; 
 import edu.uth.warranty.service.IStaffService;
@@ -37,32 +38,57 @@ public class StaffServiceImpl implements IStaffService{
     }
 
     @Override
-    public Staff saveStaff(Staff staff) {
-        //Kiểm tra Service Center có tồn tại không
-        if (staff.getCenter() == null || staff.getCenter().getCenterId() == null) {
+    public Staff saveStaff(StaffRequest request) { // SỬA: Nhận StaffRequest DTO
+        // 1. Kiểm tra Service Center có tồn tại không
+        if (request.getCenterId() == null) {
             throw new IllegalArgumentException("Nhân viên phải được gán cho một Trung tâm Dịch vụ hợp lệ.");
         }
-        if (serviceCenterRepository.findById(staff.getCenter().getCenterId()).isEmpty()) {
-            throw new IllegalArgumentException("Trung tâm dịch vụ không tồn tại.");
-        }
+        ServiceCenter center = serviceCenterRepository.findById(request.getCenterId())
+            .orElseThrow(() -> new IllegalArgumentException("Trung tâm dịch vụ không tồn tại."));
 
-        //Kiểm tra tính duy nhất của Username, Email, Phone
+        Staff staff;
         
-        // Kiểm tra Username
-        Optional<Staff> existingStaffByUsername = staffRepository.findByUsername(staff.getUsername());
-        if (existingStaffByUsername.isPresent() && (staff.getStaffId() == null || !staff.getStaffId().equals(existingStaffByUsername.get().getStaffId()))) {
-            throw new IllegalArgumentException("Tên đăng nhập đã tồn tại.");
-        }
+        // 2. Logic Ánh xạ và Kiểm tra
+        if (request.getId() != null) { // Logic Cập nhật (Sẽ phức tạp hơn, ta tập trung vào Tạo mới)
+            staff = staffRepository.findById(request.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Hồ sơ Staff không tồn tại."));
+            
+            // Kiểm tra tính duy nhất khi cập nhật
+            Optional<Staff> existingByUsername = staffRepository.findByUsername(request.getUsername());
+            if (existingByUsername.isPresent() && !staff.getStaffId().equals(existingByUsername.get().getStaffId())) {
+                throw new IllegalArgumentException("Tên đăng nhập đã tồn tại.");
+            }
+            Optional<Staff> existingByEmail = staffRepository.findByEmail(request.getEmail());
+            if (existingByEmail.isPresent() && !staff.getStaffId().equals(existingByEmail.get().getStaffId())) {
+                throw new IllegalArgumentException("Email đã tồn tại.");
+            }
 
-        // Kiểm tra Email
-        Optional<Staff> existingStaffByEmail = staffRepository.findByEmail(staff.getEmail());
-        if (existingStaffByEmail.isPresent() && (staff.getStaffId() == null || !staff.getStaffId().equals(existingStaffByEmail.get().getStaffId()))) {
-            throw new IllegalArgumentException("Email đã tồn tại.");
+        } else {
+            // Logic Tạo mới (Chủ yếu từ UserService)
+            staff = new Staff();
+            // Kiểm tra Username và Email đã tồn tại (Chỉ kiểm tra nếu tạo mới)
+            if (staffRepository.findByUsername(request.getUsername()).isPresent() || staffRepository.findByEmail(request.getEmail()).isPresent()) {
+                throw new IllegalArgumentException("Username hoặc Email đã tồn tại.");
+            }
         }
-
-        if (staff.getPassword() != null && !staff.getPassword().isEmpty()) {
-            String hashedPassword = passwordEncoder.encode(staff.getPassword());
-            staff.setPassword(hashedPassword); 
+        
+        // 3. Ánh xạ dữ liệu từ Request DTO sang Entity Staff
+        staff.setStaffId(request.getId()); // ID này là PK/FK từ bảng User
+        staff.setCenter(center); 
+        staff.setName(request.getName());
+        staff.setRole(request.getRole());
+        staff.setEmail(request.getEmail()); 
+        staff.setPhone(request.getPhone());
+        staff.setAddress(request.getAddress()); 
+        staff.setUsername(request.getUsername());
+        
+        // Mã hóa mật khẩu nếu được cung cấp (Logic này chỉ áp dụng nếu Staff tự tạo, 
+        // nhưng ta giữ để hệ thống hoạt động)
+        if (request.getPassword() != null && !request.getPassword().isEmpty() && !request.getPassword().startsWith("$2a$")) {
+            String hashedPassword = passwordEncoder.encode(request.getPassword());
+            staff.setPassword(hashedPassword);
+        } else if (request.getPassword() != null && request.getPassword().startsWith("$2a$")) {
+            staff.setPassword(request.getPassword()); // Nếu đã mã hóa (từ UserService)
         }
 
         return staffRepository.save(staff);

@@ -16,6 +16,8 @@ public interface TechnicianRepository extends JpaRepository<Technician, Long>{
 
     Optional<Technician> findByEmail(String email);
 
+    Boolean existsByEmail(String email);
+
     List<Technician> findByCenter(ServiceCenter center);
 
     //? có nối 1:n center, kiểu chứa Entity sang Reponsitory 
