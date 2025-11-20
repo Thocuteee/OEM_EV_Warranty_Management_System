@@ -42,6 +42,7 @@ public class UserController {
             user.setId(request.getId());
         }
         user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
         user.setPassword(request.getPassword());
         user.setRole(request.getRole());
         return user;

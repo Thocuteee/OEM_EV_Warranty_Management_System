@@ -44,21 +44,27 @@ public class CampaignVehicle {
     }
 
     @Id
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "campaign_id", nullable = false)
-    private RecallCampaign campaign; 
+    private Long campaign; 
 
     @Id
+    private Long vehicle; 
+    
     @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("campaign") 
+    @JoinColumn(name = "campaign_id", nullable = false)
+    private RecallCampaign recallCampaignEntity; // SỬA: Đổi tên trường
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("vehicle") 
     @JoinColumn(name = "vehicle_id", nullable = false)
-    private Vehicle vehicle; 
+    private Vehicle vehicleEntity; // SỬA: Đổi tên trường
 
     @Column(name = "status", nullable = false)
     private String status;
 
     public CampaignVehicle(Vehicle vehicle, String status, RecallCampaign campaign) {
-        this.vehicle = vehicle;
+        this.vehicleEntity = vehicle;
         this.status = status;
-        this.campaign = campaign;
+        this.recallCampaignEntity = campaign;
     } 
 }

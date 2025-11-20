@@ -12,11 +12,11 @@ import java.util.Optional;
 
 @Repository
 public interface CampaignVehicleRepository extends JpaRepository<CampaignVehicle, CampaignVehicle.CampaignVehicleId>{
-    List<CampaignVehicle> findByCampaign(RecallCampaign campaign);
+    List<CampaignVehicle> findByRecallCampaignEntity(RecallCampaign campaign);
 
-    List<CampaignVehicle> findByVehicle(Vehicle vehicle);
+    List<CampaignVehicle> findByVehicleEntity(Vehicle vehicle);
 
-    Optional<CampaignVehicle> findByCampaignAndVehicle(RecallCampaign campaign, Vehicle vehicle);
+    Optional<CampaignVehicle> findByRecallCampaignEntityAndVehicleEntity(RecallCampaign campaign, Vehicle vehicle);
 
     List<CampaignVehicle> findByStatus(String status);
 }

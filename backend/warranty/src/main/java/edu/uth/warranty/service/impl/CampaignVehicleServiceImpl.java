@@ -42,8 +42,10 @@ public class CampaignVehicleServiceImpl implements ICampaignVehicleService{
 
     @Override
     public CampaignVehicle saveCampaignVehicle(CampaignVehicle entity) {
-        Long campaignId = entity.getCampaign().getCampaignId();
-        Long vehicleId = entity.getVehicle().getVehicleId();
+        // SỬA LỖI: Dùng Entity references mới để lấy ID
+        Long campaignId = entity.getRecallCampaignEntity().getCampaignId();
+        Long vehicleId = entity.getVehicleEntity().getVehicleId();
+        
         // Kiểm tra xem Campaign và Vehicle có tồn tại không
         if (recallCampaignRepository.findById(campaignId).isEmpty()) {
             throw new IllegalArgumentException("Chiến dịch triệu hồi không tồn tại.");
@@ -62,12 +64,12 @@ public class CampaignVehicleServiceImpl implements ICampaignVehicleService{
 
     @Override
     public List<CampaignVehicle> getCampaignVehiclesByCampaign(RecallCampaign campaign) {
-        return campaignVehicleRepository.findByCampaign(campaign);
+        return campaignVehicleRepository.findByRecallCampaignEntity(campaign);
     }
 
     @Override
     public List<CampaignVehicle> getCampaignsByVehicle(Vehicle vehicle) {
-        return campaignVehicleRepository.findByVehicle(vehicle);
+        return campaignVehicleRepository.findByVehicleEntity(vehicle);
     }
 
     @Override

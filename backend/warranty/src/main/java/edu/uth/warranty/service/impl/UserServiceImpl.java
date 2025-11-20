@@ -37,7 +37,20 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public Optional<User> authenticateUser(LoginRequest loginRequest) {
-        Optional<User> userOpt = userRepository.findByUsername(loginRequest.getUsername());
+        Optional<User> userOpt = Optional.empty();
+        String identifier = loginRequest.getUsername();
+        
+        // Bước 1: Kiểm tra xem identifier có phải là email không
+        if (identifier != null && identifier.contains("@")) {
+            userOpt = userRepository.findByEmail(identifier);
+        }
+
+        // Bước 2: Nếu không phải email hoặc không tìm thấy, thử tìm theo username
+        if (userOpt.isEmpty() && identifier != null) {
+            userOpt = userRepository.findByUsername(identifier);
+        }
+        
+        // Bước 3: Xác thực mật khẩu
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
@@ -87,14 +100,11 @@ public class UserServiceImpl implements IUserService {
         }
         
         // 3. Mã hóa mật khẩu
-        if(user.getPassword() != null && user.getPassword().isEmpty()) {
-            if(!user.getPassword().startsWith("$2a$")) {
-                String hassPassword = passwordEncoder.encode(user.getPassword());
-                user.setPassword(hassPassword);
-            }
-
-            // Nếu đây là cập nhật và password là null/rỗng, chúng ta cần giữ lại mật khẩu cũ.
+        if(user.getPassword() != null && !user.getPassword().startsWith("$2a$")) { // Sửa lỗi so sánh rỗng
+            String hassPassword = passwordEncoder.encode(user.getPassword());
+            user.setPassword(hassPassword);
         } else if(user.getId() != null) {
+            // Giữ lại mật khẩu cũ nếu là cập nhật và mật khẩu mới là null/rỗng
             User existingUser = userRepository.findById(user.getId()).orElse(null);
             if (existingUser != null) {
                 user.setPassword(existingUser.getPassword());
@@ -111,7 +121,7 @@ public class UserServiceImpl implements IUserService {
         return savedUser;
     }
 
-    // PHƯƠNG THỨC MỚI: TẠO HỒ SƠ NGHIỆP VỤ TỰ ĐỘNG
+    // PHƯƠNG THỨC ĐÃ SỬA: TẠO HỒ SƠ NGHIỆP VỤ TỰ ĐỘNG
     private void createBusinessProfile(User user) {
         Role role = user.getRole();
         Long userId = user.getId();
@@ -120,12 +130,16 @@ public class UserServiceImpl implements IUserService {
         Long defaultCenterId = 1L; 
 
         try {
-            // Lấy các trường thông tin chung (dùng dữ liệu từ User và dummy data)
+            // Lấy các trường thông tin chung
             String name = user.getUsername();
             String email = user.getEmail();
-            String phone = "090000" + userId;
-            String address = "Địa chỉ mặc định SC/HQ";
-            String password = user.getPassword(); // Password đã hash
+            
+            // SỬA LỖI MOCKING: Đảm bảo SĐT có đủ 10 ký tự (090000 + ID 4 chữ số)
+            String phoneSuffix = String.format("%04d", userId); 
+            String phone = "090000" + phoneSuffix; 
+            
+            String address = "Địa chỉ mặc định SC/HQ"; // Cần thiết cho StaffRequest
+            String password = user.getPassword(); 
             
             // Kiểm tra Role và tạo hồ sơ tương ứng
             if (role == Role.SC_Staff || role == Role.EVM_Staff || role == Role.Admin) {
@@ -137,7 +151,7 @@ public class UserServiceImpl implements IUserService {
                 staffRequest.setRole(role);
                 staffRequest.setEmail(email);
                 staffRequest.setPhone(phone);
-                staffRequest.setAddress(address);
+                staffRequest.setAddress(address); 
                 staffRequest.setUsername(user.getUsername());
                 staffRequest.setPassword(password);
 
@@ -159,9 +173,9 @@ public class UserServiceImpl implements IUserService {
             }
             
         } catch (Exception e) {
-            // LỖI NẶNG: Nếu tạo hồ sơ nghiệp vụ thất bại (do FK hoặc DB), cần log rõ ràng
-            System.err.println("LỖI CRITICAL: Không thể tạo hồ sơ nghiệp vụ cho User ID " + userId + " (Role: " + user.getRole() + "). Chi tiết: " + e.getMessage());
-            // Tùy chọn: ném lỗi lại để ngăn chặn việc sử dụng tài khoản chưa hoàn chỉnh
+            // Ném IllegalArgumentException để GlobalExceptionHandler bắt và trả về 400
+            String errorMessage = "Lỗi khi tạo hồ sơ nhân sự tự động (Role: " + role.name() + "). Hãy đảm bảo Service Center 1 tồn tại và không bị trùng Email/SĐT. Chi tiết: " + e.getMessage();
+            throw new IllegalArgumentException(errorMessage);
         }
     }
 
