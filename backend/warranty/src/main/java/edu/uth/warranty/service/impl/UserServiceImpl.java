@@ -4,12 +4,13 @@ import edu.uth.warranty.model.User;
 import edu.uth.warranty.common.Role;
 import edu.uth.warranty.repository.UserRepository;
 import edu.uth.warranty.dto.LoginRequest;
-import edu.uth.warranty.dto.StaffRequest;
-import edu.uth.warranty.dto.TechnicianRequest;
 import edu.uth.warranty.service.IStaffService;
 import edu.uth.warranty.service.ITechnicianService;
 import edu.uth.warranty.service.IUserService;
 
+// Import DTOs cần thiết để tạo hồ sơ
+import edu.uth.warranty.dto.StaffRequest;
+import edu.uth.warranty.dto.TechnicianRequest;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,8 +25,8 @@ public class UserServiceImpl implements IUserService {
     
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final IStaffService staffService;          
-    private final ITechnicianService technicianService;
+    private final IStaffService staffService;           
+    private final ITechnicianService technicianService;  
         
     public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, IStaffService staffService, ITechnicianService technicianService) {
         this.userRepository = userRepository;
@@ -39,7 +40,6 @@ public class UserServiceImpl implements IUserService {
         Optional<User> userOpt = userRepository.findByUsername(loginRequest.getUsername());
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            // So sánh mật khẩu đầu vào (chưa mã hóa) với mật khẩu đã mã hóa trong DB
             if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
                 return Optional.of(user);
             }
@@ -56,68 +56,96 @@ public class UserServiceImpl implements IUserService {
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
+    
+    @Override
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email); //
+    }
 
-    // Triển khai Tạo/Cập nhật User: Đảm bảo mật khẩu được mã hóa trước khi lưu.
+    @Override
+    public Boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email); //
+    }
+
+    // Phương thức lõi để lưu User
     @Override
     public User saveUser(User user) {
-        // 1. Kiểm tra tính duy nhất (chỉ áp dụng cho tạo mới hoặc nếu username bị thay đổi)
-        Optional<User> existingUser = userRepository.findByUsername(user.getUsername());
-        if (existingUser.isPresent()) {
-            // Nếu Username đã tồn tại, chỉ cho phép cập nhật nếu đó là cùng một bản ghi
-            if (user.getId() == null || !user.getId().equals(existingUser.get().getId())) {
+        // 1. Kiểm tra tính duy nhất Username
+        Optional<User> existingUserByUsername = userRepository.findByUsername(user.getUsername());
+        if (existingUserByUsername.isPresent()) {
+            if (user.getId() == null || !user.getId().equals(existingUserByUsername.get().getId())) {
                 throw new IllegalArgumentException("Username đã tồn tại trong hệ thống.");
             }
         }
         
-        // 2. Mã hóa mật khẩu nếu nó được cung cấp và KHÔNG rỗng
-        // [Lưu ý: Mật khẩu luôn được cung cấp trong RegisterRequest và UserRequest]
-        if (user.getPassword() != null && !user.getPassword().isEmpty() && !user.getPassword().startsWith("$2a$")) { 
-            // Kiểm tra thêm: nếu nó chưa được mã hóa (bắt đầu bằng $2a$ là đã mã hóa)
-            String hashedPassword = passwordEncoder.encode(user.getPassword());
-            user.setPassword(hashedPassword);
+        // 2. BỔ SUNG KIỂM TRA TÍNH DUY NHẤT EMAIL
+        Optional<User> existingUserByEmail = userRepository.findByEmail(user.getEmail());
+        if (existingUserByEmail.isPresent()) {
+            if (user.getId() == null || !user.getId().equals(existingUserByEmail.get().getId())) {
+                throw new IllegalArgumentException("Email đã tồn tại trong hệ thống.");
+            }
         }
+        
+        // 3. Mã hóa mật khẩu
+        if(user.getPassword() != null && user.getPassword().isEmpty()) {
+            if(!user.getPassword().startsWith("$2a$")) {
+                String hassPassword = passwordEncoder.encode(user.getPassword());
+                user.setPassword(hassPassword);
+            }
 
+            // Nếu đây là cập nhật và password là null/rỗng, chúng ta cần giữ lại mật khẩu cũ.
+        } else if(user.getId() != null) {
+            User existingUser = userRepository.findById(user.getId()).orElse(null);
+            if (existingUser != null) {
+                user.setPassword(existingUser.getPassword());
+            }
+        }
+    
         User savedUser = userRepository.save(user);
 
-        // 3. TỰ ĐỘNG TẠO PROFILE NGHIỆP VỤ NẾU LÀ TẠO MỚI (chưa có ID)
+        // 4. Tự động tạo Profile (chỉ chạy khi là tạo mới)
         if (user.getId() == null) {
             createBusinessProfile(savedUser);
         }
-    
+
         return savedUser;
     }
 
+    // PHƯƠNG THỨC MỚI: TẠO HỒ SƠ NGHIỆP VỤ TỰ ĐỘNG
     private void createBusinessProfile(User user) {
         Role role = user.getRole();
         Long userId = user.getId();
-
+        
         // Giả định: Mọi nhân viên mới đều thuộc Service Center ID 1 (Mặc định)
-        Long defaultCenterId = 1L;
+        Long defaultCenterId = 1L; 
 
         try {
+            // Lấy các trường thông tin chung (dùng dữ liệu từ User và dummy data)
             String name = user.getUsername();
-            String username = user.getUsername() + "@default.com";
+            String email = user.getEmail();
             String phone = "090000" + userId;
-            String password = user.getPassword(); // Password đã được hash
-
-            if(role == Role.SC_Staff || role == Role.EVM_Staff || role == Role.Admin) {
+            String address = "Địa chỉ mặc định SC/HQ";
+            String password = user.getPassword(); // Password đã hash
+            
+            // Kiểm tra Role và tạo hồ sơ tương ứng
+            if (role == Role.SC_Staff || role == Role.EVM_Staff || role == Role.Admin) {
+                // Tạo hồ sơ Staff
                 StaffRequest staffRequest = new StaffRequest();
-
-                // Set các trường bắt buộc (Sử dụng User ID làm ID hồ sơ nghiệp vụ)
                 staffRequest.setId(userId);
                 staffRequest.setCenterId(defaultCenterId);
                 staffRequest.setName(name);
                 staffRequest.setRole(role);
                 staffRequest.setEmail(email);
                 staffRequest.setPhone(phone);
+                staffRequest.setAddress(address);
                 staffRequest.setUsername(user.getUsername());
-                staffRequest.setPassword(password); // Password đã hash
+                staffRequest.setPassword(password);
 
-                staffService.saveStaff(staffRequest);
-
-            } else if(role == Role.SC_Technician) {
+                staffService.saveStaff(staffRequest); 
+                
+            } else if (role == Role.SC_Technician) {
+                // Tạo hồ sơ Technician
                 TechnicianRequest technicianRequest = new TechnicianRequest();
-
                 technicianRequest.setId(userId);
                 technicianRequest.setCenterId(defaultCenterId);
                 technicianRequest.setName(name);
@@ -125,14 +153,18 @@ public class UserServiceImpl implements IUserService {
                 technicianRequest.setPhone(phone);
                 technicianRequest.setSpecialization("EV General");
                 technicianRequest.setUsername(user.getUsername());
-                technicianRequest.setPassword(password); // Password đã hash
+                technicianRequest.setPassword(password);
                 
-                technicianService.saveTechnician(technicianRequest);
+                technicianService.saveTechnician(technicianRequest); 
             }
-        } catch(Exception e) {
+            
+        } catch (Exception e) {
+            // LỖI NẶNG: Nếu tạo hồ sơ nghiệp vụ thất bại (do FK hoặc DB), cần log rõ ràng
             System.err.println("LỖI CRITICAL: Không thể tạo hồ sơ nghiệp vụ cho User ID " + userId + " (Role: " + user.getRole() + "). Chi tiết: " + e.getMessage());
+            // Tùy chọn: ném lỗi lại để ngăn chặn việc sử dụng tài khoản chưa hoàn chỉnh
         }
     }
+
 
     @Override
     public User registerUser(User user) {
@@ -156,17 +188,5 @@ public class UserServiceImpl implements IUserService {
     @Override
     public Boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
-    }
-
-    @Override
-    public Optional<User> getUserByEmail(String email) {
-
-        return userRepository.findByEmail(email);
-    }
-
-    @Override
-    public Boolean existsByEmail(String email) {
-        // Sử dụng phương thức mới của Repository
-        return userRepository.existsByEmail(email);
     }
 }

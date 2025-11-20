@@ -1,6 +1,7 @@
 package edu.uth.warranty.service.impl;
 
 import edu.uth.warranty.model.Technician;
+import edu.uth.warranty.dto.TechnicianRequest;
 import edu.uth.warranty.model.ServiceCenter;
 import edu.uth.warranty.repository.TechnicianRepository;
 import edu.uth.warranty.repository.ServiceCenterRepository;
@@ -36,26 +37,41 @@ public class TechnicianServiceImpl implements ITechnicianService{
     }
 
     @Override
-    public Technician saveTechnician(Technician technician) {
-        if (technician.getCenter() == null || technician.getCenter().getCenterId() == null) {
-            throw new IllegalArgumentException("Kỹ thuật viên phải được gán cho một Trung tâm Dịch vụ hợp lệ.");
-        }
-        if (serviceCenterRepository.findById(technician.getCenter().getCenterId()).isEmpty()) {
-            throw new IllegalArgumentException("Trung tâm dịch vụ không tồn tại.");
-        }
-        Optional<Technician> existingByEmail = technicianRepository.findByEmail(technician.getEmail());
-        if (existingByEmail.isPresent() && (technician.getTechnicianId() == null || !technician.getTechnicianId().equals(existingByEmail.get().getTechnicianId()))) {
-            throw new IllegalArgumentException("Email đã tồn tại.");
-        }
+    public Technician saveTechnician(TechnicianRequest request) { // SỬA: Nhận TechnicianRequest DTO
+        
+        // 1. Kiểm tra Center (FK)
+        ServiceCenter center = serviceCenterRepository.findById(request.getCenterId()).orElseThrow(() -> new IllegalArgumentException("Trung tâm Dịch vụ không tồn tại."));
 
-        Optional<Technician> existingByPhone = technicianRepository.findByPhone(technician.getPhone());
-        if (existingByPhone.isPresent() && (technician.getTechnicianId() == null || !technician.getTechnicianId().equals(existingByPhone.get().getTechnicianId()))) {
-            throw new IllegalArgumentException("Số điện thoại đã tồn tại.");
-        }
+        Technician technician;
 
-        if (technician.getPassword() != null && !technician.getPassword().isEmpty()) {
-            String hashedPassword = passwordEncoder.encode(technician.getPassword());
-            technician.setPassword(hashedPassword);
+        if (request.getId() != null) {
+            // Logic Cập nhật
+            technician = technicianRepository.findById(request.getId()).orElseThrow(() -> new IllegalArgumentException("Hồ sơ Technician không tồn tại."));
+        } else {
+            // Logic Tạo mới (Chủ yếu từ UserService)
+            technician = new Technician();
+            
+            // 2. Kiểm tra tính duy nhất (Username và Email)
+            if (technicianRepository.findByUsername(request.getUsername()).isPresent()) {
+                throw new IllegalArgumentException("Tên đăng nhập đã tồn tại.");
+            }
+            if (technicianRepository.findByEmail(request.getEmail()).isPresent()) {
+                throw new IllegalArgumentException("Email đã tồn tại.");
+            }
+        }
+        
+        // 3. Ánh xạ dữ liệu từ Request DTO sang Entity Technician
+        technician.setTechnicianId(request.getId());
+        technician.setCenter(center);
+        technician.setName(request.getName());
+        technician.setEmail(request.getEmail()); 
+        technician.setPhone(request.getPhone());
+        technician.setSpecialization(request.getSpecialization());
+        technician.setUsername(request.getUsername());
+        
+        // Mật khẩu (Chủ yếu được User Entity quản lý, nhưng nếu DTO có thì ta lưu)
+        if (request.getPassword() != null) {
+             technician.setPassword(request.getPassword()); // Giả định là mật khẩu đã hash từ UserService
         }
         
         return technicianRepository.save(technician);

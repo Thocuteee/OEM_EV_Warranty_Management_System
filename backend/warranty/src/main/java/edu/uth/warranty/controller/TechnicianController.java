@@ -67,11 +67,9 @@ public class TechnicianController {
     @PostMapping
     public ResponseEntity<?> createTechnician(@Valid @RequestBody TechnicianRequest request) {
         try {
-            Technician newTechnician = toEntity(request);
-            newTechnician.setTechnicianId(null); // Đảm bảo tạo mới
-            Technician savedTechnician = technicianService.saveTechnician(newTechnician);
-            
-            return ResponseEntity.status(HttpStatus.CREATED).body(toResponseDTO(savedTechnician));
+            request.setId(null); 
+            Technician newTechnician = technicianService.saveTechnician(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(toResponseDTO(newTechnician));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         } catch (Exception e) {
@@ -112,7 +110,7 @@ public class TechnicianController {
         }
 
         try {
-            Technician updatedTechnician = technicianService.saveTechnician(toEntity(request));
+            Technician updatedTechnician = technicianService.saveTechnician(request);
             return ResponseEntity.ok(toResponseDTO(updatedTechnician));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
