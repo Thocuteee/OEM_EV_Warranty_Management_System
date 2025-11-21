@@ -1,3 +1,4 @@
+// frontend/src/pages/claims/new.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -11,6 +12,8 @@ import { createWarrantyClaim } from '@/services/modules/claimService';
 import { getClaimById } from '@/services/modules/claimService';
 import { ServiceCenterResponse } from '@/types/center'; 
 import { getAllServiceCenters } from '@/services/modules/centerService';
+import { TechnicianResponse } from '@/types/technician'; // <-- Import cần thiết
+import { getAllTechnicians } from '@/services/modules/technicianService' // <-- Import cần thiết
 import axios from 'axios';
 
 
@@ -19,12 +22,15 @@ interface ClaimFormProps {
         vehicle: VehicleResponse;
         centers: ServiceCenterResponse[];
         staffId: number;
+        // 1. THÊM PROP TECHNICIANS
+        technicians: TechnicianResponse[]; 
     };
     onSuccess: (claim: WarrantyClaimResponse) => void;
 }
 
 const ClaimForm: React.FC<ClaimFormProps> = ({ initialData, onSuccess }) => {
-    const { vehicle, centers, staffId } = initialData;
+    // 2. THÊM TECHNICIANS VÀO DESTRUCTURING
+    const { vehicle, centers, staffId, technicians } = initialData; 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -45,6 +51,8 @@ const ClaimForm: React.FC<ClaimFormProps> = ({ initialData, onSuccess }) => {
             ...prev,
             [name]: name === 'totalCost' ? (value ? parseFloat(value) : 0) : 
                     name === 'centerId' ? (value ? parseInt(value) : 0) : 
+                    // 3. LOGIC XỬ LÝ ID TECHNICIAN (Chuyển chuỗi sang số hoặc null)
+                    name === 'technicianId' ? (value ? parseInt(value) : null) :
                     value,
         } as WarrantyClaimRequest));
     };
@@ -149,17 +157,24 @@ const ClaimForm: React.FC<ClaimFormProps> = ({ initialData, onSuccess }) => {
                         required
                     />
                 </div>
-                {/* 5. Technician ID (Optional) */}
+                
+                {/* 5. Technician ID (SỬ DỤNG SELECT ĐỂ HIỆN TÊN) */}
                 <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1">ID Kỹ thuật viên (Nếu được chỉ định)</label>
-                    <input
-                        type="number"
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">Kỹ thuật viên (Tùy chọn)</label>
+                    <select
                         name="technicianId"
-                        value={formState.technicianId || ''}
+                        value={formState.technicianId || ''} // Sử dụng '' cho option null/default
                         onChange={handleChange}
-                        placeholder="ID Technician"
                         className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500"
-                    />
+                    >
+                        <option value={''}>-- Không gán Kỹ thuật viên --</option> 
+                        {/* Lặp qua danh sách Technician */}
+                        {technicians.map(t => (
+                            <option key={t.id} value={t.id}>
+                                {t.name} ({t.specialization}) - ID: {t.id}
+                            </option>
+                        ))}
+                    </select>
                 </div>
             </div>
 
@@ -187,6 +202,7 @@ const AddNewClaimPage: React.FC = () => {
 
     const [vehicleData, setVehicleData] = useState<VehicleResponse | null>(null);
     const [centersData, setCentersData] = useState<ServiceCenterResponse[]>([]);
+    const [techniciansData, setTechniciansData] = useState<TechnicianResponse[]>([]); // <--- THÊM STATE NÀY
     const [isLoading, setIsLoading] = useState(true);
     const [pageError, setPageError] = useState('');
     const [isClaimSuccess, setIsClaimSuccess] = useState(false);
@@ -194,6 +210,14 @@ const AddNewClaimPage: React.FC = () => {
     useEffect(() => {
         if (!isAuthenticated || !user) {
             router.push('/login');
+            return;
+        }
+
+        // Chỉ cho phép Staff/Technician Roles tạo claim, hoặc Admin/EVM_Staff
+        const allowedRoles = ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"];
+        if (user && !allowedRoles.includes(user.role)) {
+            setPageError("Bạn không có quyền tạo Yêu cầu Bảo hành.");
+            setIsLoading(false);
             return;
         }
 
@@ -207,13 +231,16 @@ const AddNewClaimPage: React.FC = () => {
             setIsLoading(true);
             try {
                 // 1. Lấy thông tin Xe theo VIN
-                // Dùng getVehicleByVIN đã được sửa tên trong repository
                 const vehicle = await getVehicleByVIN(vin); 
                 setVehicleData(vehicle);
                 
                 // 2. Lấy danh sách Trung tâm Dịch vụ
                 const centers = await getAllServiceCenters();
                 setCentersData(centers);
+
+                // 3. Lấy danh sách Kỹ thuật viên (MỚI)
+                const technicians = await getAllTechnicians(); 
+                setTechniciansData(technicians);
 
             } catch (e: unknown) {
                 const message = (e instanceof Error) ? e.message : "Không thể tải thông tin xe hoặc trung tâm dịch vụ.";
@@ -276,6 +303,7 @@ const AddNewClaimPage: React.FC = () => {
                         vehicle: vehicleData,
                         centers: centersData,
                         staffId: user.id,
+                        technicians: techniciansData, // <--- TRUYỀN DỮ LIỆU ĐÃ TẢI
                     }}
                     onSuccess={handleSuccess}
                 />

@@ -43,20 +43,14 @@ public class CampaignVehicle {
         }
     }
 
-    // KHẮC PHỤC LỖI TẠO CỘT DƯ THỪA và ANNOTATIONEXCEPTION 
-    // Các trường này cần phải có vì được tham chiếu bởi @IdClass và @MapsId, 
-    // NHƯNG cần ngăn Hibernate cố gắng ánh xạ chúng thành cột độc lập (đã bị xóa).
-
     @Id
-    @Column(name = "campaign_id", insertable = false, updatable = false) // <-- THÊM LẠI CÁC TRƯỜNG NÀY VÀ FIX LỖI JPA
+    //@Column(name = "campaign_id", insertable = false, updatable = false) 
     private Long campaign; 
 
     @Id
-    @Column(name = "vehicle_id", insertable = false, updatable = false) // <-- THÊM LẠI CÁC TRƯỜNG NÀY VÀ FIX LỖI JPA
+    //@Column(name = "vehicle_id", insertable = false, updatable = false) 
     private Long vehicle; 
     
-    // Bây giờ, các trường ManyToOne mới thực hiện việc ánh xạ quan hệ
-    // Giữ nguyên @MapsId để liên kết với các trường ID phức hợp ở trên
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("campaign") 
     @JoinColumn(name = "campaign_id", nullable = false)
@@ -75,8 +69,5 @@ public class CampaignVehicle {
         this.status = status;
         this.recallCampaignEntity = campaign;
     } 
-    // LƯU Ý: Bạn cần chỉnh sửa constructor này (nếu đang dùng) 
-    // hoặc XÓA nó và sử dụng constructor do Lombok tạo nếu nó gây lỗi.
-    // Nếu bạn muốn giữ constructor tùy chỉnh, nó cần phải phù hợp với @AllArgsConstructor của Lombok
-    // (Lombok sẽ tạo constructor với tất cả các trường không phải static/final)
+
 }

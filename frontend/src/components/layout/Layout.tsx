@@ -60,7 +60,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"], 
     },
 
-    { name: "Yêu cầu Bảo hành", icon: "📋", href: "#" },
+    { name: "Yêu cầu Bảo hành", icon: "📋", href: "/admin/claims", 
+      roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"] // Thêm roles để hiện thị
+    },
 
     { name: "Linh kiện & Phụ tùng", icon: "⚙️", href: "#" },
 

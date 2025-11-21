@@ -98,10 +98,8 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
         // Logic Khởi tạo Claim mới (DRAFT)
         if(warrantyClaim.getClaimId() == null) {
             warrantyClaim.setCreatedAt(LocalDateTime.now());
-            // SỬA LỖI CÚ PHÁP: Xóa khoảng trắng thừa trong Status
             warrantyClaim.setStatus("DRAFT"); 
             warrantyClaim.setApprovalStatus("PENDING");
-
         }
         
         warrantyClaim.setUpdatedAt(LocalDateTime.now());
