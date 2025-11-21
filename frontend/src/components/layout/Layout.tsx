@@ -1,6 +1,7 @@
+// frontend/src/components/layout/Layout.tsx
 "use client";
 
-import React, { useState, ReactNode } from "react";
+import React, { useState, ReactNode, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
@@ -18,8 +19,13 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  // THÊM: State để quản lý việc hiển thị Dropdown Menu
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
   const router = useRouter();
+  
+  // Ref để phát hiện click bên ngoài
+  const menuRef = useRef<HTMLDivElement>(null); 
 
   const displayName = user?.username ?? "";
   const initial = displayName ? displayName.charAt(0).toUpperCase() : '?';
@@ -28,6 +34,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     logout();
     router.push('/login');
   };
+  
+  // THÊM: Logic để đóng menu khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuRef]);
+
 
   const sidebarMenuItems: SidebarItem[] = [
     { name: "Dashboard", icon: "🏠", href: "/" },
@@ -37,7 +58,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       icon: "🚗", 
       href: "/cars", 
       roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"], 
-        },
+    },
 
     { name: "Yêu cầu Bảo hành", icon: "📋", href: "#" },
 
@@ -94,16 +115,48 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
         
         {isAuthenticated ? (
+          // THÊM: ref và position relative cho dropdown
           <div 
-            className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 cursor-pointer transition-colors"
-            onClick={handleLogout}
+            className="relative"
+            ref={menuRef} 
           >
-            <span className="text-sm font-semibold text-gray-700 hidden sm:inline">
-              {displayName}
-            </span>
-            <div className="w-8 h-8 rounded-full bg-blue-500 text-white text-sm font-semibold flex items-center justify-center">
-              {initial}
+            <div
+                className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 cursor-pointer transition-colors"
+                // SỬA LỖI: Chỉ toggle menu, không gọi logout ở đây
+                onClick={() => setIsMenuOpen(!isMenuOpen)} 
+            >
+                <span className="text-sm font-semibold text-gray-700 hidden sm:inline">
+                  {displayName}
+                </span>
+                <div className="w-8 h-8 rounded-full bg-blue-500 text-white text-sm font-semibold flex items-center justify-center">
+                  {initial}
+                </div>
             </div>
+
+            {/* DROP DOWN MENU */}
+            {isMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-100">
+                    <div className="px-4 py-2 text-xs font-semibold text-gray-400 border-b mb-1 truncate">
+                        {user?.role}
+                    </div>
+                    {/* OPTION 1: Thông tin tài khoản (Placeholder) */}
+                    <Link href="/profile" passHref legacyBehavior>
+                        <a 
+                            onClick={() => setIsMenuOpen(false)}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        >
+                            Thông tin tài khoản
+                        </a>
+                    </Link>
+                    {/* OPTION 2: Đăng xuất */}
+                    <a 
+                        onClick={handleLogout}
+                        className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                    >
+                        Đăng xuất
+                    </a>
+                </div>
+            )}
           </div>
         ) : (
           <div className="flex items-center gap-[3px]">

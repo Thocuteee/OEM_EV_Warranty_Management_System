@@ -18,11 +18,12 @@ export default function SidebarAdmin() {
         
         // --- CHUỖI NGHIỆP VỤ (CLAIMS & PARTS) ---
         { name: "Quản lý Xe", href: "/admin/vehicles", icon: "🚗" },
-        { name: "Yêu cầu Bảo hành (Claims)", href: "/admin/claims", icon: "📄" }, // Biểu tượng Claims rõ hơn
+        { name: "Yêu cầu Bảo hành (Claims)", href: "/admin/claims", icon: "📄" }, 
         
         // --- MODULE HỖ TRỢ VÀ TỒN KHO ---
-        { name: "Quản lý Linh kiện/Tồn kho", href: "/admin/parts", icon: "🔧" }, // Module tiếp theo
-        { name: "Chiến dịch", href: "/admin/campaigns", icon: "📣" }, // Sửa Icon cho Chiến dịch
+        { name: "Quản lý Linh kiện/Tồn kho", href: "/admin/parts", icon: "🔧" }, 
+        { name: "Quản lý Trung tâm Dịch vụ", href: "/admin/centers", icon: "📍" },
+        { name: "Chiến dịch", href: "/admin/campaigns", icon: "📣" }, 
         { name: "Quản lý Hóa đơn", href: "/admin/invoices", icon: "🧾" }, // Thêm Hóa đơn
         
         // --- KHÁC ---

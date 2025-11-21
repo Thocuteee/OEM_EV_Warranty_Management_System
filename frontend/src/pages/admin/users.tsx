@@ -35,11 +35,12 @@ export default function AdminUsersPage() {
       router.push("/login");
       return;
     }
-    if (user && user.role !== "Admin") {
+    const allowedRoles = ["Admin", "EVM_Staff"];
+    if(user && !allowedRoles.includes(user.role)) {
       router.push("/");
       return;
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, router]);
 
   // ---------------------------------------
   // Load danh sách user
