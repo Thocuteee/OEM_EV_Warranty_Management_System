@@ -15,3 +15,4 @@ export const updateStaff = async (id: number, staffData: StaffRequest): Promise<
     const response = await apiClient.put<StaffResponse>(`/staffs/${id}`, staffData);
     return response.data;
 };
+

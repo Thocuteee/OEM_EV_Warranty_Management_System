@@ -1,3 +1,4 @@
+// frontend/src/services/modules/technicianService.ts
 import { apiClient } from "../coreApiClient";
 import { TechnicianResponse, TechnicianRequest } from "@/types/technician";
 
@@ -13,3 +14,8 @@ export const getTechnicianById = async (id: number): Promise<TechnicianResponse>
     return response.data;
 };
 
+// THÊM: PUT: Cập nhật thông tin Technician
+export const updateTechnician = async (id: number, technicianData: TechnicianRequest): Promise<TechnicianResponse> => {
+    const response = await apiClient.put<TechnicianResponse>(`/technicians/${id}`, technicianData);
+    return response.data;
+};

@@ -11,3 +11,20 @@ export interface LoginResponse {
     role: UserRole;
     token: string;
 }
+
+export interface AuthContextType {
+    user: UserProfile | null;
+    isAuthenticated: boolean;
+    login: (userData: UserProfile) => void;
+    logout: () => void;
+    updateProfile: (profileUpdate: Partial<UserProfile>) => void; 
+}
+
+export interface UserProfile {
+    id: number;
+    username: string;
+    name: string; 
+    email: string;
+    role: UserRole;
+    token: string;
+}

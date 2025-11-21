@@ -105,7 +105,7 @@ public class StaffController {
 
     // 3. GET /api/staffs/{id} : Lấy chi tiết Staff
     @GetMapping("/{id}")
-    public ResponseEntity<StaffResponse> getStaffById(@Valid Long id) {
+    public ResponseEntity<StaffResponse> getStaffById(@PathVariable Long id) {
         Optional<Staff> staff = staffService.getStaffById(id);
 
         if(staff.isEmpty()) {
@@ -137,7 +137,7 @@ public class StaffController {
     }
 
     // 6. GET /api/staffs/center/{centerId} : Tìm kiếm theo Trung tâm Dịch vụ
-    @GetMapping("/center{centerId}")
+    @GetMapping("/center/{centerId}")
     public ResponseEntity<List<StaffResponse>> getStaffsByCenter(@PathVariable Long centerId) {
         ServiceCenter serviceCenter = new ServiceCenter();
         serviceCenter.setCenterId(centerId);

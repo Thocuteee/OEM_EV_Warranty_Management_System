@@ -32,7 +32,7 @@ public class WarrantyClaim {
     private Customer customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "technician_id", nullable = false)
+    @JoinColumn(name = "technician_id", nullable = true)
     private Technician technician;
 
     @ManyToOne(fetch = FetchType.LAZY)

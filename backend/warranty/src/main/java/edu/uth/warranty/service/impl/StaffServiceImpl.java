@@ -35,7 +35,7 @@ public class StaffServiceImpl implements IStaffService{
 
     @Override
     public Optional<Staff> getStaffById(Long id) {
-        return staffRepository.findByIdWithCenter(id);
+        return staffRepository.findById(id);
     }
 
     @Override

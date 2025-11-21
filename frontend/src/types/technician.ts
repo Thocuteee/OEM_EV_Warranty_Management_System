@@ -20,4 +20,5 @@ export interface TechnicianResponse {
     email: string;
     specialization: string;
     username: string;
+    role: UserRole;
 }

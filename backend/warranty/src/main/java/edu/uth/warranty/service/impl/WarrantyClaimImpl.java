@@ -42,7 +42,7 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
             VehicleRepository vehicleRepository,
             TechnicianRepository technicianRepository,
             StaffRepository staffRepository,
-            ServiceCenterRepository serviceCenterRepository, CustomerServiceImpl customerServiceImpl)
+            ServiceCenterRepository serviceCenterRepository)
             {
         this.warrantyClaimRepository = warrantyClaimRepository;
         this.customerRepository = customerRepository;
@@ -52,35 +52,62 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
         this.serviceCenterRepository = serviceCenterRepository;
     
     }
+
     @Override
     public List<WarrantyClaim> getAllWarrantyClaims() {
         return warrantyClaimRepository.findAll();
     }
+
     @Override
     public Optional<WarrantyClaim> getWarrantyClaimById(Long id) {
         return warrantyClaimRepository.findById(id);
     }
+
     @Override
     public WarrantyClaim saveWarrantyClaim(WarrantyClaim warrantyClaim){
-        if(vehicleRepository.findById(warrantyClaim.getVehicle().getVehicleId()).isEmpty()) {
-            throw new IllegalArgumentException("Yêu cầu bảo hành với không tồn tại.");
+        
+        // 1. KIỂM TRA STAFF ID (KHẮC PHỤC LỖI 500 CƠ BẢN NHẤT)
+        // Staff ID là BẮT BUỘC và phải tồn tại trong bảng Staff
+        if(warrantyClaim.getStaff() == null || warrantyClaim.getStaff().getStaffId() == null || staffRepository.findById(warrantyClaim.getStaff().getStaffId()).isEmpty()) {
+            throw new IllegalArgumentException("Nhân viên (Staff ID) tạo yêu cầu không tồn tại trong hệ thống.");
         }
-        if(customerRepository.findById(warrantyClaim.getCustomer().getCustomerId()).isEmpty()) {
-            throw new IllegalArgumentException("Khách hàng với ID " + warrantyClaim.getCustomer().getCustomerId() + " không tồn tại.");
+        
+        // 2. KIỂM TRA VEHICLE ID
+        if(warrantyClaim.getVehicle() == null || warrantyClaim.getVehicle().getVehicleId() == null || vehicleRepository.findById(warrantyClaim.getVehicle().getVehicleId()).isEmpty()) {
+            // Sửa thông báo lỗi để rõ ràng hơn
+            throw new IllegalArgumentException("Xe (Vehicle ID) không tồn tại."); 
         }
-        if(serviceCenterRepository.findById(warrantyClaim.getCenter().getCenterId()).isEmpty()) {
-            throw new IllegalArgumentException("Trung tâm dịch vụ với ID " + warrantyClaim.getCenter().getCenterId() + " không tồn tại.");
+        
+        // 3. KIỂM TRA CUSTOMER ID
+        if(warrantyClaim.getCustomer() == null || warrantyClaim.getCustomer().getCustomerId() == null || customerRepository.findById(warrantyClaim.getCustomer().getCustomerId()).isEmpty()) {
+             throw new IllegalArgumentException("Khách hàng không tồn tại.");
         }
+        
+        // 4. KIỂM TRA SERVICE CENTER ID
+        if(warrantyClaim.getCenter() == null || warrantyClaim.getCenter().getCenterId() == null || serviceCenterRepository.findById(warrantyClaim.getCenter().getCenterId()).isEmpty()) {
+            throw new IllegalArgumentException("Trung tâm dịch vụ không tồn tại.");
+        }
+        
+        // 5. KIỂM TRA TECHNICIAN ID (Nếu được cung cấp)
+        if (warrantyClaim.getTechnician() != null && warrantyClaim.getTechnician().getTechnicianId() != null) {
+            if (technicianRepository.findById(warrantyClaim.getTechnician().getTechnicianId()).isEmpty()) {
+                throw new IllegalArgumentException("Kỹ thuật viên không tồn tại.");
+            }
+        }
+        
+        // Logic Khởi tạo Claim mới (DRAFT)
         if(warrantyClaim.getClaimId() == null) {
             warrantyClaim.setCreatedAt(LocalDateTime.now());
-            warrantyClaim.setStatus("DRAFT ");
+            // SỬA LỖI CÚ PHÁP: Xóa khoảng trắng thừa trong Status
+            warrantyClaim.setStatus("DRAFT"); 
             warrantyClaim.setApprovalStatus("PENDING");
 
         }
+        
         warrantyClaim.setUpdatedAt(LocalDateTime.now());
         return warrantyClaimRepository.save(warrantyClaim);
-    
     }
+
     @Override
     public void deleteWarrantyClaim(Long id) {
     Optional<WarrantyClaim> claimOpt = warrantyClaimRepository.findById(id);
