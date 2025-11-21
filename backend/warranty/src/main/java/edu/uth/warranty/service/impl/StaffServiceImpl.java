@@ -11,6 +11,7 @@ import edu.uth.warranty.service.IStaffService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.hibernate.Hibernate; 
 import java.util.List;
 import java.util.Optional;
 
@@ -34,7 +35,7 @@ public class StaffServiceImpl implements IStaffService{
 
     @Override
     public Optional<Staff> getStaffById(Long id) {
-        return staffRepository.findById(id);
+        return staffRepository.findByIdWithCenter(id);
     }
 
     @Override

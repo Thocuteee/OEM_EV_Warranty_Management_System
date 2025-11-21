@@ -35,13 +35,13 @@ public class StaffController {
         String centerName = null;
         Long centerId = null;
 
-        if(staff.getCenter() != null && staff.getCenter().getCenterId() != null) {
-            Long actualCenterId = staff.getCenter().getCenterId();
-            Optional<ServiceCenter> centerOpt = serviceCenterService.getServiceCenterById(actualCenterId);
-            if(centerOpt.isPresent()) {
-                centerName = centerOpt.get().getName();
-                centerId = actualCenterId;
-            }
+        // FIX LỖI 500: Chỉ sử dụng các thuộc tính đã được tải sẵn từ Entity Staff
+        ServiceCenter center = staff.getCenter();
+        
+        if (center != null) {
+            // centerId và centerName đã được tải (do ServiceImpl đã buộc tải Lazy Load)
+            centerId = center.getCenterId();
+            centerName = center.getName();
         }
         return new StaffResponse(
             staff.getStaffId(),

@@ -26,8 +26,16 @@ public class TechnicianController {
     }
 
     private TechnicianResponse toResponseDTO(Technician technician) {
-        Long centerId = technician.getCenter() != null ? technician.getCenter().getCenterId() : null;
-        String centerName = technician.getCenter() != null ? technician.getCenter().getName() : null;
+        String centerName = null;
+        Long centerId = null;
+        
+        // FIX LỖI 500: Dựa vào Entity đã được Service tải
+        ServiceCenter center = technician.getCenter();
+        
+        if (center != null) {
+            centerId = center.getCenterId();
+            centerName = center.getName();
+        }
         
         return new TechnicianResponse(
             technician.getTechnicianId(),

@@ -5,6 +5,7 @@ import edu.uth.warranty.model.ServiceCenter;
 import edu.uth.warranty.common.Role;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -24,4 +25,7 @@ public interface StaffRepository extends JpaRepository<Staff, Long>{
     List<Staff> findByCenter(ServiceCenter center);
 
     List<Staff> findByRoleAndCenter(Role role, ServiceCenter center);
+
+    @Query("SELECT s FROM Staff s JOIN FETCH s.center WHERE s.staffId = :id")
+    Optional<Staff> findByIdWithCenter(Long id);
 }
