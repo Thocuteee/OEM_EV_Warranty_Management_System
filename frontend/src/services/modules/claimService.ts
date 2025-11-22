@@ -42,3 +42,9 @@ export const getClaimsByStatuses = async(statuses:string[]): Promise<WarrantyCla
     const response = await apiClient.get<WarrantyClaimResponse[]>(`/warranty-claims/search/statuses?statuses=${statusList}`);
     return response.data;
 };
+
+// 8. PUT: Cập nhật Technician ID cho Claim
+export const updateClaimTechnician = async (claimId: number, technicianId: number): Promise<WarrantyClaimResponse> => {
+    const response = await apiClient.put<WarrantyClaimResponse>(`/warranty-claims/${claimId}/assign-tech?technicianId=${technicianId}`);
+    return response.data;
+};

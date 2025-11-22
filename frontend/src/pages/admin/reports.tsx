@@ -1,4 +1,3 @@
-// frontend/src/pages/admin/reports.tsx
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
@@ -123,8 +122,8 @@ export default function AdminReportsPage() {
             await loadReports();
             setIsModalOpen(false); // Đóng modal sau khi thành công
         } catch (err: unknown) {
-             const errorMessage = axios.isAxiosError(err) && err.response?.data?.message ? err.response.data.message : "Lỗi khi tạo Báo cáo. Kiểm tra Claim ID, Vehicle ID, Center ID và Technician ID.";
-             throw new Error(errorMessage);
+            const errorMessage = axios.isAxiosError(err) && err.response?.data?.message ? err.response.data.message : "Lỗi khi tạo Báo cáo. Kiểm tra Claim ID, Vehicle ID, Center ID và Technician ID.";
+            throw new Error(errorMessage);
         }
     }
 
@@ -205,9 +204,9 @@ export default function AdminReportsPage() {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl p-8 w-full max-w-2xl shadow-2xl transform transition-all duration-300">
                         <ReportForm
-                            initialClaimId={1} 
-                            initialVehicleId={1} 
-                            initialCenterId={1} 
+                            initialClaimId={0} 
+                            initialVehicleId={0} 
+                            initialCenterId={0} 
                             currentUserId={user.id}
                             currentUsername={user.username}
                             onSubmit={handleCreateReport}

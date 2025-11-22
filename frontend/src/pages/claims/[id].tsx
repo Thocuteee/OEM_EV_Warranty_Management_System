@@ -7,18 +7,26 @@ import { useAuth } from '@/context/AuthContext';
 import Layout from '@/components/layout/Layout';
 import { WarrantyClaimResponse } from '@/types/claim'; 
 import { TechnicianResponse } from '@/types/technician';
-import { ClaimPartResponse } from '@/types/claimPart';
-import { WorkLogResponse } from '@/types/workLog';
+import { ClaimPartResponse, ClaimPartRequest } from '@/types/claimPart';
+import { WorkLogResponse, WorkLogRequest } from '@/types/workLog';
+import { ReportRequest } from '@/types/report'; 
 
-import { getClaimById, updateClaimStatus } from '@/services/modules/claimService';
+// IMPORT FORMS
+import ReportForm from "@/reports/ReportForm"; 
+import WorkLogForm from "@/worklogs/WorkLogForm"; 
+import ClaimPartForm from "@/claims/ClaimPartForm"; 
+
+// IMPORT SERVICES
+import { getClaimById, updateClaimStatus, updateClaimTechnician } from '@/services/modules/claimService';
 import { getAllTechnicians } from '@/services/modules/technicianService';
-import { getClaimPartsByClaimId } from '@/services/modules/claimPartService';
-import { getWorkLogsByClaimId } from '@/services/modules/workLogService';
+import { getClaimPartsByClaimId, createClaimPart, deleteClaimPartByCompositeId } from '@/services/modules/claimPartService'; 
+import { getWorkLogsByClaimId, createWorkLog, deleteWorkLog } from '@/services/modules/workLogService'; 
+import { createReport } from '@/services/modules/reportService'; 
 
 import axios from 'axios';
 
 // -----------------------------------------------------------------------------
-// ĐỊNH NGHĨA INTERFACE CHO CÁC COMPONENT CON (Đã sửa lỗi TS2345/TS2322)
+// INTERFACE CHO CÁC COMPONENT CON (CẬP NHẬT PROPS ĐẦY ĐỦ)
 // -----------------------------------------------------------------------------
 
 interface ClaimPartsManagerProps {
@@ -26,12 +34,16 @@ interface ClaimPartsManagerProps {
     technicianId: number | null | undefined;
     initialParts: ClaimPartResponse[]; 
     onPartUpdate: () => void;
+    onAddPart: () => void; 
+    onDeletePart: (partId: number) => void;
 }
 
 interface WorkLogManagerProps {
     claimId: number;
     technicianId: number | null | undefined;
     initialLogs: WorkLogResponse[];
+    onAddLog: () => void;
+    onDeleteLog: (logId: number) => void;
 }
 
 interface AssignTechnicianProps {
@@ -42,64 +54,135 @@ interface AssignTechnicianProps {
 
 
 // -----------------------------------------------------------------------------
-// 1. ClaimPartsManager (Đã áp dụng typing)
+// 1. ClaimPartsManager (CÓ NÚT XỬ LÝ SỰ KIỆN)
 // -----------------------------------------------------------------------------
-const ClaimPartsManager: React.FC<ClaimPartsManagerProps> = ({ claimId, technicianId, initialParts, onPartUpdate }) => (
+const ClaimPartsManager: React.FC<ClaimPartsManagerProps> = ({ claimId, initialParts, onAddPart, onDeletePart }) => (
     <div className="bg-white p-4 rounded-lg border">
-        <h3 className="font-bold text-lg">Quản lý Phụ tùng ({initialParts?.length || 0})</h3>
-        <p className="text-sm text-gray-500 mt-2">Tính năng Thêm/Sửa/Xóa phụ tùng yêu cầu bảo hành cho Claim {claimId}.</p>
+        <h3 className="font-bold text-xl mb-3">Quản lý Phụ tùng ({initialParts?.length || 0})</h3>
         
-        <ul className="mt-4 space-y-1 text-sm">
-            {/* SỬA LỖI P.PARTNUMBER: Đảm bảo sử dụng property tồn tại trong ClaimPartResponse */}
-            {initialParts?.map(p => <li key={p.partNumber || p.partId}>{p.partName} - {p.quantity} cái - {p.unitPrice.toLocaleString('vi-VN')} VND</li>)}
-        </ul>
-        <button className="mt-3 bg-blue-500 text-white px-3 py-1 text-sm rounded">Thêm Phụ tùng</button>
+        {initialParts?.length === 0 ? (
+            <p className="text-gray-500 italic">Chưa có linh kiện nào được ghi nhận cho yêu cầu này.</p>
+        ) : (
+            <ul className="mt-4 space-y-2 text-sm max-h-60 overflow-y-auto border-t pt-3">
+                {initialParts?.map(p => (
+                    <li key={`${p.partNumber}-${p.claimId}`} className="flex justify-between items-center border-b pb-1">
+                        <div>
+                            <span className="font-medium text-gray-700">{p.partName} <span className="text-gray-500">({p.partNumber})</span></span>
+                            <div className="text-blue-700 font-bold text-xs">{p.quantity} cái x {p.unitPrice.toLocaleString('vi-VN')} VND</div>
+                        </div>
+                        <button 
+                            onClick={() => onDeletePart(p.partId)} 
+                            className="text-red-500 hover:text-red-700 text-xs font-semibold p-1"
+                        >
+                            Xóa
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        )}
+        
+        <button 
+            onClick={onAddPart} 
+            className="mt-4 bg-blue-600 text-white px-3 py-2 text-sm rounded hover:bg-blue-700"
+        >
+            + Thêm Phụ tùng
+        </button>
     </div>
 );
 
 // -----------------------------------------------------------------------------
-// 2. WorkLogManager (Đã áp dụng typing)
+// 2. WorkLogManager (CÓ NÚT XỬ LÝ SỰ KIỆN)
 // -----------------------------------------------------------------------------
-const WorkLogManager: React.FC<WorkLogManagerProps> = ({ claimId, initialLogs, technicianId }) => (
+const WorkLogManager: React.FC<WorkLogManagerProps> = ({ claimId, initialLogs, technicianId, onAddLog, onDeleteLog }) => (
     <div className="bg-white p-4 rounded-lg border">
-        <h3 className="font-bold text-lg">Nhật ký Công việc ({initialLogs?.length || 0})</h3>
-        <p className="text-sm text-gray-500 mt-2">Tính năng ghi lại thời gian sửa chữa của Kỹ thuật viên.</p>
-        <button className="mt-3 bg-green-500 text-white px-3 py-1 text-sm rounded">Thêm Log Công việc</button>
+        <h3 className="font-bold text-xl mb-3">Nhật ký Công việc ({initialLogs?.length || 0})</h3>
+        
+        {initialLogs?.length === 0 ? (
+            <p className="text-gray-500 italic">Chưa có nhật ký công việc nào.</p>
+        ) : (
+            <ul className="mt-4 space-y-2 text-sm max-h-60 overflow-y-auto border-t pt-3">
+                {initialLogs?.map(log => (
+                    <li key={log.id} className="border-b pb-1 flex justify-between items-center">
+                        <div>
+                            <div className="flex justify-start font-medium">
+                                <span className="text-gray-800">🛠️ {log.technicianName}</span>
+                                <span className="text-indigo-600 ml-4">{log.duration.toLocaleString()} Ngày</span>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-0.5 truncate">Notes: {log.notes}</p>
+                        </div>
+                        <button 
+                            onClick={() => onDeleteLog(log.id)} 
+                            className="text-red-500 hover:text-red-700 text-xs font-semibold p-1"
+                        >
+                            Xóa
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        )}
+        
+        <button 
+            onClick={onAddLog} 
+            className="mt-4 bg-indigo-600 text-white px-3 py-2 text-sm rounded hover:bg-indigo-700"
+        >
+            + Thêm Log Công việc
+        </button>
     </div>
 );
 
+
 // -----------------------------------------------------------------------------
-// 3. AssignTechnician (Đã áp dụng typing)
+// 3. AssignTechnician 
 // -----------------------------------------------------------------------------
 const AssignTechnician: React.FC<AssignTechnicianProps> = ({ claim, technicians, onAssign }) => {
-    const [selectedTech, setSelectedTech] = useState(claim.technicianId || '');
+    const { user } = useAuth();
+    const canAssign = user && ['Admin', 'EVM_Staff', 'SC_Staff'].includes(user.role);
+    
+    // Tìm tech hiện tại để hiển thị tên
+    const currentTech = technicians.find(t => t.id === claim.technicianId);
 
-    // Hàm gọi khi nhấn Gán (Placeholder)
+    const [selectedTech, setSelectedTech] = useState(claim.technicianId ? String(claim.technicianId) : '');
+    
+    // Chỉ cho phép gán nếu Claim chưa hoàn thành hoặc bị từ chối phê duyệt
+    const isModificationAllowed = !['COMPLETED', 'REJECTED'].includes(claim.status.toUpperCase()) && canAssign;
+
     const handleAssignClick = () => {
-        if (selectedTech) {
-            onAssign(parseInt(selectedTech as string));
-        }
+        if (!selectedTech || !canAssign) return;
+
+        const techId = parseInt(selectedTech);
+        onAssign(techId); 
     };
 
     return (
-        <div className="bg-white p-4 rounded-lg border">
-            <h3 className="font-bold text-lg">Gán Kỹ thuật viên</h3>
-            <p className="text-sm">Kỹ thuật viên hiện tại: <span className="font-semibold">{claim.technicianId || 'Chưa gán'}</span></p>
-            <select 
-                className="mt-3 w-full border rounded p-2 text-sm"
-                value={selectedTech}
-                onChange={(e) => setSelectedTech(e.target.value)}
-            >
-                <option value="">-- Chọn Kỹ thuật viên --</option>
-                {technicians.map(t => <option key={t.id} value={t.id}>{t.name} ({t.specialization})</option>)}
-            </select>
-            <button 
-                className="mt-3 bg-indigo-500 text-white px-3 py-1 text-sm rounded hover:bg-indigo-600 disabled:opacity-50"
-                onClick={handleAssignClick}
-                disabled={!selectedTech}
-            >
-                Gán
-            </button>
+        <div className="bg-white p-4 rounded-xl shadow-md border space-y-3">
+            <h3 className="font-bold text-lg text-gray-800">Gán Kỹ thuật viên</h3>
+            
+            <p className="text-sm text-gray-700">
+                Kỹ thuật viên hiện tại: <span className="font-semibold text-indigo-600">
+                    {claim.technicianId ? `${currentTech?.name || 'ID không rõ'}` : 'Chưa gán'}
+                </span>
+            </p>
+            
+            {isModificationAllowed && (
+                <>
+                    <select 
+                        className="w-full border rounded p-2 text-sm focus:ring-blue-500 focus:border-blue-500"
+                        value={selectedTech}
+                        onChange={(e) => setSelectedTech(e.target.value)}
+                        disabled={!isModificationAllowed}
+                    >
+                        <option value="">-- Chọn Kỹ thuật viên --</option>
+                        {technicians.map(t => <option key={t.id} value={t.id}>{t.name} ({t.specialization})</option>)}
+                    </select>
+                    <button 
+                        className="w-full bg-indigo-600 text-white px-3 py-2 text-sm rounded hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                        onClick={handleAssignClick}
+                        disabled={!selectedTech || !isModificationAllowed}
+                    >
+                        Gán Kỹ thuật viên
+                    </button>
+                </>
+            )}
         </div>
     );
 };
@@ -114,7 +197,6 @@ export default function ClaimDetailPage() {
     const { id } = router.query;
     const { user } = useAuth();
     
-    // Lấy ID từ URL và chuyển sang kiểu number
     const claimId = typeof id === 'string' ? parseInt(id) : null;
     
     const [claim, setClaim] = useState<WarrantyClaimResponse | null>(null);
@@ -123,7 +205,12 @@ export default function ClaimDetailPage() {
     const [workLogs, setWorkLogs] = useState<WorkLogResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
-    const [activeTab, setActiveTab] = useState<'info' | 'parts' | 'logs'>('info');
+    const [activeTab, setActiveTab] = useState<'parts' | 'logs'>('parts'); 
+    
+    // THÊM STATES MODAL CÒN THIẾU
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false); 
+    const [isWorkLogModalOpen, setIsWorkLogModalOpen] = useState(false);
+    const [isClaimPartModalOpen, setIsClaimPartModalOpen] = useState(false);
 
     const isEVMApprover = user?.role === 'Admin' || user?.role === 'EVM_Staff';
     const canSendOrDelete = user?.role === 'SC_Staff';
@@ -133,7 +220,6 @@ export default function ClaimDetailPage() {
         if (!claimId) return;
         setIsLoading(true);
         try {
-            // SỬA LỖI TS2345/TS2322: Sử dụng Array Destructuring Tường minh
             const [claimData, techs, parts, logs] = await Promise.all([
                 getClaimById(claimId),
                 getAllTechnicians(),
@@ -158,6 +244,9 @@ export default function ClaimDetailPage() {
         fetchData();
     }, [fetchData]);
 
+    // ---------------------------------------------------------------------
+    // HANDLERS CHÍNH
+    // ---------------------------------------------------------------------
 
     const handleApproval = async (status: 'APPROVED' | 'REJECTED') => {
         if (!claim || !user || claim.approvalStatus !== 'PENDING') return;
@@ -165,7 +254,6 @@ export default function ClaimDetailPage() {
         if (!confirm(`Bạn có chắc muốn ${status === 'APPROVED' ? 'PHÊ DUYỆT' : 'TỪ CHỐI'} Claim ID ${claim.id}?`)) return;
         
         try {
-            // Dùng hàm updateClaimStatus đã sửa
             await updateClaimStatus(claim.id, status);
             alert(`Claim đã được cập nhật thành ${status}.`);
             fetchData();
@@ -175,14 +263,102 @@ export default function ClaimDetailPage() {
         }
     }
 
-    const handleAssignTechnician = (technicianId: number) => {
-        // TODO: Cần implement API PUT để cập nhật technicianId cho Claim.
-        console.log(`Assigning Claim ${claimId} to Technician ID: ${technicianId}`);
-        alert(`Chức năng Gán đang được triển khai API! Đã chọn ID: ${technicianId}`);
-        // Sau khi API thành công: fetchData();
+    const handleAssignTechnician = async (technicianId: number) => {
+        if (!claim) return;
+        try {
+            await updateClaimTechnician(claim.id, technicianId); 
+            alert(`Đã gán thành công Kỹ thuật viên ID ${technicianId}.`);
+            fetchData(); 
+        } catch (e: unknown) {
+            const message = axios.isAxiosError(e) ? e.response?.data?.message || 'Lỗi gán kỹ thuật viên.' : 'Lỗi không xác định.';
+            alert(message);
+        }
     };
     
-    const handlePartUpdate = () => {/* Logic khi thêm/sửa phụ tùng */}; 
+    const handlePartUpdate = () => {
+        // Tải lại dữ liệu phụ tùng khi ClaimPartsManager hoàn tất
+        fetchData(); 
+    }; 
+    
+    // ---------------------------------------------------------------------
+    // LOGIC WORKLOG
+    // ---------------------------------------------------------------------
+    const handleCreateWorkLog = async (payload: WorkLogRequest) => {
+        try {
+            await createWorkLog(payload);
+            alert("Đã thêm Nhật ký Công việc thành công!");
+            setIsWorkLogModalOpen(false);
+            fetchData(); 
+        } catch (e: unknown) {
+            const message = axios.isAxiosError(e) ? e.response?.data?.message || 'Lỗi thêm Work Log.' : 'Lỗi không xác định.';
+            throw new Error(message); 
+        }
+    }
+    
+    const handleDeleteWorkLog = async (logId: number) => {
+        if (!confirm(`Bạn có chắc muốn xóa Nhật ký Công việc ID ${logId}?`)) return;
+        try {
+            await deleteWorkLog(logId);
+            alert("Đã xóa Nhật ký Công việc.");
+            fetchData();
+        } catch (e: unknown) {
+            alert('Lỗi khi xóa Work Log.');
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // LOGIC CLAIM PART
+    // ---------------------------------------------------------------------
+    const handleCreateClaimPart = async (payload: ClaimPartRequest) => {
+        try {
+            await createClaimPart(payload); 
+            alert("Phụ tùng đã được thêm/cập nhật thành công!");
+            setIsClaimPartModalOpen(false);
+            fetchData(); 
+        } catch (e: unknown) {
+            const message = axios.isAxiosError(e) ? e.response?.data?.message || 'Lỗi thêm Phụ tùng Claim. Kiểm tra Part ID và Claim ID.' : 'Lỗi không xác định.';
+            throw new Error(message); 
+        }
+    }
+    
+    const handleDeleteClaimPart = async (partId: number) => {
+        if (!confirm(`Bạn có chắc muốn xóa Linh kiện ID ${partId} khỏi Claim này?`)) return;
+        try {
+            await deleteClaimPartByCompositeId(claimId!, partId); 
+            alert("Đã xóa Linh kiện khỏi Claim.");
+            fetchData();
+        } catch (e: unknown) {
+            alert('Lỗi khi xóa Claim Part.');
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // LOGIC REPORT
+    // ---------------------------------------------------------------------
+
+    const handleReportSubmit = async (payload: ReportRequest) => {
+        if (!user || !claim) return;
+        
+        const finalPayload: ReportRequest = {
+            ...payload,
+            claimId: claim.id,
+            vehicleId: claim.vehicleId, 
+            centerId: claim.centerId, 
+        }
+
+        try {
+            await createReport(finalPayload); 
+            alert("Báo cáo công việc đã được tạo thành công!");
+            setIsReportModalOpen(false);
+            fetchData(); 
+        } catch (e: unknown) {
+            const message = axios.isAxiosError(e) ? e.response?.data?.message || 'Lỗi tạo báo cáo. Đảm bảo dữ liệu không bị trùng lặp.' : 'Lỗi không xác định.';
+            throw new Error(message); 
+        }
+    }
+    
+    const canCreateReport = (canSendOrDelete || isTech) && claim?.status.toUpperCase() === 'IN_PROCESS'; 
+    const canModifyWork = canSendOrDelete || isTech; // Staff/Technician có thể thêm Log/Part
 
     if (!claimId || isLoading) {
         return (
@@ -206,7 +382,10 @@ export default function ClaimDetailPage() {
     
     const statusClass = (status: string) => {
         switch (status.toUpperCase().trim()) {
-            case "APPROVED": return "bg-green-500";
+            case "APPROVED": 
+            case "IN_PROCESS": 
+            case "COMPLETED": 
+                return "bg-green-500";
             case "SENT": return "bg-indigo-500";
             case "PENDING": return "bg-yellow-500";
             case "REJECTED": return "bg-red-500";
@@ -214,14 +393,13 @@ export default function ClaimDetailPage() {
         }
     }
 
-
     return (
         <Layout>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Chi tiết Yêu cầu Bảo hành #{claim.id}</h1>
             <p className="text-gray-600 mb-6">VIN: {claim.vehicleVIN} | Khách hàng: {claim.customerName}</p>
 
             <div className="space-y-8">
-                {/* Thanh Trạng thái và Hành động Phê duyệt (Dành cho EVM Staff/Admin) */}
+                {/* Thanh Trạng thái và Hành động Phê duyệt */}
                 <div className="p-4 bg-white rounded-xl shadow-md border border-gray-100 flex justify-between items-center">
                     <div className="flex items-center space-x-3">
                         <span className={`px-3 py-1 text-sm font-semibold text-white rounded-full ${statusClass(claim.status)}`}>
@@ -251,7 +429,7 @@ export default function ClaimDetailPage() {
                     )}
                 </div>
 
-                {/* Phần 1: Thông tin cơ bản & Gán kỹ thuật viên */}
+                {/* Phần 1: Thông tin cơ bản, Nút Report & Gán kỹ thuật viên */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2 bg-white p-6 rounded-xl shadow-md border space-y-3">
                         <h2 className="text-xl font-bold text-gray-800">Thông tin Claim</h2>
@@ -259,10 +437,19 @@ export default function ClaimDetailPage() {
                         <p><strong>Trung tâm:</strong> ID {claim.centerId}</p>
                         <p><strong>Chi phí dự kiến:</strong> {claim.totalCost.toLocaleString('vi-VN')} VND</p>
                         <p><strong>Tạo lúc:</strong> {new Date(claim.createdAt).toLocaleString()}</p>
+                        
+                        {/* NÚT TẠO REPORT */}
+                        {canCreateReport && (
+                            <button
+                                onClick={() => setIsReportModalOpen(true)}
+                                className="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700"
+                            >
+                                📝 Tạo Báo cáo Công việc
+                            </button>
+                        )}
                     </div>
 
-                    {/* Module Gán Kỹ thuật viên (Chỉ SC Staff/Tech) */}
-                    {(canSendOrDelete || isTech) && (
+                    {(canSendOrDelete || isTech) && claim && (
                         <AssignTechnician 
                             claim={claim}
                             technicians={technicians} 
@@ -294,7 +481,9 @@ export default function ClaimDetailPage() {
                                 claimId={claim.id} 
                                 technicianId={claim.technicianId}
                                 initialParts={claimParts} 
-                                onPartUpdate={handlePartUpdate} 
+                                onPartUpdate={fetchData} // Sử dụng fetchData để tải lại data
+                                onAddPart={() => canModifyWork && setIsClaimPartModalOpen(true)}
+                                onDeletePart={handleDeleteClaimPart}
                             />
                         )}
                         {activeTab === 'logs' && (
@@ -302,11 +491,57 @@ export default function ClaimDetailPage() {
                                 claimId={claim.id} 
                                 technicianId={claim.technicianId}
                                 initialLogs={workLogs} 
+                                onAddLog={() => canModifyWork && setIsWorkLogModalOpen(true)}
+                                onDeleteLog={handleDeleteWorkLog}
                             />
                         )}
                     </div>
                 </div>
             </div>
+            
+            {/* MODAL TẠO REPORT */}
+            {isReportModalOpen && claim && user && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl p-8 w-full max-w-2xl shadow-2xl transform transition-all duration-300 overflow-y-auto max-h-[90vh]">
+                        <ReportForm
+                            initialClaimId={claim.id} 
+                            initialVehicleId={claim.vehicleId} 
+                            initialCenterId={claim.centerId} 
+                            currentUserId={user.id}
+                            currentUsername={user.username}
+                            onSubmit={handleReportSubmit}
+                            onClose={() => setIsReportModalOpen(false)}
+                        />
+                    </div>
+                </div>
+            )}
+            
+            {/* MODAL TẠO WORK LOG */}
+            {isWorkLogModalOpen && claim && user && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl p-8 w-full max-w-lg shadow-2xl transform transition-all duration-300">
+                        <WorkLogForm
+                            claimId={claim.id}
+                            initialTechnicianId={claim.technicianId}
+                            onSubmit={handleCreateWorkLog}
+                            onClose={() => setIsWorkLogModalOpen(false)}
+                        />
+                    </div>
+                </div>
+            )}
+            
+            {/* MODAL TẠO CLAIM PART */}
+            {isClaimPartModalOpen && claim && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl p-8 w-full max-w-lg shadow-2xl transform transition-all duration-300">
+                        <ClaimPartForm
+                            claimId={claim.id}
+                            onSubmit={handleCreateClaimPart}
+                            onClose={() => setIsClaimPartModalOpen(false)}
+                        />
+                    </div>
+                </div>
+            )}
         </Layout>
     );
 }

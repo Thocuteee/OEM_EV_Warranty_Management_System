@@ -24,3 +24,7 @@ export const updateClaimPart = async (id: number, claimPartData: ClaimPartReques
 export const deleteClaimPart = async (id: number): Promise<void> => {
     await apiClient.delete(`/claim-parts/${id}`);
 };
+
+export const deleteClaimPartByCompositeId = async (claimId: number, partId: number): Promise<void> => {
+    await apiClient.delete(`/claim-parts/${claimId}/${partId}`);
+};
