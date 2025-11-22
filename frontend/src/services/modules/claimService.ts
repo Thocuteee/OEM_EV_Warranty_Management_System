@@ -36,3 +36,9 @@ export const sendClaimToEVM = async (id: number): Promise<WarrantyClaimResponse>
     const response = await apiClient.put<WarrantyClaimResponse>(`/warranty-claims/${id}/send`);
     return response.data;
 };
+
+export const getClaimsByStatuses = async(statuses:string[]): Promise<WarrantyClaimResponse[]> => {
+    const statusList = statuses.join(',');
+    const response = await apiClient.get<WarrantyClaimResponse[]>(`/warranty-claims/search/statuses?statuses=${statusList}`);
+    return response.data;
+};
