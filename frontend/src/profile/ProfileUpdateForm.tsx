@@ -76,13 +76,12 @@ const ProfileUpdateForm: React.FC<ProfileUpdateFormProps> = ({ initialData, onUp
             
             const basePayload = {
                 id: initialData.id,
-                // centerId không cho phép sửa, lấy lại giá trị cũ
                 centerId: initialData.centerId, 
                 name: formState.name,
                 email: formState.email,
                 phone: formState.phone,
                 username: initialData.username,
-                password: formState.password || undefined, 
+                password: formState.password || undefined,
             };
             
             if (isStaff) {
@@ -90,7 +89,7 @@ const ProfileUpdateForm: React.FC<ProfileUpdateFormProps> = ({ initialData, onUp
                     ...basePayload,
                     role: (initialData as StaffResponse).role,
                     address: formState.address,
-                } as StaffRequest; 
+                } as StaffRequest;
                 
                 updatedProfile = await updateStaff(initialData.id, staffPayload); 
                 

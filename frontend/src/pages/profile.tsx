@@ -11,6 +11,7 @@ import { getStaffById } from '@/services/modules/staffService';
 import { getTechnicianById } from '@/services/modules/technicianService';
 import axios from 'axios'; 
 import ProfileUpdateForm from '@/profile/ProfileUpdateForm'; 
+import { UserProfile } from '@/types/auth';
 
 interface AuthUserMinimal {
     id: number;
@@ -29,7 +30,7 @@ interface BasicProfile {
 type ProfileUnion = StaffResponse | TechnicianResponse | BasicProfile;
 
 export default function UserProfilePage() {
-    const { user, isAuthenticated } = useAuth();
+    const { user, isAuthenticated, updateProfile } = useAuth(); // Thêm updateProfile
     const router = useRouter();
     
     const [profileData, setProfileData] = useState<ProfileUnion | null>(null);
@@ -58,37 +59,50 @@ export default function UserProfilePage() {
             let data: StaffResponse | TechnicianResponse;
 
             if (isTechnicianRole) {
+                // Ưu tiên Technician
                 data = await getTechnicianById(user.id);
-                setProfileData(data);
             } else if (isStaffRole) {
+                // Sau đó là Staff
                 data = await getStaffById(user.id);
-                setProfileData(data);
             } else {
+                // Fallback cho các vai trò khác (như Customer)
                 setProfileData(mapToBasicProfile(userMinimal));
+                return; 
             }
-            // Xóa lỗi 404 sau khi tải thành công
+            
+            // Nếu gọi API thành công:
+            setProfileData(data);
             setError(null);
+
         } catch (e: unknown) {
             console.error("Lỗi tải profile:", e);
             
-            if (axios.isAxiosError(e) && e.response && e.response.status === 404 && (isStaffRole || isTechnicianRole)) {
-                 // Fallback về hồ sơ cơ bản
-                setProfileData(mapToBasicProfile(userMinimal));
-                setError("Thông tin chi tiết nghiệp vụ chưa được tạo (404 Not Found).");
+            // LUÔN FALLBACK: Gán hồ sơ cơ bản từ AuthContext để tránh màn hình trắng
+            setProfileData(mapToBasicProfile(userMinimal)); 
+            
+            if (axios.isAxiosError(e) && e.response && e.response.status === 404) {
+                setError("Thông tin chi tiết nghiệp vụ chưa được tạo (404 Not Found). Vui lòng cập nhật hồ sơ.");
             } else if (e instanceof Error) {
-                setError(e.message);
-            }else {
-                setError("Lỗi không xác định khi tải dữ liệu profile.");
+                setError("Lỗi khi tải dữ liệu: " + e.message);
+            } else {
+                setError("Lỗi không xác định khi tải profile.");
             }
         } finally {
             setIsLoading(false);
         }
     };
     
+    // Cập nhật Auth Context với dữ liệu mới từ Profile
     const handleUpdateSuccess = (updatedData: ProfileUnion) => {
+        // Cập nhật Profile trong Auth Context để hiển thị tên mới trên Navbar
+        updateProfile({ 
+            name: updatedData.name, 
+            email: updatedData.email 
+        } as Partial<UserProfile>); 
+
         setProfileData(updatedData); 
         setIsEditing(false); 
-        // Lỗi 404 đã được khắc phục bằng cách chèn dữ liệu DB, nên bước này sẽ thành công.
+        setError("Cập nhật hồ sơ thành công!"); // Hiển thị thông báo thành công
     };
 
 
@@ -103,7 +117,9 @@ export default function UserProfilePage() {
     }, [isAuthenticated, user, router, refreshTrigger]); 
 
 
-    if (!user || isLoading) {
+    if (!user) return null; // Luôn kiểm tra user trước khi render
+
+    if (isLoading) {
         return (
             <Layout>
                 <div className="py-20 text-center text-lg text-blue-600">Đang tải thông tin cá nhân...</div>
@@ -111,7 +127,18 @@ export default function UserProfilePage() {
         );
     }
     
-    if (!profileData) return null;
+    // [ĐÃ SỬA]: Loại bỏ 'if (!profileData) return null;' gây màn hình trắng.
+    if (!profileData) {
+        // Nếu load xong (isLoading=false) mà vẫn null, đây là lỗi nghiêm trọng không thể phục hồi bằng fallback
+         return (
+            <Layout>
+                <div className="p-6 text-red-600 bg-red-100 border border-red-300 rounded-lg">
+                    Lỗi nghiêm trọng: Không thể khởi tạo Profile Data. Vui lòng kiểm tra console.
+                </div>
+            </Layout>
+        );
+    }
+
 
     const isStaff = 'address' in profileData && profileData.role !== 'SC_Technician';
     const isTechnician = 'specialization' in profileData;
@@ -152,7 +179,7 @@ export default function UserProfilePage() {
                 <p className="pt-4 text-sm text-gray-500">
                     *ID hệ thống: {user.id}
                 </p>
-                {/* Chỉ hiển thị lỗi nếu có lỗi, không hiển thị message fallback 404 cũ */}
+                {/* Hiển thị lỗi từ Backend hoặc Frontend */}
                 {error && <p className="text-sm text-red-500">{error}</p>}
             </div>
         );

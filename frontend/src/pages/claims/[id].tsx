@@ -336,8 +336,8 @@ export default function ClaimDetailPage() {
     const handleAddWorkDataClick = (type: 'log' | 'part') => {
         const currentStatus = claim?.status.toUpperCase();
 
-        // Trường hợp 1: HÀNH ĐỘNG HỢP LỆ -> MỞ MODAL
         if (isAllowedToWork) {
+            // Trường hợp 1: ĐƯỢC PHÉP THAO TÁC -> MỞ MODAL
             if (type === 'part') {
                 setIsClaimPartModalOpen(true);
             } else {
@@ -350,7 +350,7 @@ export default function ClaimDetailPage() {
             if (currentStatus === 'COMPLETED' || currentStatus === 'REJECTED') {
                 message = `Claim đã ở trạng thái ${currentStatus}. Không thể thêm dữ liệu mới.`;
             } else if (!isClaimInProgress) {
-                // FIX LỖI: SỬ DỤNG LỖI NÀY CHO DRAFT, SENT, PENDING
+                // DRAFT, SENT, PENDING
                 message = `Claim hiện đang ở trạng thái ${currentStatus}. Vui lòng chờ Claim được chuyển sang IN_PROCESS để bắt đầu công việc.`;
             }
             
