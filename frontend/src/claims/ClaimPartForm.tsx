@@ -1,4 +1,3 @@
-// frontend/src/claims/ClaimPartForm.tsx
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
