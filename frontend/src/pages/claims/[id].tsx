@@ -1,3 +1,4 @@
+// frontend/src/pages/claims/[id].tsx
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -23,7 +24,7 @@ import { getWorkLogsByClaimId, createWorkLog, deleteWorkLog } from '@/services/m
 import { createReport } from '@/services/modules/reportService'; 
 
 import axios from 'axios';
-interface ClaimPartsManagerProps {
+interface ClaimPartsManagerProps { 
     claimId: number; 
     technicianId: number | null | undefined;
     initialParts: ClaimPartResponse[]; 
@@ -195,6 +196,7 @@ export default function ClaimDetailPage() {
     const [isWorkLogModalOpen, setIsWorkLogModalOpen] = useState(false);
     const [isClaimPartModalOpen, setIsClaimPartModalOpen] = useState(false);
 
+    // FIX 1: Định nghĩa lại quyền (bao gồm Admin/EVM Staff)
     const isEVMApprover = user?.role === 'Admin' || user?.role === 'EVM_Staff';
     const canSendOrDelete = user?.role === 'SC_Staff';
     const isTech = user?.role === 'SC_Technician';
@@ -229,11 +231,30 @@ export default function ClaimDetailPage() {
 
     
     const handleApproval = async (status: 'APPROVED' | 'REJECTED') => {
-        // ... (Logic phê duyệt)
+        if (!claim || !user || claim.approvalStatus !== 'PENDING') return;
+
+        if (!confirm(`Bạn có chắc muốn ${status === 'APPROVED' ? 'PHÊ DUYỆT' : 'TỪ CHỐI'} Claim ID ${claim.id}?`)) return;
+        
+        try {
+            await updateClaimStatus(claim.id, status);
+            alert(`Claim đã được cập nhật thành ${status}.`);
+            fetchData();
+        } catch (e: unknown) {
+            const message = axios.isAxiosError(e) ? e.response?.data?.message || 'Lỗi server khi phê duyệt.' : 'Lỗi không xác định.';
+            alert(message);
+        }
     }
 
     const handleAssignTechnician = async (technicianId: number) => {
-        // ... (Logic gán Tech)
+        if (!claim) return;
+        try {
+            await updateClaimTechnician(claim.id, technicianId); 
+            alert(`Đã gán thành công Kỹ thuật viên ID ${technicianId}.`);
+            fetchData(); 
+        } catch (e: unknown) {
+            const message = axios.isAxiosError(e) ? e.response?.data?.message || 'Lỗi gán kỹ thuật viên.' : 'Lỗi không xác định.';
+            alert(message);
+        }
     };
     
     const handlePartUpdate = () => {
@@ -287,32 +308,60 @@ export default function ClaimDetailPage() {
     }
 
     const handleReportSubmit = async (payload: ReportRequest) => {
-        // ... (Logic Report)
+        if (!user || !claim) return;
+        
+        const finalPayload: ReportRequest = {
+            ...payload,
+            claimId: claim.id,
+            vehicleId: claim.vehicleId, 
+            centerId: claim.centerId, 
+        }
+
+        try {
+            await createReport(finalPayload); 
+            alert("Báo cáo công việc đã được tạo thành công!");
+            setIsReportModalOpen(false);
+            fetchData(); 
+        } catch (e: unknown) {
+            const message = axios.isAxiosError(e) ? e.response?.data?.message || 'Lỗi tạo báo cáo. Đảm bảo dữ liệu không bị trùng lặp.' : 'Lỗi không xác định.';
+            throw new Error(message); 
+        }
     }
     
-    // --- BƯỚC SỬA 1: ĐỊNH NGHĨA LẠI LOGIC NGHIỆP VỤ CHO CÁC NÚT THÊM ---
+    // FIX 2: Sửa isAllowedToWork để bao gồm Admin/EVM Staff
     const isClaimInProgress = claim?.status.toUpperCase() === 'IN_PROCESS'; 
-    const isAllowedToWork = (canSendOrDelete || isTech) && isClaimInProgress;
-    
+    const isAllowedToWork = (isEVMApprover || canSendOrDelete || isTech) && isClaimInProgress;
     const canCreateReport = isAllowedToWork;
     
     const handleAddWorkDataClick = (type: 'log' | 'part') => {
-    if (isAllowedToWork) {
-        if (type === 'part') {
-            setIsClaimPartModalOpen(true);
+        const currentStatus = claim?.status.toUpperCase();
+
+        if (isAllowedToWork) {
+            // Trường hợp 1: ĐƯỢC PHÉP THAO TÁC -> MỞ MODAL
+            if (type === 'part') {
+                setIsClaimPartModalOpen(true);
+            } else {
+                setIsWorkLogModalOpen(true);
+            }
         } else {
-            setIsWorkLogModalOpen(true);
+            // Trường hợp 2: BỊ CHẶN -> HIỂN THỊ LỖI RÕ RÀNG
+            let message = "Bạn không có quyền thực hiện thao tác này.";
+            
+            if (currentStatus === 'COMPLETED') {
+                message = "Claim đã hoàn thành. Không thể thêm dữ liệu mới.";
+            } else if (currentStatus === 'REJECTED') {
+                message = "Claim đã bị từ chối. Không thể thêm dữ liệu mới.";
+            } else if (!isClaimInProgress) {
+                // DRAFT, SENT, PENDING
+                message = `Claim hiện đang ở trạng thái ${currentStatus}. Vui lòng chờ Claim được chuyển sang IN_PROCESS để bắt đầu công việc.`;
+            } else if (isClaimInProgress && !isEVMApprover && !canSendOrDelete && !isTech) {
+                 // Sửa lỗi: Nếu là IN_PROCESS nhưng vẫn vào đây, tức là User không có quyền Staff/Tech/Approver
+                 message = "Bạn không thuộc nhóm Nhân viên/Kỹ thuật viên có quyền cập nhật công việc.";
+            }
+
+            alert(message);
         }
-    } else {
-        let message = "Chỉ cho phép thêm Công việc/Phụ tùng khi Claim đã được PHÊ DUYỆT và đang ở trạng thái IN_PROCESS.";
-        if (claim?.status.toUpperCase() === 'COMPLETED') {
-            message = "Claim đã hoàn thành. Không thể thêm dữ liệu mới.";
-        } else if (claim?.status.toUpperCase() === 'REJECTED') {
-            message = "Claim đã bị từ chối. Không thể thêm dữ liệu mới.";
-        }
-        alert(message);
     }
-}
 
     if (!claimId || isLoading) {
         return (
@@ -355,14 +404,42 @@ export default function ClaimDetailPage() {
             <div className="space-y-8">
                 {/* Thanh Trạng thái và Hành động Phê duyệt */}
                 <div className="p-4 bg-white rounded-xl shadow-md border border-gray-100 flex justify-between items-center">
-                    {/* ... (Phần Status) ... */}
+                    <div className="flex items-center space-x-3">
+                        <span className={`px-3 py-1 text-sm font-semibold text-white rounded-full ${statusClass(claim.status)}`}>
+                            STATUS: {claim.status}
+                        </span>
+                        <span className={`px-3 py-1 text-sm font-semibold text-white rounded-full ${statusClass(claim.approvalStatus)}`}>
+                            APPROVAL: {claim.approvalStatus}
+                        </span>
+                    </div>
+
+                    {/* Nút Phê duyệt/Từ chối (Chỉ hiện cho EVM Approver khi trạng thái là PENDING) */}
+                    {isEVMApprover && claim.approvalStatus === 'PENDING' && (
+                        <div className="space-x-2">
+                            <button 
+                                onClick={() => handleApproval('APPROVED')}
+                                className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700"
+                            >
+                                ✅ Phê duyệt
+                            </button>
+                            <button
+                                onClick={() => handleApproval('REJECTED')}
+                                className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-red-700"
+                            >
+                                ❌ Từ chối
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Phần 1: Thông tin cơ bản, Nút Report & Gán kỹ thuật viên */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2 bg-white p-6 rounded-xl shadow-md border space-y-3">
                         <h2 className="text-xl font-bold text-gray-800">Thông tin Claim</h2>
-                        {/* ... (Claim Details) ... */}
+                        <p><strong>Mô tả:</strong> {claim.description}</p>
+                        <p><strong>Trung tâm:</strong> ID {claim.centerId}</p>
+                        <p><strong>Chi phí dự kiến:</strong> {claim.totalCost.toLocaleString('vi-VN')} VND</p>
+                        <p><strong>Tạo lúc:</strong> {new Date(claim.createdAt).toLocaleString()}</p>
                         
                         {/* NÚT TẠO REPORT */}
                         {canCreateReport && (
@@ -375,7 +452,7 @@ export default function ClaimDetailPage() {
                         )}
                     </div>
 
-                    {(canSendOrDelete || isTech) && claim && (
+                    {(canSendOrDelete || isTech || isEVMApprover) && claim && (
                         <AssignTechnician 
                             claim={claim}
                             technicians={technicians} 
@@ -387,7 +464,19 @@ export default function ClaimDetailPage() {
                 {/* Phần 2: Tab Quản lý Công việc & Phụ tùng */}
                 <div className="bg-white p-6 rounded-xl shadow-md border">
                     <div className="flex border-b mb-4 space-x-4">
-                        {/* ... (Tab Buttons) ... */}
+                        {/* NÚT CHUYỂN TAB */}
+                        <button 
+                            onClick={() => setActiveTab('parts')}
+                            className={`pb-2 font-semibold ${activeTab === 'parts' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-500'}`}
+                        >
+                            Quản lý Phụ tùng
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('logs')}
+                            className={`pb-2 font-semibold ${activeTab === 'logs' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-blue-500'}`}
+                        >
+                            Nhật ký Công việc
+                        </button>
                     </div>
 
                     <div>
@@ -397,7 +486,6 @@ export default function ClaimDetailPage() {
                                 technicianId={claim.technicianId}
                                 initialParts={claimParts} 
                                 onPartUpdate={fetchData} 
-                                // BƯỚC SỬA 2: Sử dụng handler mới
                                 onAddPart={() => handleAddWorkDataClick('part')}
                                 onDeletePart={handleDeleteClaimPart}
                             />
@@ -407,7 +495,6 @@ export default function ClaimDetailPage() {
                                 claimId={claim.id} 
                                 technicianId={claim.technicianId}
                                 initialLogs={workLogs} 
-                                // BƯỚC SỬA 2: Sử dụng handler mới
                                 onAddLog={() => handleAddWorkDataClick('log')}
                                 onDeleteLog={handleDeleteWorkLog}
                             />
@@ -416,8 +503,6 @@ export default function ClaimDetailPage() {
                 </div>
             </div>
             
-            {/* ... (MODALS) */}
-
             {/* MODAL TẠO REPORT */}
             {isReportModalOpen && claim && user && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
