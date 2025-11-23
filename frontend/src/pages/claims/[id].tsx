@@ -336,8 +336,8 @@ export default function ClaimDetailPage() {
     const handleAddWorkDataClick = (type: 'log' | 'part') => {
         const currentStatus = claim?.status.toUpperCase();
 
+        // Trường hợp 1: HÀNH ĐỘNG HỢP LỆ -> MỞ MODAL
         if (isAllowedToWork) {
-            // Trường hợp 1: ĐƯỢC PHÉP THAO TÁC -> MỞ MODAL
             if (type === 'part') {
                 setIsClaimPartModalOpen(true);
             } else {
@@ -347,16 +347,16 @@ export default function ClaimDetailPage() {
             // Trường hợp 2: BỊ CHẶN -> HIỂN THỊ LỖI RÕ RÀNG
             let message = "Bạn không có quyền thực hiện thao tác này.";
             
-            if (currentStatus === 'COMPLETED') {
-                message = "Claim đã hoàn thành. Không thể thêm dữ liệu mới.";
-            } else if (currentStatus === 'REJECTED') {
-                message = "Claim đã bị từ chối. Không thể thêm dữ liệu mới.";
+            if (currentStatus === 'COMPLETED' || currentStatus === 'REJECTED') {
+                message = `Claim đã ở trạng thái ${currentStatus}. Không thể thêm dữ liệu mới.`;
             } else if (!isClaimInProgress) {
-                // DRAFT, SENT, PENDING
+                // FIX LỖI: SỬ DỤNG LỖI NÀY CHO DRAFT, SENT, PENDING
                 message = `Claim hiện đang ở trạng thái ${currentStatus}. Vui lòng chờ Claim được chuyển sang IN_PROCESS để bắt đầu công việc.`;
-            } else if (isClaimInProgress && !isEVMApprover && !canSendOrDelete && !isTech) {
-                 // Sửa lỗi: Nếu là IN_PROCESS nhưng vẫn vào đây, tức là User không có quyền Staff/Tech/Approver
-                 message = "Bạn không thuộc nhóm Nhân viên/Kỹ thuật viên có quyền cập nhật công việc.";
+            }
+            
+            // Nếu là IN_PROCESS nhưng vẫn vào đây (isAllowedToWork = false), tức là User không có quyền
+            if (isClaimInProgress && !isEVMApprover && !canSendOrDelete && !isTech) {
+                message = "Bạn không thuộc nhóm Nhân viên/Kỹ thuật viên có quyền cập nhật công việc.";
             }
 
             alert(message);
