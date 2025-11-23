@@ -1,7 +1,6 @@
-// frontend/src/worklogs/WorkLogForm.tsx
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { WorkLogRequest, WorkLogResponse } from '@/types/workLog'; 
 import { TechnicianResponse } from '@/types/technician';
 import { getAllTechnicians } from '@/services/modules/technicianService'; 
@@ -75,6 +74,23 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
         setFormState(prev => ({ ...prev, [name]: newValue } as WorkLogRequest));
     };
 
+    const calculatedDurationDisplay = useMemo(() => {
+        const start = formState.startTime;
+        const end = formState.endTime;
+
+        if (start && end) {
+            const startTime = new Date(start);
+            const endTime = new Date(end);
+
+            if (startTime.getTime() <= endTime.getTime()) {
+                const diffTime = endTime.getTime() - startTime.getTime();
+                const diffDays = diffTime / (1000 * 60 * 60 * 24); 
+                return diffDays;
+            }
+        }
+        return undefined;
+    }, [formState.startTime, formState.endTime]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
@@ -86,17 +102,45 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
             return;
         }
         
-        const payloadToSend: WorkLogRequest = {
-            ...formState,
-            // Đảm bảo các trường số là undefined nếu rỗng
-            duration: formState.duration || undefined,
-            notes: formState.notes || undefined,
-            logDate: formState.logDate,
-        };
+        // --- XÁC THỰC NGÀY THÁNG ---
+        const startTime = new Date(formState.startTime);
+        const endTime = new Date(formState.endTime);
 
+        if (startTime.getTime() > endTime.getTime()) {
+            setError("Ngày Bắt đầu không được sau Ngày Kết thúc.");
+            setLoading(false);
+            return;
+        }
+
+        // --- TÍNH TOÁN DURATION CHO PAYLOAD ---
+        let finalDuration: number | undefined = formState.duration;
+        
+        if (finalDuration === undefined || finalDuration === 0) { 
+            // Nếu người dùng không nhập hoặc nhập 0, sử dụng giá trị tính toán
+            const diffTime = endTime.getTime() - startTime.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            
+            if (diffDays > 0) {
+                finalDuration = diffDays;
+            } else if (diffDays === 0) {
+                finalDuration = 1; 
+            }
+        }
+        
+        const payloadToSend: WorkLogRequest = {
+            id: formState.id, 
+            claimId: formState.claimId,
+            technicianId: formState.technicianId,
+            startTime: formState.startTime,
+            endTime: formState.endTime,
+            logDate: formState.logDate,
+            duration: finalDuration, 
+            notes: formState.notes || undefined,
+        };
+        
         try {
             await onSubmit(payloadToSend);
-            onClose(); // Đóng modal sau khi thành công
+            onClose();
         } catch (err: unknown) {
             let errorMessage = "Lỗi khi lưu Nhật ký Công việc.";
             
@@ -114,7 +158,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
     };
     
     const currentTech = technicians.find(t => t.id === formState.technicianId);
-    const isTechAssigned = !!initialTechnicianId && !isEditing; // Không cho chọn nếu đã gán và không phải edit
+    const isTechAssigned = !!initialTechnicianId && !isEditing; 
 
     return (
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -137,13 +181,13 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
                         onChange={handleChange}
                         className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:border-blue-500" 
                         required
-                        // Disable nếu đang không edit và đã có tech được gán
                         disabled={isTechAssigned} 
                     >
                         {loadingTechs && <option value={0} disabled>Đang tải Kỹ thuật viên...</option>}
+                        
                         {isTechAssigned && currentTech && <option value={currentTech.id}>{currentTech.name} (Đã gán)</option>}
                         
-                        {/* Chỉ hiển thị list đầy đủ nếu chưa gán hoặc đang edit */}
+                        {!isTechAssigned && <option value={0} disabled>-- Chọn Kỹ thuật viên --</option>}
                         {!isTechAssigned && technicians.map(t => (
                             <option key={t.id} value={t.id}>
                                 {t.name} (ID: {t.id})
@@ -156,7 +200,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
             {/* Thời gian làm việc */}
             <h3 className="text-xl font-bold text-gray-800 border-b pb-2 pt-3">Thời gian Công việc</h3>
             <div className="grid grid-cols-3 gap-4">
-                 <div>
+                <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Ngày Bắt đầu *</label>
                     <input 
                         type="date"
@@ -187,7 +231,8 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
                         onChange={handleChange} 
                         step="0.01"
                         min="0"
-                        placeholder="Được tính tự động"
+                        // SỬ DỤNG calculatedDurationDisplay MỚI ĐƯỢC useMemo TÍNH
+                        placeholder={calculatedDurationDisplay !== undefined ? `${calculatedDurationDisplay.toFixed(1)} (tính từ ngày)` : "Được tính tự động"}
                         className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm bg-gray-50 focus:border-blue-500" 
                     />
                 </div>

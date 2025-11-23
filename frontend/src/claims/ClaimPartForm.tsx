@@ -30,6 +30,7 @@ const ClaimPartForm: React.FC<ClaimPartFormProps> = ({
     const [currentUnitPrice, setCurrentUnitPrice] = useState<number>(initialData?.unitPrice || 0);
 
     const [formState, setFormState] = useState<ClaimPartRequest>({
+        // ĐÃ SỬA: XÓA TRƯỜNG ID
         claimId: claimId,
         partId: initialData?.partId || 0,
         quantity: initialData?.quantity || 1,
@@ -64,9 +65,6 @@ const ClaimPartForm: React.FC<ClaimPartFormProps> = ({
                                 partId: selectedPart.id,
                                 unitPrice: price,
                             }));
-                        } else if (isEditing) {
-                            // Khi edit, unitPrice trong FormState phải là giá ban đầu của ClaimPart
-                            setFormState(prev => ({ ...prev, unitPrice: initialData.unitPrice }));
                         }
                     }
                 }
@@ -117,12 +115,15 @@ const ClaimPartForm: React.FC<ClaimPartFormProps> = ({
             return;
         }
         
+        // Cần đảm bảo initialData không null nếu là isEditing
+        const finalUnitPrice = isEditing && initialData ? initialData.unitPrice : currentUnitPrice;
+
         const payloadToSend: ClaimPartRequest = {
             claimId: claimId,
             partId: formState.partId,
             quantity: formState.quantity,
-            // Quan trọng: Luôn gửi UnitPrice ĐƯỢC CHỌN (hoặc giá cũ khi edit)
-            unitPrice: isEditing ? initialData.unitPrice : currentUnitPrice, 
+            // Sử dụng giá trị đã xác định
+            unitPrice: finalUnitPrice, 
             totalPrice: calculatedTotalPrice, 
         };
 
@@ -162,9 +163,10 @@ const ClaimPartForm: React.FC<ClaimPartFormProps> = ({
                     onChange={handleChange}
                     className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:border-blue-500" 
                     required
-                    disabled={isEditing || loadingParts} // Không cho phép đổi Part khi EDIT
+                    disabled={isEditing || loadingParts} 
                 >
                     <option value={0} disabled>-- Chọn Linh kiện --</option>
+                    {loadingParts && <option value={0} disabled>Đang tải danh sách linh kiện...</option>}
                     {availableParts.map(p => (
                         <option key={p.id} value={p.id}>
                             {p.name} ({p.partNumber})
@@ -176,7 +178,7 @@ const ClaimPartForm: React.FC<ClaimPartFormProps> = ({
 
             {/* Số lượng & Đơn giá */}
             <div className="grid grid-cols-3 gap-4">
-                 <div>
+                <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Số lượng *</label>
                     <input 
                         type="number"
@@ -197,7 +199,7 @@ const ClaimPartForm: React.FC<ClaimPartFormProps> = ({
                         disabled 
                     />
                 </div>
-                 <div>
+                <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Tổng cộng (VND)</label>
                     <input 
                         type="text"
