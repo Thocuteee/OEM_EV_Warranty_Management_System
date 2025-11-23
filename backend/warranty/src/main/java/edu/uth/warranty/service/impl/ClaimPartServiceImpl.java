@@ -40,22 +40,22 @@ public class ClaimPartServiceImpl implements IClaimPartService{
 
     @Override
     public ClaimPart saveClaimPart(ClaimPart entity) {
-        //Kiểm tra Khóa Ngoại (FK) có tồn tại không
-        if (entity.getClaim() == null || entity.getClaim().getClaimId() == null || 
-            claimRepository.findById(entity.getClaim().getClaimId()).isEmpty()) {
+        Long claimId = entity.getClaim();
+        if (claimId == null || claimRepository.findById(claimId).isEmpty()) {
             throw new IllegalArgumentException("Warranty Claim không tồn tại hoặc không hợp lệ.");
         }
-        if (entity.getPart() == null || entity.getPart().getPartId() == null || 
-            partRepository.findById(entity.getPart().getPartId()).isEmpty()) {
+
+        Long partId = entity.getPart();
+
+        if (partId == null || partRepository.findById(partId).isEmpty()) {
             throw new IllegalArgumentException("Linh kiện (Part) không tồn tại hoặc không hợp lệ.");
         }
 
-        //Tính toán Total Price nếu chưa được thiết lập (hoặc xác thực)
         if (entity.getTotalPrice() == null && entity.getUnitPrice() != null && entity.getQuantity() != null) {
             BigDecimal total = entity.getUnitPrice().multiply(new BigDecimal(entity.getQuantity()));
             entity.setTotalPrice(total);
         }
-
+        
         return claimPartRepository.save(entity);
     }
 

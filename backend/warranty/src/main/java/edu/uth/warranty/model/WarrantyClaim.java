@@ -39,7 +39,7 @@ public class WarrantyClaim {
     @JoinColumn(name = "center_id", nullable = false)
     private ServiceCenter center;
 
-    @Column(name = "status", nullable = false, unique = true)
+    @Column(name = "status", nullable = false)
     private String status;
 
     @Column(name = "description")

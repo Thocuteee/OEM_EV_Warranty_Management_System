@@ -1,10 +1,12 @@
 package edu.uth.warranty.controller;
 
+import edu.uth.warranty.dto.MessageResponse;
 import edu.uth.warranty.dto.UserRequest;
 import edu.uth.warranty.dto.UserResponse;
 import edu.uth.warranty.model.User;
 import edu.uth.warranty.common.Role;
 import edu.uth.warranty.service.IUserService;
+import edu.uth.warranty.service.impl.UserServiceImpl;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +21,11 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/users")
 public class UserController {
     private final IUserService userService;
+    private final UserServiceImpl userServiceImpl;
 
     public UserController(IUserService userService) {
         this.userService = userService;
+        this.userServiceImpl = (UserServiceImpl) userService;
     }
 
     // Chuyển đổi Entity sang Response DTO (Loại bỏ mật khẩu)
@@ -108,6 +112,25 @@ public class UserController {
         List<UserResponse> response = users.stream().map(this::toResponseDTO).collect(Collectors.toList());
             
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{id}/init-profile")
+    public ResponseEntity<?> initializeProfile(@PathVariable Long id) {
+        try {
+            User user = userService.getUserById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User ID không tồn tại."));
+            
+            // Gọi lại logic tạo Business Profile bị thiếu
+            userServiceImpl.createBusinessProfileIfMissing(user); 
+            
+            return ResponseEntity.ok(new MessageResponse("Đã khởi tạo/cập nhật hồ sơ thành công cho User ID: " + id));
+        } catch (IllegalArgumentException e) {
+            // Lỗi nghiệp vụ (ví dụ: Center ID 1 không tồn tại)
+            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
+        } catch (Exception e) {
+            // Lỗi hệ thống
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Lỗi hệ thống khi khởi tạo hồ sơ: " + e.getMessage()));
+        }
     }
 
 }

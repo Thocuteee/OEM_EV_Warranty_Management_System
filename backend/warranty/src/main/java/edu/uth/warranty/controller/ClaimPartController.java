@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/claim-parts")
+@CrossOrigin(origins = "*")
 public class ClaimPartController {
     private final IClaimPartService claimPartService;
     private final IPartService partService;
@@ -34,8 +35,8 @@ public class ClaimPartController {
         String partNumber = null;
         String partName = null;
 
-        if(entity.getPart() != null && entity.getPart().getPartId() != null) {
-            Optional<Part> partOpt = partService.getPartById(entity.getPart().getPartId());
+        if(entity.getPartEntity() != null && entity.getPartEntity().getPartId() != null) {
+            Optional<Part> partOpt = partService.getPartById(entity.getPartEntity().getPartId());
             if(partOpt.isPresent()) {
                 partNumber = partOpt.get().getPartNumber();
                 partName = partOpt.get().getName();
@@ -43,8 +44,8 @@ public class ClaimPartController {
         }
 
         return new ClaimPartResponse(
-            entity.getClaim().getClaimId(),
-            entity.getPart().getPartId(),
+            entity.getClaimEntity().getClaimId(),
+            entity.getPartEntity().getPartId(),
             partNumber,
             partName,
             entity.getQuantity(),
@@ -57,18 +58,21 @@ public class ClaimPartController {
         ClaimPart entity = new ClaimPart();
 
         if(request.getClaimId() != null) {
-            entity.setClaim(new WarrantyClaim(request.getClaimId()));
+            entity.setClaim(request.getClaimId());
+            entity.setClaimEntity(new WarrantyClaim(request.getClaimId())); 
         }
 
         if (request.getPartId() != null) {
-            Part part = new Part();
+            Part part = new Part(); 
             part.setPartId(request.getPartId());
-            entity.setPart(part);
+            
+            entity.setPart(request.getPartId());    
+            entity.setPartEntity(part);             
         }
 
         entity.setQuantity(request.getQuantity());
         entity.setUnitPrice(request.getUnitPrice());
-        entity.setTotalPrice(request.getTotalPrice()); 
+        entity.setTotalPrice(request.getTotalPrice());
         
         return entity;
     }

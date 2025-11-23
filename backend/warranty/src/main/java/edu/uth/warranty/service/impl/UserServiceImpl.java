@@ -2,6 +2,8 @@ package edu.uth.warranty.service.impl;
 
 import edu.uth.warranty.model.User;
 import edu.uth.warranty.common.Role;
+import edu.uth.warranty.repository.StaffRepository;
+import edu.uth.warranty.repository.TechnicianRepository;
 import edu.uth.warranty.repository.UserRepository;
 import edu.uth.warranty.dto.LoginRequest;
 import edu.uth.warranty.service.IStaffService;
@@ -15,6 +17,7 @@ import edu.uth.warranty.dto.TechnicianRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.Optional;
 import java.util.List;
@@ -27,12 +30,17 @@ public class UserServiceImpl implements IUserService {
     private final PasswordEncoder passwordEncoder;
     private final IStaffService staffService;           
     private final ITechnicianService technicianService;  
+    private final StaffRepository staffRepository; 
+    private final TechnicianRepository technicianRepository;
         
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, IStaffService staffService, ITechnicianService technicianService) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, IStaffService staffService, ITechnicianService technicianService,StaffRepository staffRepository, 
+        TechnicianRepository technicianRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.staffService = staffService;
         this.technicianService = technicianService;
+        this.staffRepository = staffRepository; 
+        this.technicianRepository = technicianRepository;
     }
 
     @Override
@@ -126,58 +134,64 @@ public class UserServiceImpl implements IUserService {
         Role role = user.getRole();
         Long userId = user.getId();
         
-        // Giả định: Mọi nhân viên mới đều thuộc Service Center ID 1 (Mặc định)
+        // Luôn sử dụng Service Center ID 1 (giả định tồn tại)
         Long defaultCenterId = 1L; 
 
         try {
-            // Lấy các trường thông tin chung
-            String name = user.getUsername();
+            // Lấy thông tin cần thiết từ User Entity đã được lưu
+            String name = user.getUsername(); 
             String email = user.getEmail();
+            String passwordHash = user.getPassword(); // Mật khẩu đã được hash
             
-            // SỬA LỖI MOCKING: Đảm bảo SĐT có đủ 10 ký tự (090000 + ID 4 chữ số)
-            String phoneSuffix = String.format("%04d", userId); 
-            String phone = "090000" + phoneSuffix; 
+            // TẠO DỮ LIỆU MOCK DUY NHẤT VÀ HỢP LỆ (Quan trọng để tránh lỗi UNIQUE KEY)
+            // Phone: Sử dụng 0900 + ID 6 chữ số (để đảm bảo tính duy nhất)
+            String uniquePhone = String.format("09%08d", userId); 
             
-            String address = "Địa chỉ mặc định SC/HQ"; // Cần thiết cho StaffRequest
-            String password = user.getPassword(); 
+            String address = "Địa chỉ mặc định"; 
+            String specialization = "EV General"; // Chuyên môn mặc định
+
             
-            // Kiểm tra Role và tạo hồ sơ tương ứng
+            // 1. Logic cho các vai trò Staff (Admin, EVM_Staff, SC_Staff)
             if (role == Role.SC_Staff || role == Role.EVM_Staff || role == Role.Admin) {
-                // Tạo hồ sơ Staff
                 StaffRequest staffRequest = new StaffRequest();
                 staffRequest.setId(userId);
                 staffRequest.setCenterId(defaultCenterId);
                 staffRequest.setName(name);
                 staffRequest.setRole(role);
                 staffRequest.setEmail(email);
-                staffRequest.setPhone(phone);
+                staffRequest.setPhone(uniquePhone); // Dùng SĐT duy nhất
                 staffRequest.setAddress(address); 
                 staffRequest.setUsername(user.getUsername());
-                staffRequest.setPassword(password);
-
+                // Truyền HASHED PASSWORD đã có
+                staffRequest.setPassword(passwordHash); 
+                
                 staffService.saveStaff(staffRequest); 
                 
-            } else if (role == Role.SC_Technician) {
-                // Tạo hồ sơ Technician
+            } 
+            
+            // 2. Logic cho vai trò Technician
+            else if (role == Role.SC_Technician) {
                 TechnicianRequest technicianRequest = new TechnicianRequest();
                 technicianRequest.setId(userId);
                 technicianRequest.setCenterId(defaultCenterId);
                 technicianRequest.setName(name);
                 technicianRequest.setEmail(email);
-                technicianRequest.setPhone(phone);
-                technicianRequest.setSpecialization("EV General");
+                technicianRequest.setPhone(uniquePhone); // Dùng SĐT duy nhất
+                technicianRequest.setSpecialization(specialization); 
                 technicianRequest.setUsername(user.getUsername());
-                technicianRequest.setPassword(password);
+                // Truyền HASHED PASSWORD đã có
+                technicianRequest.setPassword(passwordHash); 
                 
                 technicianService.saveTechnician(technicianRequest); 
             }
             
         } catch (Exception e) {
-            // Ném IllegalArgumentException để GlobalExceptionHandler bắt và trả về 400
-            String errorMessage = "Lỗi khi tạo hồ sơ nhân sự tự động (Role: " + role.name() + "). Hãy đảm bảo Service Center 1 tồn tại và không bị trùng Email/SĐT. Chi tiết: " + e.getMessage();
+            String errorMessage = "Lỗi khi tạo hồ sơ nhân sự tự động (Role: " + role.name() + "). Chi tiết: " + e.getMessage();
             throw new IllegalArgumentException(errorMessage);
         }
     }
+
+    
 
 
     @Override
@@ -202,5 +216,30 @@ public class UserServiceImpl implements IUserService {
     @Override
     public Boolean existsByUsername(String username) {
         return userRepository.existsByUsername(username);
+    }
+
+    public void createBusinessProfileIfMissing(User user) {
+        // Kiểm tra logic để đảm bảo các trường cần thiết đã có
+        if (user.getId() == null) {
+             throw new IllegalArgumentException("Không thể tạo Business Profile: User ID không tồn tại.");
+        }
+        
+        Role role = user.getRole();
+        // Kiểm tra xem hồ sơ đã tồn tại chưa
+        boolean profileExists = false;
+        
+        if (role == Role.SC_Technician) {
+            // Technician cần kiểm tra trong TechnicianRepository
+            profileExists = technicianRepository.findById(user.getId()).isPresent();
+        } else if (role == Role.SC_Staff || role == Role.EVM_Staff || role == Role.Admin) {
+            // Staff/Admin cần kiểm tra trong StaffRepository
+            profileExists = staffRepository.findById(user.getId()).isPresent();
+        }
+        
+        if (!profileExists) {
+            // Nếu hồ sơ nghiệp vụ bị thiếu, gọi lại logic tạo (đã sửa lỗi Phone/Email duy nhất)
+            createBusinessProfile(user);
+        }
+        // Nếu hồ sơ đã tồn tại, không làm gì cả
     }
 }

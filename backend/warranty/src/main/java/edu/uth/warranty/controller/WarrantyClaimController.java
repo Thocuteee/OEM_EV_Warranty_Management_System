@@ -168,4 +168,12 @@ public class WarrantyClaimController {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
     }
+
+    @GetMapping("/search/statuses")
+    public ResponseEntity<List<WarrantyClaimResponse>> getClaimsByStatuses(@RequestParam List<String> statuses) {
+        // Sử dụng service method mới (giả định đã cập nhật IWarrantyClaimService và impl)
+        List<WarrantyClaim> claims = warrantyClaimService.getWarrantyClaimsByStatusIn(statuses); 
+        List<WarrantyClaimResponse> responses = claims.stream().map(this::toResponseDTO).collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
 }

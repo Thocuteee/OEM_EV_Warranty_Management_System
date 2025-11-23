@@ -42,5 +42,5 @@ public interface IWarrantyClaimService {
     List<WarrantyClaim> getWarrantyClaimsByStaff(Staff staff);
     List<WarrantyClaim> getWarrantyClaimsCreatedBetween(LocalDateTime start, LocalDateTime end);
     List<WarrantyClaim> getWarrantyClaimsByMinTotalCost(BigDecimal totalCost);
-
+    List<WarrantyClaim> getWarrantyClaimsByStatusIn(List<String> statuses);
 }
