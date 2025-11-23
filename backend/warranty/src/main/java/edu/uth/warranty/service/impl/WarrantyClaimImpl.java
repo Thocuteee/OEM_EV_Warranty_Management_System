@@ -80,7 +80,7 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
         
         // 3. KIỂM TRA CUSTOMER ID
         if(warrantyClaim.getCustomer() == null || warrantyClaim.getCustomer().getCustomerId() == null || customerRepository.findById(warrantyClaim.getCustomer().getCustomerId()).isEmpty()) {
-             throw new IllegalArgumentException("Khách hàng không tồn tại.");
+            throw new IllegalArgumentException("Khách hàng không tồn tại.");
         }
         
         // 4. KIỂM TRA SERVICE CENTER ID
@@ -174,19 +174,38 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
     }
 
     @Override
-public WarrantyClaim updateClaimPrimaryStatus(Long claimId, String newStatus) {
-    WarrantyClaim claim = warrantyClaimRepository.findById(claimId)
-            .orElseThrow(() -> new IllegalArgumentException("Claim không tồn tại."));
+    public WarrantyClaim updateClaimPrimaryStatus(Long claimId, String newStatus) {
+        WarrantyClaim claim = warrantyClaimRepository.findById(claimId)
+                .orElseThrow(() -> new IllegalArgumentException("Claim không tồn tại."));
 
-    if (newStatus.equalsIgnoreCase("SENT")) {
-        if (!claim.getStatus().equalsIgnoreCase("DRAFT")) {
-            throw new IllegalArgumentException("Chỉ có thể gửi Claim ở trạng thái DRAFT.");
+        if (newStatus.equalsIgnoreCase("SENT")) {
+            if (!claim.getStatus().equalsIgnoreCase("DRAFT")) {
+                throw new IllegalArgumentException("Chỉ có thể gửi Claim ở trạng thái DRAFT.");
+            }
+            claim.setStatus("SENT");
+            claim.setUpdatedAt(LocalDateTime.now());
+        } else {
+            throw new IllegalArgumentException("Trạng thái chuyển đổi không hợp lệ.");
         }
-        claim.setStatus("SENT");
-        claim.setUpdatedAt(LocalDateTime.now());
-    } else {
-        throw new IllegalArgumentException("Trạng thái chuyển đổi không hợp lệ.");
+        return warrantyClaimRepository.save(claim);
     }
-    return warrantyClaimRepository.save(claim);
-}
+
+    @Override
+    public WarrantyClaim updateClaimTechnician(Long claimId, Long technicianId) {
+        WarrantyClaim claim = warrantyClaimRepository.findById(claimId).orElseThrow(() -> new IllegalArgumentException("Claim không tồn tại."));
+
+        // 1. Kiểm tra Technician có tồn tại không
+        Technician technician = technicianRepository.findById(technicianId).orElseThrow(() -> new IllegalArgumentException("Kỹ thuật viên không tồn tại."));
+
+        // 2. Chỉ cho phép gán nếu Claim chưa hoàn thành hoặc bị từ chối
+        if (claim.getStatus().equalsIgnoreCase("COMPLETED") || claim.getStatus().equalsIgnoreCase("REJECTED")) {
+            throw new IllegalArgumentException("Không thể gán Kỹ thuật viên khi Claim ở trạng thái " + claim.getStatus() + ".");
+        }
+
+        // 3. Cập nhật trường Technician và thời gian
+        claim.setTechnician(technician);
+        claim.setUpdatedAt(LocalDateTime.now());
+        
+        return warrantyClaimRepository.save(claim);
+    }
 }

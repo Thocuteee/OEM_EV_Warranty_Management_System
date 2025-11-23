@@ -44,17 +44,16 @@ public class CampaignVehicle {
     }
 
     @Id
-    //@Column(name = "campaign_id", insertable = false, updatable = false) 
-    private Long campaign; 
+    private Long campaign;
 
     @Id
-    //@Column(name = "vehicle_id", insertable = false, updatable = false) 
-    private Long vehicle; 
+    private Long vehicle;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("campaign") 
     @JoinColumn(name = "campaign_id", nullable = false)
     private RecallCampaign recallCampaignEntity; 
+    
     
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("vehicle") 

@@ -158,4 +158,14 @@ public class WarrantyClaimController {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
     }
+
+    @PutMapping("/{id}/assign-tech")
+    public ResponseEntity<?> assignTechnician(@PathVariable Long id, @RequestParam Long technicianId) {
+        try {
+            WarrantyClaim updatedClaim = warrantyClaimService.updateClaimTechnician(id, technicianId);
+            return ResponseEntity.ok(toResponseDTO(updatedClaim));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
+        }
+    }
 }
