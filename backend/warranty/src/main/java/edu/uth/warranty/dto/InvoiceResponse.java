@@ -22,3 +22,4 @@ public class InvoiceResponse {
     private Integer minStockLevel;
     private String paymentsStatus;
 }
+

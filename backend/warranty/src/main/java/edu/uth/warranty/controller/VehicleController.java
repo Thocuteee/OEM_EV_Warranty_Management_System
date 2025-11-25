@@ -51,15 +51,12 @@ public class VehicleController {
         }
         
         return new VehicleResponse(
-            vehicle.getVehicleId(), 
+            vehicle.getVehicleId(),
             vehicle.getVIN(),
             vehicle.getModel(),
             vehicle.getYear(),
             customerId,
-            customerName,
-            vehicle.getRegistrationStatus(), 
-            vehicle.getRegisteredBy() != null ? vehicle.getRegisteredBy().getId() : null, 
-            registeredByUsername
+            customerName
         );
     }
 
@@ -163,19 +160,5 @@ public class VehicleController {
         }
         vehicleService.deleteVehicle(id);
         return ResponseEntity.noContent().build();
-    }
-    //7. PUT /api/vehicles/{id}/status : Cập nhật Trạng thái Đăng ký (Admin/EVM Staff dùng)
-    @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateRegistrationStatus(
-        @PathVariable Long id, 
-        @RequestParam String newStatus, 
-        @RequestParam Long approverUserId 
-    ) {
-        try {
-            Vehicle updatedVehicle = vehicleService.updateRegistrationStatus(id, newStatus.toUpperCase(), approverUserId);
-            return ResponseEntity.ok(toResponseDto(updatedVehicle));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
-        }
     }
 }

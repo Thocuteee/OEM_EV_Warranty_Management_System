@@ -24,3 +24,4 @@ public class InventoryResponse {
     private BigDecimal amount;
     private LocalDate invoiceDate;
 }
+
