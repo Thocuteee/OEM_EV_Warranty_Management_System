@@ -14,6 +14,12 @@ export const getTechnicianById = async (id: number): Promise<TechnicianResponse>
     return response.data;
 };
 
+// GET: Lấy Kỹ thuật viên theo username (cho trang Profile)
+export const getTechnicianByUsername = async (username: string): Promise<TechnicianResponse> => {
+    const response = await apiClient.get<TechnicianResponse>(`/technicians/username/${username}`);
+    return response.data;
+};
+
 // THÊM: PUT: Cập nhật thông tin Technician
 export const updateTechnician = async (id: number, technicianData: TechnicianRequest): Promise<TechnicianResponse> => {
     const response = await apiClient.put<TechnicianResponse>(`/technicians/${id}`, technicianData);

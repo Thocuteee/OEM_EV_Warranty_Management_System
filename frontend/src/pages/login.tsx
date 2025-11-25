@@ -9,7 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/router";
 
 // SỬA 1: Dùng đường dẫn ../ (đi lên 1 cấp)
-import { UserProfile, UserRole } from "../types/warranty";
+import { UserProfile, UserRole } from "../types/auth";
 import axios from "axios";
 
 export default function Login() {

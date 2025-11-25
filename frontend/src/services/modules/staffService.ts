@@ -16,3 +16,8 @@ export const updateStaff = async (id: number, staffData: StaffRequest): Promise<
     return response.data;
 };
 
+// Lấy thông tin Staff theo username (dành cho trang Profile)
+export const getStaffByUsername = async (username: string): Promise<StaffResponse> => {
+    const response = await apiClient.get<StaffResponse>(`/staffs/username/${username}`);
+    return response.data;
+};

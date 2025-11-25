@@ -7,11 +7,12 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/router';
 import { StaffResponse } from '@/types/staff'; 
 import { TechnicianResponse } from '@/types/technician'; 
-import { getStaffById } from '@/services/modules/staffService'; 
-import { getTechnicianById } from '@/services/modules/technicianService';
 import axios from 'axios'; 
 import ProfileUpdateForm from '@/profile/ProfileUpdateForm'; 
 import { UserProfile } from '@/types/auth';
+
+import { getStaffByUsername } from '@/services/modules/staffService';
+import { getTechnicianByUsername } from '@/services/modules/technicianService';
 
 interface AuthUserMinimal {
     id: number;
@@ -60,10 +61,10 @@ export default function UserProfilePage() {
 
             if (isTechnicianRole) {
                 // Ưu tiên Technician
-                data = await getTechnicianById(user.id);
+                data = await getTechnicianByUsername(user.username);
             } else if (isStaffRole) {
                 // Sau đó là Staff
-                data = await getStaffById(user.id);
+                data = await getStaffByUsername(user.username);
             } else {
                 // Fallback cho các vai trò khác (như Customer)
                 setProfileData(mapToBasicProfile(userMinimal));
