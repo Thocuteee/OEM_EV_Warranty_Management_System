@@ -38,57 +38,53 @@ public class TechnicianServiceImpl implements ITechnicianService{
     }
 
     @Override
-public Technician saveTechnician(TechnicianRequest request) { 
-    
-    // 1. Kiểm tra Center (FK)
-    ServiceCenter center = serviceCenterRepository.findById(request.getCenterId()).orElseThrow(() -> new IllegalArgumentException("Trung tâm Dịch vụ không tồn tại."));
+    public Technician saveTechnician(TechnicianRequest request) { 
+        // 1. Kiểm tra Center (FK)
+        ServiceCenter center = serviceCenterRepository.findById(request.getCenterId()).orElseThrow(() -> new IllegalArgumentException("Trung tâm Dịch vụ không tồn tại."));
 
-    Technician technician;
+        Technician technician;
 
-    // BƯỚC SỬA 1: Kiểm tra xem Entity đã tồn tại trong DB chưa
-    Optional<Technician> existingTechnicianOpt = Optional.empty();
-    if (request.getId() != null) {
-        existingTechnicianOpt = technicianRepository.findById(request.getId());
-    }
-
-    if (existingTechnicianOpt.isPresent()) {
-        // LOGIC CẬP NHẬT: Nếu ID tồn tại trong Request VÀ trong Database
-        technician = existingTechnicianOpt.get();
-        // KHÔNG CẦN CHECK UNIQUE EMAIL/USERNAME VÌ CHÚNG TA ĐANG CẬP NHẬT TRÊN CÙNG ENTITY
-
-    } else {
-        // LOGIC TẠO MỚI HOẶC TẠO LẦN ĐẦU TỪ USER SERVICE (SỬA LỖI Ở ĐÂY)
-        
-        // 2. Kiểm tra tính duy nhất (Username và Email) - Áp dụng cho TẠO MỚI
-        if (technicianRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("Tên đăng nhập đã tồn tại.");
-        }
-        if (technicianRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Email đã tồn tại.");
-        }
-        
-        technician = new Technician();
-        // RẤT QUAN TRỌNG: Gán ID có sẵn từ User Entity
+        // BƯỚC SỬA: Kiểm tra xem hồ sơ Technician đã tồn tại chưa
         if (request.getId() != null) {
-            technician.setTechnicianId(request.getId());
+            Optional<Technician> existingTechnicianOpt = technicianRepository.findById(request.getId());
+
+            if (existingTechnicianOpt.isPresent()) {
+                // Trường hợp 1: CẬP NHẬT hồ sơ đã có
+                technician = existingTechnicianOpt.get();
+            } else {
+                // Trường hợp 2: TẠO MỚI PROFILE cho User ID đã tồn tại
+                technician = new Technician();
+                technician.setTechnicianId(request.getId()); // <<< QUAN TRỌNG: Gán ID của User
+            }
+
+        } else {
+            // Trường hợp 3: Tạo mới hoàn toàn (ID là null)
+            technician = new Technician();
+            // Áp dụng kiểm tra duy nhất cho TẠO MỚI hoàn toàn
+            if (technicianRepository.findByUsername(request.getUsername()).isPresent() || technicianRepository.findByEmail(request.getEmail()).isPresent()) {
+                throw new IllegalArgumentException("Username hoặc Email đã tồn tại.");
+            }
         }
+        
+        // 2. Ánh xạ dữ liệu
+        technician.setCenter(center);
+        technician.setName(request.getName());
+        technician.setEmail(request.getEmail()); 
+        technician.setPhone(request.getPhone());
+        technician.setSpecialization(request.getSpecialization());
+        technician.setUsername(request.getUsername());
+        
+        // 3. Xử lý Mật khẩu
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            if (!request.getPassword().startsWith("$2a$")) {
+                technician.setPassword(passwordEncoder.encode(request.getPassword()));
+            } else {
+                technician.setPassword(request.getPassword());
+            }
+        }
+        
+        return technicianRepository.save(technician);
     }
-    
-    // 3. Ánh xạ dữ liệu từ Request DTO sang Entity Technician
-    technician.setCenter(center);
-    technician.setName(request.getName());
-    technician.setEmail(request.getEmail()); 
-    technician.setPhone(request.getPhone());
-    technician.setSpecialization(request.getSpecialization());
-    technician.setUsername(request.getUsername());
-    
-    // Mật khẩu (Giữ nguyên logic hash)
-    if (request.getPassword() != null) {
-         technician.setPassword(request.getPassword()); 
-    }
-    
-    return technicianRepository.save(technician);
-}
 
     @Override
     public void deleteTechnician(Long id) {
