@@ -69,9 +69,12 @@ const ReportForm: React.FC<ReportFormProps> = ({
     useEffect(() => {
         const loadData = async () => {
             try {
-                // Lấy tất cả Claims và lọc ra Claims có thể tạo Report (e.g., SENT, APPROVED, IN_PROCESS)
+                // Lấy tất cả Claims và lọc ra Claims có thể tạo Report (e.g., SENT, APPROVED, IN_PROCESS, IN_PROGRESS)
                 const allClaims = await getAllWarrantyClaims();
-                const validClaims = allClaims.filter(c => ['SENT', 'APPROVED', 'IN_PROCESS'].includes(c.status.toUpperCase().trim()));
+                const validClaims = allClaims.filter(c => {
+                    const status = c.status.toUpperCase().trim();
+                    return ['SENT', 'APPROVED', 'IN_PROCESS', 'IN_PROGRESS'].includes(status);
+                });
                 setClaims(validClaims);
                 
                 // Lấy Technicians
@@ -80,11 +83,34 @@ const ReportForm: React.FC<ReportFormProps> = ({
 
                 // Nếu đang tạo mới và chưa có Claim ID nào được chọn, chọn Claim đầu tiên trong danh sách hợp lệ
                 if (!isEditing && formState.claimId === 0 && validClaims.length > 0) {
-                    setFormState(prev => ({ ...prev, claimId: validClaims[0].id }));
+                    const firstClaim = validClaims[0];
+                    // Cập nhật cả claimId, vehicleId, centerId và technicianId từ claim đầu tiên
+                    setFormState(prev => ({ 
+                        ...prev, 
+                        claimId: firstClaim.id,
+                        vehicleId: firstClaim.vehicleId || prev.vehicleId,
+                        centerId: firstClaim.centerId || prev.centerId,
+                        technicianId: firstClaim.technicianId || (techs.length > 0 ? techs[0].id : prev.technicianId)
+                    }));
+                } else if (!isEditing && formState.claimId !== 0) {
+                    // Nếu đã có claimId từ props, cập nhật vehicleId và centerId từ claim đó
+                    const selectedClaim = validClaims.find(c => c.id === formState.claimId);
+                    if (selectedClaim) {
+                        setFormState(prev => ({
+                            ...prev,
+                            vehicleId: selectedClaim.vehicleId || prev.vehicleId,
+                            centerId: selectedClaim.centerId || prev.centerId,
+                            technicianId: selectedClaim.technicianId || prev.technicianId
+                        }));
+                    }
                 }
-                // Nếu đang tạo mới, gán Technician đầu tiên (hoặc gán từ Claim nếu có)
+                
+                // Nếu đang tạo mới và chưa có Technician, gán Technician đầu tiên
                 if (!isEditing && formState.technicianId === 0 && techs.length > 0) {
-                    setFormState(prev => ({ ...prev, technicianId: techs[0].id }));
+                    setFormState(prev => ({ 
+                        ...prev, 
+                        technicianId: prev.technicianId || techs[0].id 
+                    }));
                 }
 
             } catch (err) {
@@ -93,7 +119,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
             }
         };
         loadData();
-    }, [isEditing]);
+    }, [isEditing, formState.claimId]);
     
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -107,17 +133,23 @@ const ReportForm: React.FC<ReportFormProps> = ({
             newValue = parseFloat(value) || 0;
         }
 
-        // Cập nhật VehicleId/CenterId khi Claim thay đổi (Logic Giả định)
-        if (name === 'claimId' && typeof newValue === 'number') {
+        // Cập nhật VehicleId/CenterId khi Claim thay đổi
+        if (name === 'claimId' && typeof newValue === 'number' && newValue > 0) {
             const selectedClaim = claims.find(c => c.id === newValue);
             if (selectedClaim) {
                 setFormState(prev => ({ 
                     ...prev, 
                     claimId: newValue as number,
-                    vehicleId: selectedClaim.vehicleId, // Ánh xạ Vehicle ID
-                    centerId: selectedClaim.centerId,   // Ánh xạ Center ID
+                    vehicleId: selectedClaim.vehicleId || prev.vehicleId, // ÁNH XẠ: Lấy Vehicle ID từ Claim
+                    centerId: selectedClaim.centerId || prev.centerId,     // ÁNH XẠ: Lấy Center ID từ Claim
+                    // Gán TechnicianId nếu Claim đã có Technician gán, nếu không giữ nguyên
+                    technicianId: selectedClaim.technicianId || prev.technicianId,
                 }));
-                return; // Ngừng ở đây để tránh setFormState kép
+                return; 
+            } else {
+                // Nếu không tìm thấy claim, vẫn cập nhật claimId nhưng giữ nguyên vehicleId/centerId
+                setFormState(prev => ({ ...prev, claimId: newValue as number }));
+                return;
             }
         }
 
@@ -130,24 +162,46 @@ const ReportForm: React.FC<ReportFormProps> = ({
         setError('');
         setLoading(true);
 
-        const payloadToSend: ReportRequest = {
-            ...formState,
-            // Đảm bảo Claim ID hợp lệ
-            claimId: formState.claimId || 0,
-            technicianId: formState.technicianId || 0,
-            
-            partCost: formState.partCost || 0,
-            actualCost: formState.actualCost || 0,
-            
-            // MOCK: Giả định CreatedByText là username của người tạo
-            createdByText: isEditing ? (initialData as ReportResponse)?.createdByText : currentUsername, 
-        };
-        
-        if (!payloadToSend.claimId || payloadToSend.claimId === 0) {
+        // Validation: Kiểm tra các trường bắt buộc
+        if (!formState.claimId || formState.claimId === 0) {
             setError("Vui lòng chọn Claim ID hợp lệ.");
             setLoading(false);
             return;
         }
+        
+        if (!formState.vehicleId || formState.vehicleId === 0) {
+            setError("Vehicle ID không hợp lệ. Vui lòng chọn lại Claim.");
+            setLoading(false);
+            return;
+        }
+        
+        if (!formState.centerId || formState.centerId === 0) {
+            setError("Center ID không hợp lệ. Vui lòng chọn lại Claim.");
+            setLoading(false);
+            return;
+        }
+        
+        if (!formState.technicianId || formState.technicianId === 0) {
+            setError("Vui lòng chọn Technician.");
+            setLoading(false);
+            return;
+        }
+        
+        const payloadToSend: ReportRequest = {
+            ...formState,
+            // Đảm bảo các ID hợp lệ
+            claimId: formState.claimId,
+            technicianId: formState.technicianId,
+            vehicleId: formState.vehicleId,
+            centerId: formState.centerId,
+            createdById: currentUserId,
+            
+            partCost: formState.partCost || 0,
+            actualCost: formState.actualCost || 0,
+            
+            // CreatedByText là username của người tạo
+            createdByText: isEditing ? (initialData as ReportResponse)?.createdByText : currentUsername, 
+        };
 
         try {
             await onSubmit(payloadToSend);
@@ -189,14 +243,14 @@ const ReportForm: React.FC<ReportFormProps> = ({
                     >
                         <option value={0} disabled>-- Chọn Claim (SENT/IN_PROGRESS) --</option>
                         {claims.map(c => (
-                             <option key={c.id} value={c.id}>
+                            <option key={c.id} value={c.id}>
                                 {c.id} - {c.vehicleVIN} ({c.status})
-                             </option>
+                            </option>
                         ))}
                     </select>
                 </div>
                  {/* TECHNICIAN DROP DOWN */}
-                 <div>
+                <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Technician *</label>
                     <select
                         name="technicianId"
@@ -213,19 +267,33 @@ const ReportForm: React.FC<ReportFormProps> = ({
                         ))}
                     </select>
                 </div>
-                {/* Vehicle ID (READ ONLY) */}
+                {/* Vehicle ID, Center ID, User ID (READ ONLY - Tự động từ Claim) */}
                 <div className="col-span-2 grid grid-cols-3 gap-4">
-                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Vehicle ID</label>
-                        <input value={formState.vehicleId || 'T/Mục'} className={readOnlyInputClass} disabled />
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Vehicle ID *</label>
+                        <input 
+                            value={formState.vehicleId || (formState.claimId ? 'Đang tải...' : 'Chọn Claim để tự động điền')} 
+                            className={readOnlyInputClass} 
+                            disabled 
+                        />
+                        {!formState.vehicleId && formState.claimId && (
+                            <p className="text-xs text-red-500 mt-1">Vehicle ID sẽ tự động điền khi chọn Claim</p>
+                        )}
                     </div>
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">Center ID</label>
-                        <input value={formState.centerId || 'T/Mục'} className={readOnlyInputClass} disabled />
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Center ID *</label>
+                        <input 
+                            value={formState.centerId || (formState.claimId ? 'Đang tải...' : 'Chọn Claim để tự động điền')} 
+                            className={readOnlyInputClass} 
+                            disabled 
+                        />
+                        {!formState.centerId && formState.claimId && (
+                            <p className="text-xs text-red-500 mt-1">Center ID sẽ tự động điền khi chọn Claim</p>
+                        )}
                     </div>
                     <div>
-                        <label className="block text-sm font-semibold text-gray-700 mb-1">User ID (Created By)</label>
-                        <input value={currentUserId} className={readOnlyInputClass} disabled />
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">User ID (Created By) *</label>
+                        <input value={currentUserId || 'N/A'} className={readOnlyInputClass} disabled />
                     </div>
                 </div>
             </div>
@@ -233,7 +301,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
             {/* Chi phí */}
             <h3 className="text-xl font-bold text-gray-800 border-b pb-2 pt-3">Chi phí & Trạng thái</h3>
             <div className="grid grid-cols-4 gap-4">
-                 <div className="col-span-2">
+                <div className="col-span-2">
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Chi phí Linh kiện * (VND)</label>
                     <input 
                         type="number"
@@ -259,7 +327,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
                         required 
                     />
                 </div>
-                 <div>
+                <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Trạng thái Report *</label>
                     <select
                         name="status"
@@ -271,7 +339,7 @@ const ReportForm: React.FC<ReportFormProps> = ({
                         {statusOptions.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                 </div>
-                 <div>
+                <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Ngày Báo cáo *</label>
                     <input 
                         type="date"
