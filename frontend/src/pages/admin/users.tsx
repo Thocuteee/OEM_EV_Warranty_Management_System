@@ -2,16 +2,19 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import AdminLayout from "@/components/layout/AdminLayout";
-import { UserRequest, UserResponse, UserRole } from "@/types/warranty"; 
+import { UserRequest, UserResponse} from "@/types/user";
+import {UserRole} from "@/types/auth";
 import { FullUserCreationRequest } from "@/types/admin";
 // THÊM: Import axios để xử lý lỗi HTTP
-import axios from "axios"; 
-import { getAllUsers, deleteUser, createNewUser } from "@/services/warrantyApi";
+import axios from "axios";
+import {
+  getAllUsers,
+  deleteUser,
+  createNewUser,
+} from "@/services/modules/userService";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
 import { FormTaoUser, UserManagementTable } from "@/users";
-
-
 
 export default function AdminUsersPage() {
   const { user, isAuthenticated } = useAuth();
@@ -32,11 +35,12 @@ export default function AdminUsersPage() {
       router.push("/login");
       return;
     }
-    if (user && user.role !== "Admin") {
+    const allowedRoles = ["Admin", "EVM_Staff"];
+    if(user && !allowedRoles.includes(user.role)) {
       router.push("/");
       return;
     }
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, router]);
 
   // ---------------------------------------
   // Load danh sách user
@@ -77,15 +81,16 @@ export default function AdminUsersPage() {
       setUsers((prev) => [...prev, newUser]);
       setModalOpen(false);
       setToast("Tạo tài khoản thành công");
-    } catch (err : unknown) {
+    } catch (err: unknown) {
       setToast("Lỗi khi tạo tài khoản");
       if (err instanceof Error) {
-            errorMessage = err.message;
-        } else if (axios.isAxiosError(err) && err.response) { // Cần import axios
-             // Lỗi từ backend thường nằm trong response.data
-            const apiError = err.response.data as { message: string };
-            errorMessage = apiError.message || errorMessage;
-        }
+        errorMessage = err.message;
+      } else if (axios.isAxiosError(err) && err.response) {
+        // Cần import axios
+        // Lỗi từ backend thường nằm trong response.data
+        const apiError = err.response.data as { message: string };
+        errorMessage = apiError.message || errorMessage;
+      }
       throw new Error(errorMessage);
     }
   };
@@ -139,7 +144,7 @@ export default function AdminUsersPage() {
       ) : (
         <UserManagementTable
           users={filteredUsers}
-          onView={(u) => setSelectedUser(u)}   // FIX: thêm onView bắt buộc
+          onView={(u) => setSelectedUser(u)} // FIX: thêm onView bắt buộc
           onDelete={handleDeleteUser}
         />
       )}
@@ -148,9 +153,15 @@ export default function AdminUsersPage() {
       {selectedUser && (
         <div className="mt-6 p-4 border rounded-xl bg-white shadow">
           <h2 className="text-xl font-semibold mb-3">Chi tiết người dùng</h2>
-          <p><b>ID:</b> {selectedUser.id}</p>
-          <p><b>Username:</b> {selectedUser.username}</p>
-          <p><b>Role:</b> {selectedUser.role}</p>
+          <p>
+            <b>ID:</b> {selectedUser.id}
+          </p>
+          <p>
+            <b>Username:</b> {selectedUser.username}
+          </p>
+          <p>
+            <b>Role:</b> {selectedUser.role}
+          </p>
 
           <button
             onClick={() => setSelectedUser(null)}

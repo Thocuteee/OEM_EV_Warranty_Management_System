@@ -13,6 +13,8 @@ import edu.uth.warranty.dto.VehicleResponse;
 import edu.uth.warranty.dto.MessageResponse; 
 import edu.uth.warranty.model.Customer;
 import edu.uth.warranty.model.Vehicle;
+import edu.uth.warranty.service.IUserService; 
+import edu.uth.warranty.model.User;
 import edu.uth.warranty.service.ICustomerService;
 import edu.uth.warranty.service.IVehicleService;
 import jakarta.validation.Valid;
@@ -23,15 +25,18 @@ public class VehicleController {
     
     private final IVehicleService vehicleService;
     private final ICustomerService customerService; 
+    private final IUserService userService;
 
-    public VehicleController(IVehicleService vehicleService, ICustomerService customerService) {
+    public VehicleController(IVehicleService vehicleService, ICustomerService customerService, IUserService userService) {
         this.vehicleService = vehicleService;
         this.customerService = customerService;
+        this.userService = userService;
     }
 
     private VehicleResponse toResponseDto(Vehicle vehicle) {
         String customerName = null;
         Long customerId = null;
+        String registeredByUsername = null;
         
         if (vehicle.getCustomer() != null && vehicle.getCustomer().getCustomerId() != null) { 
             Optional<Customer> customerOpt = customerService.getCustomerById(vehicle.getCustomer().getCustomerId()); 
@@ -40,14 +45,21 @@ public class VehicleController {
                 customerId = customerOpt.get().getCustomerId(); 
             }
         }
+
+        if (vehicle.getRegisteredBy() != null && vehicle.getRegisteredBy().getId() != null) {
+            registeredByUsername = userService.getUserById(vehicle.getRegisteredBy().getId()).map(User::getUsername).orElse(null);
+        }
         
         return new VehicleResponse(
-            vehicle.getVehicleId(),
+            vehicle.getVehicleId(), 
             vehicle.getVIN(),
             vehicle.getModel(),
             vehicle.getYear(),
             customerId,
-            customerName
+            customerName,
+            vehicle.getRegistrationStatus(), 
+            vehicle.getRegisteredBy() != null ? vehicle.getRegisteredBy().getId() : null, 
+            registeredByUsername
         );
     }
 
@@ -62,6 +74,10 @@ public class VehicleController {
             Customer customer = new Customer();
             customer.setCustomerId(request.getCustomerId()); 
             vehicle.setCustomer(customer);
+        }
+
+        if (request.getRegisteredByUserId() != null) {
+            vehicle.setRegisteredBy(new User(request.getRegisteredByUserId()));
         }
 
         vehicle.setVIN(request.getVIN());
@@ -147,5 +163,19 @@ public class VehicleController {
         }
         vehicleService.deleteVehicle(id);
         return ResponseEntity.noContent().build();
+    }
+    //7. PUT /api/vehicles/{id}/status : Cập nhật Trạng thái Đăng ký (Admin/EVM Staff dùng)
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> updateRegistrationStatus(
+        @PathVariable Long id, 
+        @RequestParam String newStatus, 
+        @RequestParam Long approverUserId 
+    ) {
+        try {
+            Vehicle updatedVehicle = vehicleService.updateRegistrationStatus(id, newStatus.toUpperCase(), approverUserId);
+            return ResponseEntity.ok(toResponseDto(updatedVehicle));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
+        }
     }
 }

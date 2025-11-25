@@ -39,7 +39,7 @@ public class Report {
     private Vehicle vehicle;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recall_campaign_id", nullable = false)
+    @JoinColumn(name = "recall_campaign_id", nullable = true) // Cho phép null vì không phải report nào cũng liên quan đến recall campaign
     private RecallCampaign campaign;
 
     @Column(name = "status", nullable = false)

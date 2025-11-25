@@ -29,9 +29,7 @@ import jakarta.transaction.Transactional;
 public class WarrantyClaimImpl implements IWarrantyClaimService {
 
     private final CustomerRepository customerRepository;
-
     private final WarrantyClaimRepository warrantyClaimRepository;
-    
     private final VehicleRepository vehicleRepository;
     private final TechnicianRepository technicianRepository;
     private final StaffRepository staffRepository;
@@ -42,7 +40,7 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
             VehicleRepository vehicleRepository,
             TechnicianRepository technicianRepository,
             StaffRepository staffRepository,
-            ServiceCenterRepository serviceCenterRepository, CustomerServiceImpl customerServiceImpl)
+            ServiceCenterRepository serviceCenterRepository)
             {
         this.warrantyClaimRepository = warrantyClaimRepository;
         this.customerRepository = customerRepository;
@@ -52,35 +50,103 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
         this.serviceCenterRepository = serviceCenterRepository;
     
     }
+
     @Override
     public List<WarrantyClaim> getAllWarrantyClaims() {
         return warrantyClaimRepository.findAll();
     }
+
     @Override
     public Optional<WarrantyClaim> getWarrantyClaimById(Long id) {
         return warrantyClaimRepository.findById(id);
     }
+
     @Override
     public WarrantyClaim saveWarrantyClaim(WarrantyClaim warrantyClaim){
-        if(vehicleRepository.findById(warrantyClaim.getVehicle().getVehicleId()).isEmpty()) {
-            throw new IllegalArgumentException("Yêu cầu bảo hành với không tồn tại.");
-        }
-        if(customerRepository.findById(warrantyClaim.getCustomer().getCustomerId()).isEmpty()) {
-            throw new IllegalArgumentException("Khách hàng với ID " + warrantyClaim.getCustomer().getCustomerId() + " không tồn tại.");
-        }
-        if(serviceCenterRepository.findById(warrantyClaim.getCenter().getCenterId()).isEmpty()) {
-            throw new IllegalArgumentException("Trung tâm dịch vụ với ID " + warrantyClaim.getCenter().getCenterId() + " không tồn tại.");
-        }
-        if(warrantyClaim.getClaimId() == null) {
-            warrantyClaim.setCreatedAt(LocalDateTime.now());
-            warrantyClaim.setStatus("DRAFT ");
-            warrantyClaim.setApprovalStatus("PENDING");
+        
+        // --- 1. XÁC ĐỊNH NGƯỜI TẠO VÀ GÁN STAFF ENTITY HỢP LỆ ---
+    Long creatorId = warrantyClaim.getStaff() != null ? warrantyClaim.getStaff().getStaffId() : null;
+    Staff assignedStaff = null;
 
-        }
-        warrantyClaim.setUpdatedAt(LocalDateTime.now());
-        return warrantyClaimRepository.save(warrantyClaim);
-    
+    if (creatorId == null) {
+        throw new IllegalArgumentException("Người tạo (Staff ID) là bắt buộc.");
     }
+
+    // 1a. Tìm kiếm trong bảng Staff (Áp dụng cho Admin, EVM_Staff, SC_Staff)
+    Optional<Staff> staffOpt = staffRepository.findById(creatorId);
+    
+    if (staffOpt.isPresent()) {
+        assignedStaff = staffOpt.get(); // Là Staff hợp lệ
+    } else {
+        // 1b. Nếu không phải Staff, kiểm tra xem có phải Technician (SC_Technician) không
+        Optional<Technician> techOpt = technicianRepository.findById(creatorId);
+        
+        if (techOpt.isPresent()) {
+            // Nếu là Technician, gán Staff đại diện (ID 1) cho trường staff (FK bắt buộc)
+            // Lưu ý: ID 1 phải tồn tại và là Admin/Staff hợp lệ
+            assignedStaff = staffRepository.findById(1L)
+                .orElseThrow(() -> new IllegalArgumentException("Hồ sơ Staff đại diện (ID 1) không tồn tại. Vui lòng đăng ký Admin Staff đầu tiên."));
+        } else {
+            // Không phải Staff, không phải Technician -> Lỗi
+            throw new IllegalArgumentException("ID người tạo (" + creatorId + ") không tồn tại là Staff hoặc Technician.");
+        }
+    }
+    
+    // Gán lại Staff Entity đã xác thực/đại diện
+    warrantyClaim.setStaff(assignedStaff);
+    // ----------------------------------------------------
+
+
+    // --- 2. KIỂM TRA CÁC KHÓA NGOẠI KHÁC (Tối ưu hóa và kiểm tra ID chi tiết) ---
+    
+    // VEHICLE ID (BẮT BUỘC)
+    Long vehicleId = warrantyClaim.getVehicle() != null ? warrantyClaim.getVehicle().getVehicleId() : null;
+    Vehicle vehicle = vehicleId != null ? vehicleRepository.findById(vehicleId).orElseThrow(() -> 
+        new IllegalArgumentException("Xe (Vehicle ID: " + vehicleId + ") không tồn tại.")
+    ) : null;
+    warrantyClaim.setVehicle(vehicle);
+
+    
+    // CUSTOMER ID (BẮT BUỘC)
+    Long customerId = warrantyClaim.getCustomer() != null ? warrantyClaim.getCustomer().getCustomerId() : null;
+    Customer customer = customerId != null ? customerRepository.findById(customerId).orElseThrow(() -> 
+        new IllegalArgumentException("Khách hàng (Customer ID: " + customerId + ") không tồn tại.")
+    ) : null;
+    warrantyClaim.setCustomer(customer);
+    
+    
+    // SERVICE CENTER ID (BẮT BUỘC)
+    Long centerId = warrantyClaim.getCenter() != null ? warrantyClaim.getCenter().getCenterId() : null;
+    ServiceCenter center = centerId != null ? serviceCenterRepository.findById(centerId).orElseThrow(() -> 
+        new IllegalArgumentException("Trung tâm dịch vụ (Center ID: " + centerId + ") không tồn tại.")
+    ) : null;
+    warrantyClaim.setCenter(center);
+    
+    
+    // TECHNICIAN ID (TÙY CHỌN)
+    if (warrantyClaim.getTechnician() != null && warrantyClaim.getTechnician().getTechnicianId() != null) {
+        Long technicianId = warrantyClaim.getTechnician().getTechnicianId();
+        Technician technician = technicianRepository.findById(technicianId).orElseThrow(() -> 
+            new IllegalArgumentException("Kỹ thuật viên (Technician ID: " + technicianId + ") không tồn tại.")
+        );
+        warrantyClaim.setTechnician(technician);
+    } else {
+        // Gán null nếu không gán Technician
+        warrantyClaim.setTechnician(null);
+    }
+    
+    
+    // --- LOGIC KHỞI TẠO CLAIM MỚI (DRAFT) ---
+    if(warrantyClaim.getClaimId() == null) {
+        warrantyClaim.setCreatedAt(LocalDateTime.now());
+        warrantyClaim.setStatus("DRAFT"); 
+        warrantyClaim.setApprovalStatus("PENDING");
+    }
+    
+    warrantyClaim.setUpdatedAt(LocalDateTime.now());
+    return warrantyClaimRepository.save(warrantyClaim);
+    }
+
     @Override
     public void deleteWarrantyClaim(Long id) {
     Optional<WarrantyClaim> claimOpt = warrantyClaimRepository.findById(id);
@@ -109,7 +175,7 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
             claim.setUpdatedAt(LocalDateTime.now());
             
             if(newApprovalStatus.equals("APPROVED")) {
-                claim.setStatus("IN_PROGRESS");
+                claim.setStatus("IN_PROCESS"); // Sửa từ IN_PROGRESS thành IN_PROCESS để khớp với enum
             } else if(newApprovalStatus.equals("REJECTED")) {
                 claim.setStatus("REJECTED");
             }
@@ -146,5 +212,46 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
     @Override
     public List<WarrantyClaim> getWarrantyClaimsByMinTotalCost(BigDecimal totalCost) {
         return warrantyClaimRepository.findByTotalCostGreaterThanEqual(totalCost);
+    }
+
+    @Override
+    public WarrantyClaim updateClaimPrimaryStatus(Long claimId, String newStatus) {
+        WarrantyClaim claim = warrantyClaimRepository.findById(claimId)
+                .orElseThrow(() -> new IllegalArgumentException("Claim không tồn tại."));
+
+        if (newStatus.equalsIgnoreCase("SENT")) {
+            if (!claim.getStatus().equalsIgnoreCase("DRAFT")) {
+                throw new IllegalArgumentException("Chỉ có thể gửi Claim ở trạng thái DRAFT.");
+            }
+            claim.setStatus("SENT");
+            claim.setUpdatedAt(LocalDateTime.now());
+        } else {
+            throw new IllegalArgumentException("Trạng thái chuyển đổi không hợp lệ.");
+        }
+        return warrantyClaimRepository.save(claim);
+    }
+
+    @Override
+    public WarrantyClaim updateClaimTechnician(Long claimId, Long technicianId) {
+        WarrantyClaim claim = warrantyClaimRepository.findById(claimId).orElseThrow(() -> new IllegalArgumentException("Claim không tồn tại."));
+
+        // 1. Kiểm tra Technician có tồn tại không
+        Technician technician = technicianRepository.findById(technicianId).orElseThrow(() -> new IllegalArgumentException("Kỹ thuật viên không tồn tại."));
+
+        // 2. Chỉ cho phép gán nếu Claim chưa hoàn thành hoặc bị từ chối
+        if (claim.getStatus().equalsIgnoreCase("COMPLETED") || claim.getStatus().equalsIgnoreCase("REJECTED")) {
+            throw new IllegalArgumentException("Không thể gán Kỹ thuật viên khi Claim ở trạng thái " + claim.getStatus() + ".");
+        }
+
+        // 3. Cập nhật trường Technician và thời gian
+        claim.setTechnician(technician);
+        claim.setUpdatedAt(LocalDateTime.now());
+        
+        return warrantyClaimRepository.save(claim);
+    }
+
+    @Override
+    public List<WarrantyClaim> getWarrantyClaimsByStatusIn(List<String> statuses) {
+        return warrantyClaimRepository.findByStatusIn(statuses);
     }
 }

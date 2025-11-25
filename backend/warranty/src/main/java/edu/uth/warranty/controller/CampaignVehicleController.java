@@ -27,12 +27,13 @@ public class CampaignVehicleController {
     }
 
     private CampaignVehicleResponse toResponseDTO(CampaignVehicle campaignVehicle) {
-        String campaigntitle = campaignVehicle.getCampaign() != null ? campaignVehicle.getCampaign().getTitle():null;
-        String vehicleVIN = campaignVehicle.getVehicle() != null ? campaignVehicle.getVehicle().getVIN():null;
+        // SỬA LỖI: Dùng recallCampaignEntity và vehicleEntity
+        String campaigntitle = campaignVehicle.getRecallCampaignEntity() != null ? campaignVehicle.getRecallCampaignEntity().getTitle():null;
+        String vehicleVIN = campaignVehicle.getVehicleEntity() != null ? campaignVehicle.getVehicleEntity().getVIN():null;
 
         return new CampaignVehicleResponse(
-            campaignVehicle.getCampaign().getCampaignId(),
-            campaignVehicle.getVehicle().getVehicleId(),
+            campaignVehicle.getRecallCampaignEntity().getCampaignId(), // Lấy ID từ Entity
+            campaignVehicle.getVehicleEntity().getVehicleId(), // Lấy ID từ Entity
             campaigntitle,
             vehicleVIN,
             campaignVehicle.getStatus()
@@ -41,14 +42,17 @@ public class CampaignVehicleController {
 
     private CampaignVehicle toEntity(CampaignVehicleRequest request) {
         RecallCampaign campaign = new RecallCampaign(request.getCampaignId());
-        campaign.setCampaignId(campaign.getCampaignId());
+        // campaign.setCampaignId(campaign.getCampaignId()); // Dòng này là thừa
 
         Vehicle vehicle = new Vehicle();
-        vehicle.setVehicleId(vehicle.getVehicleId());
+        vehicle.setVehicleId(request.getVehicleId()); // Lấy ID từ Request
 
         CampaignVehicle entity = new CampaignVehicle();
-        entity.setCampaign(campaign);
-        entity.setVehicle(vehicle);
+        
+        // SỬA LỖI: Gán Entity vào trường mới
+        entity.setRecallCampaignEntity(campaign);
+        entity.setVehicleEntity(vehicle);
+        
         entity.setStatus(request.getStatus());
         return entity;
     }
@@ -90,13 +94,9 @@ public class CampaignVehicleController {
     @DeleteMapping("/{campaignId}/{vehicleId}")
     public ResponseEntity<Void> deleteCampaignVehicle(@PathVariable Long campaignId, @PathVariable Long vehicleId) {
         try {
-            // HTTP 204 No Content là tiêu chuẩn cho Delete thành công
-
             campaignVehicleService.deleteCampaignVehicle(campaignId, vehicleId);
-
             return ResponseEntity.noContent().build();
         } catch(Exception e) {
-            // Xử lý lỗi nếu việc xóa thất bại (có thể là lỗi server)
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

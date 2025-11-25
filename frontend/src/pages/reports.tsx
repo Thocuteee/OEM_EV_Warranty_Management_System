@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+// frontend/src/pages/reports.tsx
+// Wrapper để Next.js route đến /reports
+export { default } from "@/reports/index";
+
+=======
 // src/pages/reports.tsx
 "use client";
 
@@ -194,3 +200,4 @@ export default function ReportsPage() {
 
   return <MainLayout>{content}</MainLayout>;
 }
+>>>>>>> main

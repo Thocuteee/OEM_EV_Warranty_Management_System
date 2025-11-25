@@ -149,5 +149,31 @@ public class WarrantyClaimController {
         }
     }
 
-    
+    @PutMapping("/{id}/send")
+    public ResponseEntity<?> sendClaimForApproval(@PathVariable Long id) {
+        try {
+            WarrantyClaim sentClaim = warrantyClaimService.updateClaimPrimaryStatus(id, "SENT");
+            return ResponseEntity.ok(toResponseDTO(sentClaim));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}/assign-tech")
+    public ResponseEntity<?> assignTechnician(@PathVariable Long id, @RequestParam Long technicianId) {
+        try {
+            WarrantyClaim updatedClaim = warrantyClaimService.updateClaimTechnician(id, technicianId);
+            return ResponseEntity.ok(toResponseDTO(updatedClaim));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/search/statuses")
+    public ResponseEntity<List<WarrantyClaimResponse>> getClaimsByStatuses(@RequestParam List<String> statuses) {
+        // Sử dụng service method mới (giả định đã cập nhật IWarrantyClaimService và impl)
+        List<WarrantyClaim> claims = warrantyClaimService.getWarrantyClaimsByStatusIn(statuses); 
+        List<WarrantyClaimResponse> responses = claims.stream().map(this::toResponseDTO).collect(Collectors.toList());
+        return ResponseEntity.ok(responses);
+    }
 }

@@ -1,16 +1,17 @@
 "use client";
 
-import React, { useState, ReactNode } from "react";
-import Image from "next/image";
+import React, { useState, ReactNode, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
+
+type UserRole = "SC_Staff" | "SC_Technician" | "EVM_Staff" | "Admin" | "Customer";
 
 type SidebarItem = {
   name: string;
   icon: string;
   href: string;
-  roles?: Array<"SC_Staff" | "SC_Technician" | "EVM_Staff" | "Admin" | "Customer">;
+  roles?: Array<UserRole>;
 };
 
 interface LayoutProps {
@@ -19,8 +20,11 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
   const router = useRouter();
+  
+  const menuRef = useRef<HTMLDivElement>(null); 
 
   const displayName = user?.username ?? "";
   const initial = displayName ? displayName.charAt(0).toUpperCase() : '?';
@@ -29,18 +33,88 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     logout();
     router.push('/login');
   };
+  
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuRef]);
+
 
   const sidebarMenuItems: SidebarItem[] = [
     { name: "Dashboard", icon: "🏠", href: "/" },
-    { name: "Quản lý Xe", icon: "🚗", href: "#" },
-    { name: "Yêu cầu Bảo hành", icon: "📋", href: "#" },
-    { name: "Linh kiện & Phụ tùng", icon: "⚙️", href: "#" },
-    { name: "Báo cáo", icon: "📊", href: "#" },
+
+    { 
+      name: "Quản lý Xe", 
+      icon: "🚗", 
+      href: "/cars", 
+      roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"], 
+    },
+
+    // SỬA: Chuyển Claims ra khỏi Admin
+    { name: "Yêu cầu Bảo hành", icon: "📋", href: "/claims", 
+      roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"] 
+    },
+
+    // SỬA: Chuyển Parts/Inventory ra khỏi Admin
+    { 
+      name: "Linh kiện & Tồn kho", 
+      icon: "📦", 
+      href: "/parts", 
+      roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"], // Mở quyền xem
+    },
+
+    // SỬA: Chuyển Reports ra khỏi Admin
+    { 
+      name: "Báo cáo Công việc", 
+      icon: "📊", 
+      href: "/reports", 
+      roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"], // Mở quyền xem
+    },
+    
+    // --- MODULES QUẢN TRỊ CẤP CAO (CHỈ DÙNG CHO ADMIN & EVM_STAFF) ---
     {
-      name: "Quản trị Hệ thống",
-      icon: "🛠️",
+      name: "Quản lý User (Admin)", 
+      icon: "👤",
       href: "/admin/users",
-      roles: ["Admin", "EVM_Staff"],
+      roles: ["Admin"], // CHỈ ADMIN
+    },
+    { 
+      name: "Trung tâm Dịch vụ", 
+      icon: "📍", 
+      href: "/admin/centers", 
+      roles: ["Admin", "EVM_Staff"], 
+    },
+    { 
+      name: "Chiến dịch Triệu hồi", 
+      icon: "📢", 
+      href: "/admin/campaigns", 
+      roles: ["Admin", "EVM_Staff"], 
+    },
+    { 
+      name: "Quản lý Hóa đơn", 
+      icon: "🧾", 
+      href: "/admin/invoices", 
+      roles: ["Admin", "EVM_Staff"], 
+    },
+    { 
+      name: "Báo cáo & Thống kê", 
+      icon: "📈", 
+      href: "/admin/research", 
+      roles: ["Admin", "EVM_Staff"], 
+    },
+    {
+      name: "Cấu hình Hệ thống",
+      icon: "🛠️",
+      href: "/admin/system",
+      roles: ["Admin"],
     },
   ];
 
@@ -87,15 +161,45 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         
         {isAuthenticated ? (
           <div 
-            className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 cursor-pointer transition-colors"
-            onClick={handleLogout}
+            className="relative"
+            ref={menuRef} 
           >
-            <span className="text-sm font-semibold text-gray-700 hidden sm:inline">
-              {displayName}
-            </span>
-            <div className="w-8 h-8 rounded-full bg-blue-500 text-white text-sm font-semibold flex items-center justify-center">
-              {initial}
+            <div
+                className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 cursor-pointer transition-colors"
+                onClick={() => setIsMenuOpen(!isMenuOpen)} 
+            >
+                <span className="text-sm font-semibold text-gray-700 hidden sm:inline">
+                  {displayName}
+                </span>
+                <div className="w-8 h-8 rounded-full bg-blue-500 text-white text-sm font-semibold flex items-center justify-center">
+                  {initial}
+                </div>
             </div>
+
+            {/* DROP DOWN MENU */}
+            {isMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-100">
+                    <div className="px-4 py-2 text-xs font-semibold text-gray-400 border-b mb-1 truncate">
+                        {user?.role}
+                    </div>
+                    {/* OPTION 1: Thông tin tài khoản */}
+                    <Link href="/profile" passHref legacyBehavior>
+                        <a 
+                            onClick={() => setIsMenuOpen(false)}
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        >
+                            Thông tin tài khoản
+                        </a>
+                    </Link>
+                    {/* OPTION 2: Đăng xuất */}
+                    <a 
+                        onClick={handleLogout}
+                        className="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                    >
+                        Đăng xuất
+                    </a>
+                </div>
+            )}
           </div>
         ) : (
           <div className="flex items-center gap-[3px]">
@@ -119,7 +223,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         >
           <nav className="space-y-1 mt-4 p-4">
             {filteredMenuItems.map((item) => {
-              const isActive = router.pathname === item.href;
+              const isActive = router.pathname.startsWith(item.href); // Sử dụng startsWith để active cả trang con
               return (
                 <Link
                   key={item.name}

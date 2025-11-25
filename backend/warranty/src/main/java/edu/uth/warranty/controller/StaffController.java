@@ -35,13 +35,13 @@ public class StaffController {
         String centerName = null;
         Long centerId = null;
 
-        if(staff.getCenter() != null && staff.getCenter().getCenterId() != null) {
-            Long actualCenterId = staff.getCenter().getCenterId();
-            Optional<ServiceCenter> centerOpt = serviceCenterService.getServiceCenterById(actualCenterId);
-            if(centerOpt.isPresent()) {
-                centerName = centerOpt.get().getName();
-                centerId = actualCenterId;
-            }
+        // FIX LỖI 500: Chỉ sử dụng các thuộc tính đã được tải sẵn từ Entity Staff
+        ServiceCenter center = staff.getCenter();
+        
+        if (center != null) {
+            // centerId và centerName đã được tải (do ServiceImpl đã buộc tải Lazy Load)
+            centerId = center.getCenterId();
+            centerName = center.getName();
         }
         return new StaffResponse(
             staff.getStaffId(),
@@ -51,7 +51,8 @@ public class StaffController {
             staff.getRole(),
             staff.getPhone(),
             staff.getEmail(),
-            staff.getUsername()
+            staff.getUsername(),
+            staff.getAddress()
         );
     }
 
@@ -71,6 +72,7 @@ public class StaffController {
         staff.setRole(request.getRole());
         staff.setPhone(request.getPhone());
         staff.setEmail(request.getEmail());
+        staff.setAddress(request.getAddress());
         staff.setUsername(request.getUsername());
         staff.setPassword(request.getPassword());
         return staff;
@@ -84,7 +86,7 @@ public class StaffController {
         try {
             Staff newStaff = toEntity(request);
             newStaff.setStaffId(null);
-            Staff saveStaff = staffService.saveStaff(newStaff);
+            Staff saveStaff = staffService.saveStaff(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(toResponseDTO(saveStaff));
         } catch(IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
@@ -103,7 +105,7 @@ public class StaffController {
 
     // 3. GET /api/staffs/{id} : Lấy chi tiết Staff
     @GetMapping("/{id}")
-    public ResponseEntity<StaffResponse> getStaffById(@Valid Long id) {
+    public ResponseEntity<StaffResponse> getStaffById(@PathVariable Long id) {
         Optional<Staff> staff = staffService.getStaffById(id);
 
         if(staff.isEmpty()) {
@@ -112,16 +114,29 @@ public class StaffController {
         return ResponseEntity.ok(toResponseDTO(staff.get()));
     }
 
-    // 4. PUT /api/staffs/{id} : Cập nhật Staff
-    @PutMapping("/{id}")
-    public ResponseEntity<StaffResponse> updateStaff(@PathVariable Long id,@Valid @RequestBody StaffRequest request) {
-        request.setId(id);
+    // 3b. GET /api/staffs/username/{username} : Lấy chi tiết Staff theo Username (phục vụ trang Profile)
+    @GetMapping("/username/{username}")
+    public ResponseEntity<StaffResponse> getStaffByUsername(@PathVariable String username) {
+        Optional<Staff> staff = staffService.getStaffByUsername(username);
 
-        if(staffService.getStaffById(id).isEmpty()) {
+        if (staff.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        Staff updadedStaff = staffService.saveStaff(toEntity(request));
-        return ResponseEntity.ok(toResponseDTO(updadedStaff));
+        return ResponseEntity.ok(toResponseDTO(staff.get()));
+    }
+
+    // 4. PUT /api/staffs/{id} : Cập nhật Staff (hoặc tạo mới nếu chưa có profile)
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateStaff(@PathVariable Long id,@Valid @RequestBody StaffRequest request) {
+        request.setId(id);
+
+        try {
+            // Service sẽ tự động tạo mới profile nếu user ID tồn tại nhưng staff profile chưa có
+            Staff updadedStaff = staffService.saveStaff(request);
+            return ResponseEntity.ok(toResponseDTO(updadedStaff));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
+        }
     }
 
     // 5. DELETE /api/staffs/{id} : Xóa Staff
@@ -135,7 +150,7 @@ public class StaffController {
     }
 
     // 6. GET /api/staffs/center/{centerId} : Tìm kiếm theo Trung tâm Dịch vụ
-    @GetMapping("/center{centerId}")
+    @GetMapping("/center/{centerId}")
     public ResponseEntity<List<StaffResponse>> getStaffsByCenter(@PathVariable Long centerId) {
         ServiceCenter serviceCenter = new ServiceCenter();
         serviceCenter.setCenterId(centerId);

@@ -1,6 +1,7 @@
 package edu.uth.warranty.service;
 
 import edu.uth.warranty.model.Technician;
+import edu.uth.warranty.dto.TechnicianRequest;
 import edu.uth.warranty.model.ServiceCenter;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public interface ITechnicianService {
     List<Technician> getAllTechnicians();
     Optional<Technician> getTechnicianById(Long id);
 
-    Technician saveTechnician(Technician technician);
+    Technician saveTechnician(TechnicianRequest request);
     
     void deleteTechnician(Long id);
 

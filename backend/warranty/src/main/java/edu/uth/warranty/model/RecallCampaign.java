@@ -29,7 +29,7 @@ public class RecallCampaign {
     @Column(name = "end_date")
     private LocalDate endDate;
 
-    @OneToMany(mappedBy = "campaign", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "recallCampaignEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CampaignVehicle> vehiclesInCampaign;
 
     public RecallCampaign(Long campaignId) {

@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
-import { UserRequest, UserRole } from '@/types/warranty';
+import { UserRequest} from '@/types/user';
+import { UserRole } from '@/types/auth';
 import { UserRoleBackend, FullUserCreationRequest } from '@/types/admin'; 
 
 interface FormTaoUserProps {
@@ -73,7 +74,7 @@ const FormTaoUser: React.FC<FormTaoUserProps> = ({ onSubmit, onClose }) => {
       };
 
       // Thêm các trường Staff/Technician nếu Role không phải là Admin
-      if (payload.role === 'Admin' || payload.role === 'EVM_Staff') {
+      if (payload.role === 'Admin') {
           // Xóa các trường chỉ dành cho SC Staff/Technician
           delete payload.name;
           delete payload.phone;

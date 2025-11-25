@@ -32,4 +32,9 @@ public interface IUserService {
     Boolean existsByUsername(String username);
 
     User registerUser(User user);
+
+    Optional<User> getUserByEmail(String email);
+    
+    // 2. Kiểm tra tính duy nhất của Email (Rất quan trọng cho Đăng ký)
+    Boolean existsByEmail(String email);
 }

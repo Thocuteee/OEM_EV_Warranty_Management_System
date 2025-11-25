@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+// frontend/src/pages/parts.tsx
+// Wrapper để Next.js route đến /parts
+export { default } from "@/parts/index";
+
+=======
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -675,3 +681,4 @@ export default function PartsPage() {
     </Layout>
   );
 }
+>>>>>>> main

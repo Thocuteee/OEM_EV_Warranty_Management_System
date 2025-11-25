@@ -35,6 +35,6 @@ public class TechnicianRequest {
     @NotBlank(message = "Username là bắt buộc")
     private String username;
     
-    @NotBlank(message = "Password là bắt buộc khi tạo/cập nhật")
+    // Mật khẩu - Optional khi cập nhật, bắt buộc khi tạo mới
     private String password;
 }

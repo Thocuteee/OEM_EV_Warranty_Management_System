@@ -31,6 +31,10 @@ public interface IWarrantyClaimService {
 
     WarrantyClaim updateWarrantyClaimsStatus(Long id , String status);
 
+    WarrantyClaim updateClaimPrimaryStatus(Long claimId, String newStatus);
+
+    WarrantyClaim updateClaimTechnician(Long claimId, Long technicianId);
+
     List<WarrantyClaim> getWarrantyClaimsByVehicle(Vehicle vehicle);
     List<WarrantyClaim> getWarrantyClaimsByCustomer(Customer customer);
     List<WarrantyClaim> getWarrantyClaimsByCenter(ServiceCenter center);
@@ -38,5 +42,5 @@ public interface IWarrantyClaimService {
     List<WarrantyClaim> getWarrantyClaimsByStaff(Staff staff);
     List<WarrantyClaim> getWarrantyClaimsCreatedBetween(LocalDateTime start, LocalDateTime end);
     List<WarrantyClaim> getWarrantyClaimsByMinTotalCost(BigDecimal totalCost);
-
+    List<WarrantyClaim> getWarrantyClaimsByStatusIn(List<String> statuses);
 }

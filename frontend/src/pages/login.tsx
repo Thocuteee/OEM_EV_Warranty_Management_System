@@ -4,13 +4,13 @@ import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import styles from "../styles/login.module.css";
 // SỬA 1: Dùng đường dẫn ../ (đi lên 1 cấp)
-import { loginUser } from "../services/warrantyApi"; 
+import { loginUser } from "../services/coreApiClient";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/router";
 
 // SỬA 1: Dùng đường dẫn ../ (đi lên 1 cấp)
-import { UserProfile, UserRole } from "../types/warranty"; 
-import axios from "axios"; 
+import { UserProfile, UserRole } from "../types/auth";
+import axios from "axios";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -36,20 +36,19 @@ export default function Login() {
       login({
         id: data.id,
         username: data.username,
-        name: data.username, 
+        name: data.username,
         role: userRole,
         token: data.token,
       });
 
       // SỬA 2: Logic chuyển hướng dựa trên vai trò
-      const adminRoles: UserRole[] = ['Admin', 'EVM_Staff'];
-      
-      if (adminRoles.includes(userRole)) {
-        router.push("/admin"); 
-      } else {
-        router.push("/"); 
-      }
+      const adminRoles: UserRole[] = ["Admin", "EVM_Staff"];
 
+      if (adminRoles.includes(userRole)) {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
     } catch (err) {
       let errorMessage = "Lỗi đăng nhập không xác định.";
 

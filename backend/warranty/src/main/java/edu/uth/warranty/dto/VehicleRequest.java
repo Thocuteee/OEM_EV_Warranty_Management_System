@@ -31,4 +31,7 @@ public class VehicleRequest {
     @NotNull(message = "Năm sản xuất là bắt buộc")
     @Pattern(regexp = "^(19[0-9]{2}|20[0-9]{2}|2100)$", message = "Năm sản xuất phải từ 1900 đến 2100")
     private String year;
+
+    @NotNull(message = "ID người đăng ký là bắt buộc")
+    private Long registeredByUserId;
 }

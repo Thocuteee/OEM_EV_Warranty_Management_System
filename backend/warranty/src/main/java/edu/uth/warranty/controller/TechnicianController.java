@@ -26,8 +26,16 @@ public class TechnicianController {
     }
 
     private TechnicianResponse toResponseDTO(Technician technician) {
-        Long centerId = technician.getCenter() != null ? technician.getCenter().getCenterId() : null;
-        String centerName = technician.getCenter() != null ? technician.getCenter().getName() : null;
+        String centerName = null;
+        Long centerId = null;
+        
+        // FIX LỖI 500: Dựa vào Entity đã được Service tải
+        ServiceCenter center = technician.getCenter();
+        
+        if (center != null) {
+            centerId = center.getCenterId();
+            centerName = center.getName();
+        }
         
         return new TechnicianResponse(
             technician.getTechnicianId(),
@@ -67,11 +75,9 @@ public class TechnicianController {
     @PostMapping
     public ResponseEntity<?> createTechnician(@Valid @RequestBody TechnicianRequest request) {
         try {
-            Technician newTechnician = toEntity(request);
-            newTechnician.setTechnicianId(null); // Đảm bảo tạo mới
-            Technician savedTechnician = technicianService.saveTechnician(newTechnician);
-            
-            return ResponseEntity.status(HttpStatus.CREATED).body(toResponseDTO(savedTechnician));
+            request.setId(null); 
+            Technician newTechnician = technicianService.saveTechnician(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(toResponseDTO(newTechnician));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         } catch (Exception e) {
@@ -102,17 +108,26 @@ public class TechnicianController {
         return ResponseEntity.ok(toResponseDTO(technician.get()));
     }
 
-    // 4. PUT /api/technicians/{id} : Cập nhật Kỹ thuật viên
+    // 3b. GET /api/technicians/username/{username} : Lấy chi tiết theo Username (phục vụ trang Profile)
+    @GetMapping("/username/{username}")
+    public ResponseEntity<TechnicianResponse> getTechnicianByUsername(@PathVariable String username) {
+        Optional<Technician> technician = technicianService.getTechnicianByUsername(username);
+
+        if (technician.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        return ResponseEntity.ok(toResponseDTO(technician.get()));
+    }
+
+    // 4. PUT /api/technicians/{id} : Cập nhật Kỹ thuật viên (hoặc tạo mới nếu chưa có profile)
     @PutMapping("/{id}") 
     public ResponseEntity<?> updateTechnician(@PathVariable Long id, @Valid @RequestBody TechnicianRequest request) {
         request.setId(id);
 
-        if(technicianService.getTechnicianById(id).isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
         try {
-            Technician updatedTechnician = technicianService.saveTechnician(toEntity(request));
+            // Service sẽ tự động tạo mới profile nếu user ID tồn tại nhưng technician profile chưa có
+            Technician updatedTechnician = technicianService.saveTechnician(request);
             return ResponseEntity.ok(toResponseDTO(updatedTechnician));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));

@@ -41,7 +41,7 @@ public class WorkLogServiceImpl implements IWorkLogService{
 
     @Override
     public WorkLog saveWorkLog(WorkLog workLog) {
-        //Kiểm tra Khóa Ngoại (FK) có tồn tại không
+        //Kiểm tra Khóa Ngoại (FK) có tồn tại không (Logic giữ nguyên)
         if (workLog.getClaim() == null || claimRepository.findById(workLog.getClaim().getClaimId()).isEmpty()) {
             throw new IllegalArgumentException("Warranty Claim không tồn tại hoặc không hợp lệ.");
         }
@@ -49,14 +49,29 @@ public class WorkLogServiceImpl implements IWorkLogService{
             throw new IllegalArgumentException("Technician không tồn tại hoặc không hợp lệ.");
         }
 
-        //Tính toán Duration nếu startTime và endTime được cung cấp
+        // Tính toán Duration nếu startTime và endTime được cung cấp
         if (workLog.getStartTime() != null && workLog.getEndTime() != null) {
-            long days = ChronoUnit.DAYS.between(workLog.getStartTime(), workLog.getEndTime());
-            // Giả định Duration được tính bằng số ngày
-            workLog.setDuration(new BigDecimal(days)); 
+            
+            // 1. Kiểm tra logic ngày tháng
+            if (workLog.getStartTime().isAfter(workLog.getEndTime())) {
+                throw new IllegalArgumentException("Ngày bắt đầu phải trước hoặc bằng Ngày kết thúc.");
+            }
+            
+            // 2. TÍNH TOÁN DURATION (Tính số ngày làm việc, bao gồm ngày cuối)
+            if (workLog.getDuration() == null) {
+                long daysBetween = ChronoUnit.DAYS.between(workLog.getStartTime(), workLog.getEndTime());
+                
+                // Thời gian làm việc tối thiểu là 1 ngày (kể cả khi start=end)
+                long finalDays = daysBetween + 1;
+                
+                workLog.setDuration(new BigDecimal(finalDays)); 
+            }
+
+        } else if (workLog.getDuration() == null) {
+            throw new IllegalArgumentException("Không thể tính Duration, thiếu Ngày bắt đầu hoặc Ngày kết thúc.");
         }
         
-        // Thiết lập logDate nếu không có (thường là ngày tạo bản ghi)
+        // Thiết lập logDate nếu không có
         if (workLog.getLogDate() == null) {
             workLog.setLogDate(LocalDate.now());
         }

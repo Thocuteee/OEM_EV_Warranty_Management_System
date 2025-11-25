@@ -44,18 +44,23 @@ public class ClaimPart {
         }
     }
 
-
-
-
+    // THÊM CÁC TRƯỜNG ID THÔ VÀO ENTITY
     @Id
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "claim_id", nullable = false)
-    private WarrantyClaim claim;
+    private Long claim; // FIX: Khóa thô (primitive key)
     
     @Id
+    private Long part;  // FIX: Khóa thô (primitive key)
+
+    // ÁNH XẠ KHÓA NGOẠI SANG KHÓA CHÍNH BẰNG @MapsId
+    @MapsId("claim") 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "claim_id", nullable = false)
+    private WarrantyClaim claimEntity; // Đổi tên thành claimEntity để tránh xung đột
+
+    @MapsId("part") 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "part_id", nullable = false)
-    private Part part;
+    private Part partEntity; // Đổi tên thành partEntity
 
     @Column(name = "quantity")
     private Integer quantity;

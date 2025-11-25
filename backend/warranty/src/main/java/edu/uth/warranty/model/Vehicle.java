@@ -1,3 +1,4 @@
+
 package edu.uth.warranty.model;
 
 import java.util.List;
@@ -23,21 +24,36 @@ public class Vehicle {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
-    @Column(name = "VIN", nullable = false, unique = true)
+    @Column(name = "vin", nullable = false, unique = true)
     private String VIN;
 
-    @Column(name = "model", nullable = false, unique = true)
+    @Column(name = "model", nullable = false)
     private String model;
     
     @Column(name = "year", nullable = false)
     private String year;
 
-    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "vehicleEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CampaignVehicle> campaignVehicles;
 
     public Vehicle(Long vehicleId) {
         this.vehicleId = vehicleId;
     }
     
+    @Column(name = "registration_status", nullable = false)
+    private String registrationStatus = "PENDING";
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "registered_by_user_id") // Người đã tạo yêu cầu đăng ký
+    private User registeredBy;
+
+    public Vehicle(Long vehicleId, Customer customer, String VIN, String model, String year, String registrationStatus, User registeredBy) {
+    this.vehicleId = vehicleId;
+    this.customer = customer;
+    this.VIN = VIN;
+    this.model = model; 
+    this.year = year;
+    this.registrationStatus = registrationStatus;
+    this.registeredBy = registeredBy;
+}
 }

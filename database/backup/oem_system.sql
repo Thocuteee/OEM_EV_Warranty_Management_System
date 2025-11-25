@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 24, 2025 lúc 04:30 AM
+-- Thời gian đã tạo: Th10 17, 2025 lúc 01:18 PM
 -- Phiên bản máy phục vụ: 10.4.32-MariaDB
 -- Phiên bản PHP: 8.2.12
 
@@ -28,10 +28,10 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `campaign_vehicle` (
-  `status` varchar(255) NOT NULL,
+  `campaign_id` bigint(20) NOT NULL,
   `vehicle_id` bigint(20) NOT NULL,
-  `campaign_id` bigint(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `status` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -44,7 +44,7 @@ CREATE TABLE `claim_attachment` (
   `file_url` varchar(255) NOT NULL,
   `type` varchar(255) NOT NULL,
   `claim_id` bigint(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -58,7 +58,7 @@ CREATE TABLE `claim_part` (
   `quantity` int(11) DEFAULT NULL,
   `total_price` decimal(10,2) NOT NULL,
   `unit_price` decimal(10,2) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -72,7 +72,7 @@ CREATE TABLE `customer` (
   `email` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
   `phone` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -86,7 +86,7 @@ CREATE TABLE `inventory` (
   `invoice_date` date NOT NULL,
   `center_id` bigint(20) NOT NULL,
   `part_id` bigint(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -103,7 +103,7 @@ CREATE TABLE `invoice` (
   `center_id` bigint(20) NOT NULL,
   `claim_id` bigint(20) NOT NULL,
   `part_id` bigint(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -116,7 +116,7 @@ CREATE TABLE `part` (
   `name` varchar(255) NOT NULL,
   `part_number` varchar(255) NOT NULL,
   `price` decimal(10,2) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -129,7 +129,7 @@ CREATE TABLE `part_serial` (
   `date_received` date NOT NULL,
   `serial_number` varchar(255) NOT NULL,
   `part_id` bigint(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -142,7 +142,7 @@ CREATE TABLE `recall_campaign` (
   `end_date` date DEFAULT NULL,
   `start_date` date DEFAULT NULL,
   `title` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -172,7 +172,7 @@ CREATE TABLE `report` (
   `user_id` bigint(20) NOT NULL,
   `technician_id` bigint(20) NOT NULL,
   `vehicle_id` bigint(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -184,7 +184,14 @@ CREATE TABLE `service_center` (
   `center_id` bigint(20) NOT NULL,
   `location` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `service_center`
+--
+
+INSERT INTO `service_center` (`center_id`, `location`, `name`) VALUES
+(1, 'Ha Noi, Vietnam', 'Service Center 01 - Ha Noi');
 
 -- --------------------------------------------------------
 
@@ -201,7 +208,7 @@ CREATE TABLE `staff` (
   `role` enum('Admin','EVM_Staff','SC_Staff','SC_Technician') NOT NULL,
   `username` varchar(255) NOT NULL,
   `center_id` bigint(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -213,10 +220,12 @@ CREATE TABLE `technician` (
   `technician_id` bigint(20) NOT NULL,
   `email` varchar(255) NOT NULL,
   `name` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
   `phone` varchar(255) NOT NULL,
   `specialization` varchar(255) NOT NULL,
+  `username` varchar(255) NOT NULL,
   `center_id` bigint(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -225,18 +234,21 @@ CREATE TABLE `technician` (
 --
 
 CREATE TABLE `user` (
-  `user_id` bigint(20) NOT NULL,
+  `id` bigint(20) NOT NULL,
   `user_password` varchar(255) NOT NULL,
   `role` enum('Admin','EVM_Staff','SC_Staff','SC_Technician') NOT NULL,
   `username` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `user`
 --
 
-INSERT INTO `user` (`user_id`, `user_password`, `role`, `username`) VALUES
-(2, 'duy123', 'SC_Staff', 'duy123');
+INSERT INTO `user` (`id`, `user_password`, `role`, `username`) VALUES
+(1, '$2a$10$dF7CrUs44mOINE.7262jC.WxbJEX1NNtxqhuHJ0U1xYZKIVlW/2f2', 'SC_Staff', 'duy@gmail.com'),
+(5, '$2a$10$gpU0Qmx2Ldh81EK4m2w5kecoENQo/uVnFqGBYOMMRIXkfumo4vDvO', 'Admin', 'admin@gmail.com'),
+(6, '$2a$10$vFww0U7bz4evcWPXQDvGiuRnHsssrrDC/Uo352E1A/QfuvsvS5Yz2', 'EVM_Staff', 'duy_04'),
+(7, '$2a$10$ibhp6Q/Y1R.Y9PkNUn4PeOlJ2.9XfXpkwbNoZCi4yLvFXtoGyg5ei', 'SC_Technician', 'Dat_09');
 
 -- --------------------------------------------------------
 
@@ -250,7 +262,7 @@ CREATE TABLE `vehicle` (
   `model` varchar(255) NOT NULL,
   `year` varchar(255) NOT NULL,
   `customer_id` bigint(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -264,7 +276,7 @@ CREATE TABLE `vehicle_part` (
   `claim_id` bigint(20) NOT NULL,
   `part_serial_id` bigint(20) NOT NULL,
   `vehicle_id` bigint(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -285,7 +297,7 @@ CREATE TABLE `warranty_claim` (
   `staff_id` bigint(20) NOT NULL,
   `technician_id` bigint(20) NOT NULL,
   `vehicle_id` bigint(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -302,7 +314,7 @@ CREATE TABLE `work_log` (
   `start_time` date NOT NULL,
   `claim_id` bigint(20) NOT NULL,
   `technician_id` bigint(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -411,14 +423,14 @@ ALTER TABLE `technician`
   ADD PRIMARY KEY (`technician_id`),
   ADD UNIQUE KEY `UKcrs6ef6e2yblrw13n1fe4ma53` (`email`),
   ADD UNIQUE KEY `UKfrrlrgt7ovsyt2789is9j1mse` (`phone`),
+  ADD UNIQUE KEY `UKjsidk542aq2smw9e3i79g7d4y` (`username`),
   ADD KEY `FKrqg70wwt1tsit90xe35pkuhn2` (`center_id`);
 
 --
 -- Chỉ mục cho bảng `user`
 --
 ALTER TABLE `user`
-  ADD PRIMARY KEY (`user_id`),
-  ADD UNIQUE KEY `UK5tuc0l7mu0ohvqdmigp55npov` (`user_password`),
+  ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `UKsb8bbouer5wak8vyiiy4pf2bx` (`username`);
 
 --
@@ -515,7 +527,7 @@ ALTER TABLE `report`
 -- AUTO_INCREMENT cho bảng `service_center`
 --
 ALTER TABLE `service_center`
-  MODIFY `center_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `center_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT cho bảng `staff`
@@ -533,7 +545,7 @@ ALTER TABLE `technician`
 -- AUTO_INCREMENT cho bảng `user`
 --
 ALTER TABLE `user`
-  MODIFY `user_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT cho bảng `vehicle`
@@ -611,7 +623,7 @@ ALTER TABLE `report`
   ADD CONSTRAINT `FK3kcjqsuxcjkcr00bda9sks397` FOREIGN KEY (`service_center_id`) REFERENCES `service_center` (`center_id`),
   ADD CONSTRAINT `FK6mydedygyn8pimdp3sx2aykvj` FOREIGN KEY (`recall_campaign_id`) REFERENCES `recall_campaign` (`campaign_id`),
   ADD CONSTRAINT `FKbhx4915b5kpmovy0hvx2o1xv` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicle` (`vehicle_id`),
-  ADD CONSTRAINT `FKj62onw73yx1qnmd57tcaa9q3a` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`),
+  ADD CONSTRAINT `FKj62onw73yx1qnmd57tcaa9q3a` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
   ADD CONSTRAINT `FKlb3uii39ild7d66kmgql13992` FOREIGN KEY (`claim_id`) REFERENCES `warranty_claim` (`claim_id`),
   ADD CONSTRAINT `FKn9krnhmsnlqxvtdomtwaeka1b` FOREIGN KEY (`technician_id`) REFERENCES `technician` (`technician_id`);
 
