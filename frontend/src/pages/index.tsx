@@ -11,7 +11,7 @@ import Link from "next/link"; // Cần thiết để tạo link trên thẻ
 interface OtherSectionItem {
     title: string;
     description: string;
-    href?: string; // Thêm href cho các card chức năng
+    href?: string; 
 }
 
 // Hàm helper để xác định icon dựa trên tiêu đề
@@ -32,9 +32,9 @@ const initialOtherSections: OtherSectionItem[] = [
         href: "/admin/campaigns" 
     },
     { 
-        title: "Báo cáo Tháng 10", 
-        description: "Thống kê chi phí và yêu cầu bảo hành." ,
-        href: "#"
+        title: "Báo cáo & Thống kê", 
+        description: "Thống kê chi phí, tỷ lệ lỗi và dự báo bảo hành." ,
+        href: "/admin/research"
     },
     // THÊM: Mục liên quan đến tồn kho, trỏ đến trang quản lý mới
     { 
