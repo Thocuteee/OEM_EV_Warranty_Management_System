@@ -9,11 +9,13 @@ interface ClaimTableProps {
     onSend: (claimId: number) => void; 
     onViewDetail: (claimId: number) => void;
     onDelete: (claimId: number) => void;
+    canModify?: boolean; // Thêm prop để kiểm soát quyền sửa/xóa
 }
 
-const ClaimTable: React.FC<ClaimTableProps> = ({ claims, onSend, onViewDetail, onDelete }) => {
+const ClaimTable: React.FC<ClaimTableProps> = ({ claims, onSend, onViewDetail, onDelete, canModify: canModifyProp }) => {
     const { user } = useAuth();
-    const canModify = user?.role === 'Admin' || user?.role === 'SC_Staff';
+    // Sử dụng prop canModify nếu được truyền, nếu không thì dùng logic cũ
+    const canModify = canModifyProp !== undefined ? canModifyProp : (user?.role === 'Admin' || user?.role === 'SC_Staff');
     const isApprover = user?.role === 'Admin' || user?.role === 'EVM_Staff';
 
     const getStatusClasses = (status: string) => {

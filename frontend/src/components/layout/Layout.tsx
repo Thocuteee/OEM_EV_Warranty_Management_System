@@ -1,4 +1,3 @@
-// frontend/src/components/layout/Layout.tsx
 "use client";
 
 import React, { useState, ReactNode, useRef, useEffect } from "react";
@@ -6,11 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "@/context/AuthContext";
 
+type UserRole = "SC_Staff" | "SC_Technician" | "EVM_Staff" | "Admin" | "Customer";
+
 type SidebarItem = {
   name: string;
   icon: string;
   href: string;
-  roles?: Array<"SC_Staff" | "SC_Technician" | "EVM_Staff" | "Admin" | "Customer">;
+  roles?: Array<UserRole>;
 };
 
 interface LayoutProps {
@@ -19,12 +20,10 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  // THÊM: State để quản lý việc hiển thị Dropdown Menu
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
   const router = useRouter();
   
-  // Ref để phát hiện click bên ngoài
   const menuRef = useRef<HTMLDivElement>(null); 
 
   const displayName = user?.username ?? "";
@@ -35,7 +34,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     router.push('/login');
   };
   
-  // THÊM: Logic để đóng menu khi click ra ngoài
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -60,29 +58,57 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"], 
     },
 
-    { name: "Yêu cầu Bảo hành", icon: "📋", href: "/admin/claims", 
+    // SỬA: Chuyển Claims ra khỏi Admin
+    { name: "Yêu cầu Bảo hành", icon: "📋", href: "/claims", 
       roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"] 
     },
 
+    // SỬA: Chuyển Parts/Inventory ra khỏi Admin
     { 
-      name: "Linh kiện & Phụ tùng", 
-      icon: "⚙️", 
-      href: "/admin/parts", 
+      name: "Linh kiện & Tồn kho", 
+      icon: "📦", 
+      href: "/parts", 
+      roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"], // Mở quyền xem
+    },
+
+    // SỬA: Chuyển Reports ra khỏi Admin
+    { 
+      name: "Báo cáo Công việc", 
+      icon: "📊", 
+      href: "/reports", 
+      roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"], // Mở quyền xem
+    },
+    
+    // --- MODULES QUẢN TRỊ CẤP CAO (CHỈ DÙNG CHO ADMIN & EVM_STAFF) ---
+    {
+      name: "Quản lý User (Admin)", 
+      icon: "👤",
+      href: "/admin/users",
+      roles: ["Admin"], // CHỈ ADMIN
+    },
+    { 
+      name: "Trung tâm Dịch vụ", 
+      icon: "📍", 
+      href: "/admin/centers", 
       roles: ["Admin", "EVM_Staff"], 
     },
-
     { 
-      name: "Báo cáo", 
-      icon: "📊", 
-      href: "/admin/reports", 
-      roles: ["Admin", "EVM_Staff", "SC_Staff"], 
+      name: "Chiến dịch Triệu hồi", 
+      icon: "📢", 
+      href: "/admin/campaigns", 
+      roles: ["Admin", "EVM_Staff"], 
     },
-
+    { 
+      name: "Quản lý Hóa đơn", 
+      icon: "🧾", 
+      href: "/admin/invoices", 
+      roles: ["Admin", "EVM_Staff"], 
+    },
     {
-      name: "Quản trị Hệ thống",
+      name: "Cấu hình Hệ thống",
       icon: "🛠️",
-      href: "/admin/users",
-      roles: ["Admin", "EVM_Staff"],
+      href: "/admin/system",
+      roles: ["Admin"],
     },
   ];
 
@@ -128,14 +154,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
         
         {isAuthenticated ? (
-          // THÊM: ref và position relative cho dropdown
           <div 
             className="relative"
             ref={menuRef} 
           >
             <div
                 className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 cursor-pointer transition-colors"
-                // SỬA LỖI: Chỉ toggle menu, không gọi logout ở đây
                 onClick={() => setIsMenuOpen(!isMenuOpen)} 
             >
                 <span className="text-sm font-semibold text-gray-700 hidden sm:inline">
@@ -152,7 +176,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     <div className="px-4 py-2 text-xs font-semibold text-gray-400 border-b mb-1 truncate">
                         {user?.role}
                     </div>
-                    {/* OPTION 1: Thông tin tài khoản (Placeholder) */}
+                    {/* OPTION 1: Thông tin tài khoản */}
                     <Link href="/profile" passHref legacyBehavior>
                         <a 
                             onClick={() => setIsMenuOpen(false)}
@@ -193,7 +217,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         >
           <nav className="space-y-1 mt-4 p-4">
             {filteredMenuItems.map((item) => {
-              const isActive = router.pathname === item.href;
+              const isActive = router.pathname.startsWith(item.href); // Sử dụng startsWith để active cả trang con
               return (
                 <Link
                   key={item.name}
