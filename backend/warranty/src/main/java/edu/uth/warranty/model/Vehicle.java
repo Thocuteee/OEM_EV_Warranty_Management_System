@@ -1,3 +1,4 @@
+
 package edu.uth.warranty.model;
 
 import java.util.List;
@@ -50,7 +51,7 @@ public class Vehicle {
     this.vehicleId = vehicleId;
     this.customer = customer;
     this.VIN = VIN;
-    this.model = model; // <--- DÒNG NÀY ĐANG BỊ THIẾU THAM SỐ TRONG DỊNH NGHĨA CONSTRUCTOR
+    this.model = model; 
     this.year = year;
     this.registrationStatus = registrationStatus;
     this.registeredBy = registeredBy;

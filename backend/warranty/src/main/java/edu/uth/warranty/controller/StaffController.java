@@ -4,10 +4,10 @@ import edu.uth.warranty.dto.MessageResponse;
 import edu.uth.warranty.dto.StaffRequest;
 import edu.uth.warranty.dto.StaffResponse;
 import edu.uth.warranty.model.Staff;
-import edu.uth.warranty.model.ServiceCenter; 
+import edu.uth.warranty.model.ServiceCenter;
 import edu.uth.warranty.common.Role;
 import edu.uth.warranty.service.IStaffService;
-import edu.uth.warranty.service.IServiceCenterService; 
+import edu.uth.warranty.service.IServiceCenterService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -172,3 +172,4 @@ public class StaffController {
 
 
 }
+

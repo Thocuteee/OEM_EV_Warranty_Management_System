@@ -12,3 +12,4 @@ public class CenterResponse {
     private String name;
     private String location;
 }
+

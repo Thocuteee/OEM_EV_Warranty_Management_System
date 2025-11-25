@@ -28,3 +28,4 @@ public class InventoryRequest {
     @NotNull(message = "Ngày hóa đơn là bắt buộc")
     private LocalDate invoiceDate;
 }
+

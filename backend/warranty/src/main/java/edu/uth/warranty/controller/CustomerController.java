@@ -1,20 +1,25 @@
 package edu.uth.warranty.controller;
 
-import edu.uth.warranty.dto.CustomerRequest;
-import edu.uth.warranty.dto.CustomerResponse;
-
-import edu.uth.warranty.model.Customer;
-
-import edu.uth.warranty.service.ICustomerService;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import jakarta.validation.Valid;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import edu.uth.warranty.dto.CustomerRequest;
+import edu.uth.warranty.dto.CustomerResponse;
+import edu.uth.warranty.model.Customer;
+import edu.uth.warranty.service.ICustomerService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/customers")
@@ -59,7 +64,7 @@ public class CustomerController {
     }
     // 2. GET /api/customers : Lấy tất cả Khách hàng
     @GetMapping
-    public ResponseEntity<List<CustomerResponse>> getAllCustomers() { 
+    public ResponseEntity<List<CustomerResponse>> getAllCustomers() {
         List<Customer> customers = customerService.getAllCustomers();
         List<CustomerResponse> customerResponses = customers.stream().map(this::toResponseDTO).collect(Collectors.toList());
 
@@ -95,7 +100,7 @@ public class CustomerController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCustomer(@PathVariable Long id) {
         if(customerService.getCustomerById(id).isEmpty()) {
-            return ResponseEntity.notFound().build(); 
+            return ResponseEntity.notFound().build();
         }
         customerService.deleteCustomer(id);
         return ResponseEntity.noContent().build();

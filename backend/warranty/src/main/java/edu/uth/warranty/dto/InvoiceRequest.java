@@ -38,3 +38,4 @@ public class InvoiceRequest {
     @NotBlank(message = "Trạng thái thanh toán là bắt buộc")
     private String paymentsStatus;
 }
+
