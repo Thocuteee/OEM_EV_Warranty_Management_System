@@ -175,7 +175,7 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
             claim.setUpdatedAt(LocalDateTime.now());
             
             if(newApprovalStatus.equals("APPROVED")) {
-                claim.setStatus("IN_PROGRESS");
+                claim.setStatus("IN_PROCESS"); // Sửa từ IN_PROGRESS thành IN_PROCESS để khớp với enum
             } else if(newApprovalStatus.equals("REJECTED")) {
                 claim.setStatus("REJECTED");
             }

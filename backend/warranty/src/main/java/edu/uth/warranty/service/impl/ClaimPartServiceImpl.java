@@ -46,12 +46,20 @@ public class ClaimPartServiceImpl implements IClaimPartService{
         }
 
         Long partId = entity.getPart();
-
         if (partId == null || partRepository.findById(partId).isEmpty()) {
             throw new IllegalArgumentException("Linh kiện (Part) không tồn tại hoặc không hợp lệ.");
         }
 
-        if (entity.getTotalPrice() == null && entity.getUnitPrice() != null && entity.getQuantity() != null) {
+        // THÊM VALIDATION LOGIC
+        if (entity.getQuantity() == null || entity.getQuantity() <= 0) {
+            throw new IllegalArgumentException("Số lượng linh kiện phải lớn hơn 0.");
+        }
+        if (entity.getUnitPrice() == null || entity.getUnitPrice().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Đơn giá không được âm.");
+        }
+
+        // TÍNH TOÁN TOTAL PRICE (Logic giữ nguyên)
+        if (entity.getTotalPrice() == null) {
             BigDecimal total = entity.getUnitPrice().multiply(new BigDecimal(entity.getQuantity()));
             entity.setTotalPrice(total);
         }
