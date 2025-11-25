@@ -1,4 +1,3 @@
-// frontend/src/pages/claims/[id].tsx
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -48,7 +47,7 @@ interface AssignTechnicianProps {
 }
 
 
-// 1. ClaimPartsManager (KHÔNG ĐỔI)
+// 1. ClaimPartsManager (Đã kiểm tra, logic phụ tùng hoàn chỉnh)
 const ClaimPartsManager: React.FC<ClaimPartsManagerProps> = ({ claimId, initialParts, onAddPart, onDeletePart }) => (
     <div className="bg-white p-4 rounded-lg border">
         <h3 className="font-bold text-xl mb-3">Quản lý Phụ tùng ({initialParts?.length || 0})</h3>
@@ -83,7 +82,7 @@ const ClaimPartsManager: React.FC<ClaimPartsManagerProps> = ({ claimId, initialP
     </div>
 );
 
-// 2. WorkLogManager (KHÔNG ĐỔI)
+// 2. WorkLogManager (Đã kiểm tra, logic Work Log hoàn chỉnh)
 const WorkLogManager: React.FC<WorkLogManagerProps> = ({ claimId, initialLogs, technicianId, onAddLog, onDeleteLog }) => (
     <div className="bg-white p-4 rounded-lg border">
         <h3 className="font-bold text-xl mb-3">Nhật ký Công việc ({initialLogs?.length || 0})</h3>
@@ -196,7 +195,7 @@ export default function ClaimDetailPage() {
     const [isWorkLogModalOpen, setIsWorkLogModalOpen] = useState(false);
     const [isClaimPartModalOpen, setIsClaimPartModalOpen] = useState(false);
 
-    // FIX 1: Định nghĩa lại quyền (bao gồm Admin/EVM Staff)
+    // Định nghĩa quyền
     const isEVMApprover = user?.role === 'Admin' || user?.role === 'EVM_Staff';
     const canSendOrDelete = user?.role === 'SC_Staff';
     const isTech = user?.role === 'SC_Technician';
@@ -328,8 +327,10 @@ export default function ClaimDetailPage() {
         }
     }
     
-    // FIX 2: Sửa isAllowedToWork để bao gồm Admin/EVM Staff
-    const isClaimInProgress = claim?.status.toUpperCase() === 'IN_PROCESS'; 
+    // ĐỊNH NGHĨA BIẾN KIỂM TRA QUYỀN
+    // Chấp nhận cả IN_PROCESS và IN_PROGRESS (do có thể có dữ liệu cũ)
+    const statusUpper = claim?.status.toUpperCase();
+    const isClaimInProgress = statusUpper === 'IN_PROCESS' || statusUpper === 'IN_PROGRESS'; 
     const isAllowedToWork = (isEVMApprover || canSendOrDelete || isTech) && isClaimInProgress;
     const canCreateReport = isAllowedToWork;
     
@@ -349,14 +350,13 @@ export default function ClaimDetailPage() {
             
             if (currentStatus === 'COMPLETED' || currentStatus === 'REJECTED') {
                 message = `Claim đã ở trạng thái ${currentStatus}. Không thể thêm dữ liệu mới.`;
-            } else if (!isClaimInProgress) {
-                // DRAFT, SENT, PENDING
+            } 
+            // SỬA LỖI LOGIC: Nếu không phải là trạng thái sẵn sàng làm việc (IN_PROCESS hoặc IN_PROGRESS)
+            else if (currentStatus !== 'IN_PROCESS' && currentStatus !== 'IN_PROGRESS') { 
                 message = `Claim hiện đang ở trạng thái ${currentStatus}. Vui lòng chờ Claim được chuyển sang IN_PROCESS để bắt đầu công việc.`;
-            }
-            
-            // Nếu là IN_PROCESS nhưng vẫn vào đây (isAllowedToWork = false), tức là User không có quyền
-            if (isClaimInProgress && !isEVMApprover && !canSendOrDelete && !isTech) {
-                message = "Bạn không thuộc nhóm Nhân viên/Kỹ thuật viên có quyền cập nhật công việc.";
+            } else {
+                // Trạng thái là IN_PROCESS nhưng isAllowedToWork là false => Lỗi quyền
+                 message = "Bạn không thuộc nhóm Nhân viên/Kỹ thuật viên có quyền cập nhật công việc.";
             }
 
             alert(message);
@@ -387,6 +387,7 @@ export default function ClaimDetailPage() {
         switch (status.toUpperCase().trim()) {
             case "APPROVED": 
             case "IN_PROCESS": 
+            case "IN_PROGRESS": // Hỗ trợ cả hai format (cũ và mới)
             case "COMPLETED": 
                 return "bg-green-500";
             case "SENT": return "bg-indigo-500";

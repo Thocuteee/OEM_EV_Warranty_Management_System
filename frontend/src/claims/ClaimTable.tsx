@@ -21,6 +21,7 @@ const ClaimTable: React.FC<ClaimTableProps> = ({ claims, onSend, onViewDetail, o
             case "APPROVED":
             case "COMPLETED":
             case "IN_PROGRESS":
+            case "IN_PROCESS": // Hỗ trợ cả hai format (cũ và mới)
                 return "bg-green-100 text-green-800";
             case "REJECTED":
                 return "bg-red-100 text-red-800";
