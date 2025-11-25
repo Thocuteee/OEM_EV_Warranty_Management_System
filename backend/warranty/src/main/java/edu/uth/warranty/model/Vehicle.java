@@ -32,7 +32,7 @@ public class Vehicle {
     @Column(name = "year", nullable = false)
     private String year;
 
-    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "vehicleEntity", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CampaignVehicle> campaignVehicles;
 
     public Vehicle(Long vehicleId) {

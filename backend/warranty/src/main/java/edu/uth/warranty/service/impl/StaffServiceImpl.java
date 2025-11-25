@@ -11,7 +11,9 @@ import edu.uth.warranty.service.IStaffService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.hibernate.Hibernate; 
+import org.hibernate.Hibernate;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +23,9 @@ public class StaffServiceImpl implements IStaffService{
     private final StaffRepository staffRepository;
     private final ServiceCenterRepository serviceCenterRepository;
     private final PasswordEncoder passwordEncoder;
+    
+    @PersistenceContext
+    private EntityManager entityManager;
 
     public StaffServiceImpl(StaffRepository staffRepository, ServiceCenterRepository serviceCenterRepository, PasswordEncoder passwordEncoder) {
         this.staffRepository = staffRepository;
@@ -45,6 +50,7 @@ public Staff saveStaff(StaffRequest request) {
         .orElseThrow(() -> new IllegalArgumentException("Trung tâm dịch vụ không tồn tại."));
 
     Staff staff;
+    boolean isNewProfileWithId = false; // Flag để xác định có phải tạo mới với ID đã set không
     
     // BƯỚC SỬA 1: Xử lý TẠO MỚI PROFILE cho User ID đã tồn tại
     if (request.getId() != null) {
@@ -57,21 +63,19 @@ public Staff saveStaff(StaffRequest request) {
             // Trường hợp B: TẠO MỚI PROFILE cho User ID đã có (KHÔNG có Staff cũ)
             // Khởi tạo entity MỚI và GÁN ID TỪ REQUEST
             staff = new Staff();
-            staff.setStaffId(request.getId()); 
-            
-            // Do Staff entity mới được tạo bằng ID, nó sẽ thực hiện INSERT
-            // Dòng code này khắc phục lỗi "Hồ sơ Staff không tồn tại"
+            staff.setStaffId(request.getId()); // <<< Gán ID của User để đồng bộ với bảng User
+            isNewProfileWithId = true; // Đánh dấu là tạo mới với ID đã set
         }
     } else {
         // Trường hợp C: Tạo mới hoàn toàn (ID là null, sẽ được auto-increment)
         staff = new Staff();
         // Áp dụng kiểm tra duy nhất cho tạo mới (nếu gọi API Staff riêng)
         if (staffRepository.findByUsername(request.getUsername()).isPresent() || staffRepository.findByEmail(request.getEmail()).isPresent()) {
-             throw new IllegalArgumentException("Username hoặc Email đã tồn tại.");
+            throw new IllegalArgumentException("Username hoặc Email đã tồn tại.");
         }
     }
     
-    // 2. Ánh xạ dữ liệu chung
+    // ... (Ánh xạ dữ liệu và xử lý mật khẩu)
     staff.setCenter(center); 
     staff.setName(request.getName());
     staff.setRole(request.getRole());
@@ -87,12 +91,38 @@ public Staff saveStaff(StaffRequest request) {
         } else {
             staff.setPassword(request.getPassword());
         }
+    } else if (request.getId() != null && !isNewProfileWithId) {
+        // Giữ lại mật khẩu cũ nếu là cập nhật (không phải tạo mới)
+        Staff existingUser = staffRepository.findById(request.getId()).orElse(null);
+        if (existingUser != null && existingUser.getPassword() != null) {
+            staff.setPassword(existingUser.getPassword());
+        }
     }
     
-    // BƯỚC SỬA 2: Đảm bảo không có xung đột transaction.
-    // Nếu bạn đã thực hiện các sửa đổi tương tự như trong phản hồi trước, 
-    // việc saveStaff() sẽ hoạt động sau khi logic được phân tách rõ ràng.
-    return staffRepository.save(staff);
+    // Khi tạo mới với ID đã set, sử dụng native query để insert trực tiếp
+    // vì @GeneratedValue sẽ ignore ID đã set khi dùng save() hoặc merge()
+    if (isNewProfileWithId) {
+        // Sử dụng native query để insert với ID đã set
+        String sql = "INSERT INTO Staff (staff_id, center_id, name, role, phone, address, email, username, password) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        entityManager.createNativeQuery(sql)
+            .setParameter(1, staff.getStaffId())
+            .setParameter(2, staff.getCenter().getCenterId())
+            .setParameter(3, staff.getName())
+            .setParameter(4, staff.getRole().name())
+            .setParameter(5, staff.getPhone())
+            .setParameter(6, staff.getAddress())
+            .setParameter(7, staff.getEmail())
+            .setParameter(8, staff.getUsername())
+            .setParameter(9, staff.getPassword())
+            .executeUpdate();
+        
+        entityManager.flush();
+        // Tìm lại entity từ database sau khi insert
+        return staffRepository.findByIdWithCenter(staff.getStaffId())
+            .orElseThrow(() -> new IllegalStateException("Không thể tìm thấy Staff sau khi tạo mới"));
+    } else {
+        return staffRepository.save(staff);
+    }
 }
 
     @Override

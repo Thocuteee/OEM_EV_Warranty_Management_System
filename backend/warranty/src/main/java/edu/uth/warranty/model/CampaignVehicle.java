@@ -19,14 +19,15 @@ import lombok.AllArgsConstructor;
 @IdClass(CampaignVehicle.CampaignVehicleId.class)
 public class CampaignVehicle {
     public static class CampaignVehicleId implements Serializable {
-        private Long campaign; 
-        private Long vehicle;
+        // ĐÃ SỬA: Đổi tên trường để khớp với quy ước @MapsId
+        private Long campaignId; 
+        private Long vehicleId;
 
         public CampaignVehicleId() {}
 
-        public CampaignVehicleId(Long campaign, Long vehicle) {
-            this.campaign = campaign;
-            this.vehicle = vehicle;
+        public CampaignVehicleId(Long campaignId, Long vehicleId) {
+            this.campaignId = campaignId;
+            this.vehicleId = vehicleId;
         }
 
         @Override
@@ -34,29 +35,29 @@ public class CampaignVehicle {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             CampaignVehicleId id = (CampaignVehicleId) o;
-            return Objects.equals(campaign, id.campaign) && Objects.equals(vehicle, id.vehicle);
+            return Objects.equals(campaignId, id.campaignId) && Objects.equals(vehicleId, id.vehicleId);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(campaign, vehicle);
+            return Objects.hash(campaignId, vehicleId);
         }
     }
 
     @Id
-    private Long campaign;
+    private Long campaignId; // MATCHES CampaignVehicleId.campaignId
 
     @Id
-    private Long vehicle;
+    private Long vehicleId;  // MATCHES CampaignVehicleId.vehicleId
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("campaign") 
+    @MapsId("campaignId") // Map tới tên trường mới
     @JoinColumn(name = "campaign_id", nullable = false)
     private RecallCampaign recallCampaignEntity; 
     
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("vehicle") 
+    @MapsId("vehicleId") // Map tới tên trường mới
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicleEntity;
 

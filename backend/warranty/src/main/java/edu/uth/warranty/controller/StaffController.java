@@ -125,16 +125,18 @@ public class StaffController {
         return ResponseEntity.ok(toResponseDTO(staff.get()));
     }
 
-    // 4. PUT /api/staffs/{id} : Cập nhật Staff
+    // 4. PUT /api/staffs/{id} : Cập nhật Staff (hoặc tạo mới nếu chưa có profile)
     @PutMapping("/{id}")
-    public ResponseEntity<StaffResponse> updateStaff(@PathVariable Long id,@Valid @RequestBody StaffRequest request) {
+    public ResponseEntity<?> updateStaff(@PathVariable Long id,@Valid @RequestBody StaffRequest request) {
         request.setId(id);
 
-        if(staffService.getStaffById(id).isEmpty()) {
-            return ResponseEntity.notFound().build();
+        try {
+            // Service sẽ tự động tạo mới profile nếu user ID tồn tại nhưng staff profile chưa có
+            Staff updadedStaff = staffService.saveStaff(request);
+            return ResponseEntity.ok(toResponseDTO(updadedStaff));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
-        Staff updadedStaff = staffService.saveStaff(request);
-        return ResponseEntity.ok(toResponseDTO(updadedStaff));
     }
 
     // 5. DELETE /api/staffs/{id} : Xóa Staff

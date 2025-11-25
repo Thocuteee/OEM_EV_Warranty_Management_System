@@ -120,16 +120,13 @@ public class TechnicianController {
         return ResponseEntity.ok(toResponseDTO(technician.get()));
     }
 
-    // 4. PUT /api/technicians/{id} : Cập nhật Kỹ thuật viên
+    // 4. PUT /api/technicians/{id} : Cập nhật Kỹ thuật viên (hoặc tạo mới nếu chưa có profile)
     @PutMapping("/{id}") 
     public ResponseEntity<?> updateTechnician(@PathVariable Long id, @Valid @RequestBody TechnicianRequest request) {
         request.setId(id);
 
-        if(technicianService.getTechnicianById(id).isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
         try {
+            // Service sẽ tự động tạo mới profile nếu user ID tồn tại nhưng technician profile chưa có
             Technician updatedTechnician = technicianService.saveTechnician(request);
             return ResponseEntity.ok(toResponseDTO(updatedTechnician));
         } catch (IllegalArgumentException e) {

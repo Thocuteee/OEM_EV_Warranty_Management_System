@@ -36,8 +36,7 @@ public class StaffRequest {
     @NotBlank(message = "Username là bắt buộc")
     private String username;
     
-    // Mật khẩu (Service sẽ hash)
-    @NotBlank(message = "Password là bắt buộc khi tạo/cập nhật")
+    // Mật khẩu (Service sẽ hash) - Optional khi cập nhật, bắt buộc khi tạo mới
     private String password;
 
     
