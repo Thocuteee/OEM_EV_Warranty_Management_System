@@ -27,8 +27,13 @@ export const getReportsByDateRange = async (startDate: string, endDate: string):
     return response.data;
 };
 
-// 5. Cập nhật Report
+// 4. PUT: Cập nhật Report
 export const updateReport = async (id: number, reportData: ReportRequest): Promise<ReportResponse> => {
     const response = await apiClient.put<ReportResponse>(`/reports/${id}`, reportData);
     return response.data;
+};
+
+// 5. DELETE: Xóa Report
+export const deleteReport = async (id: number): Promise<void> => {
+    await apiClient.delete(`/reports/${id}`); 
 };

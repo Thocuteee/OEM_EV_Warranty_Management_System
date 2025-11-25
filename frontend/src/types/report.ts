@@ -25,6 +25,7 @@ export interface ReportRequest {
     
     createdByText?: string; 
     updatedBy?: string;
+    diagnosticCodes?: string;
 }
 
 export interface ReportResponse {
@@ -46,12 +47,14 @@ export interface ReportResponse {
     technicianId: number;
     technicianName: string;
     centerId: number;
+    vehicleId?: number;
+    campaignId?: number;
     
     createdByText: string;
     createdDate: string;
     updatedAt: string;
 
-    description: string;
+    description?: string;
     
     partUsed?: string;
     replacedPart?: string;

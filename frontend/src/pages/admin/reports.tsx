@@ -8,13 +8,19 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
 
 // IMPORT SERVICE
-import { getAllReports, getReportsByDateRange, createReport } from "@/services/modules/reportService";
+import { getAllReports, getReportsByDateRange, createReport, updateReport, deleteReport, getReportById } from "@/services/modules/reportService";
 // IMPORT FORM MỚI
 import ReportForm from "@/reports/ReportForm"; 
 
 
-// ... (Giữ nguyên ReportTable component)
-const ReportTable: React.FC<{reports: ReportResponse[]}> = ({ reports }) => {
+// ReportTable component với Edit và Delete
+interface ReportTableProps {
+    reports: ReportResponse[];
+    onEdit: (report: ReportResponse) => void;
+    onDelete: (id: number) => void;
+}
+
+const ReportTable: React.FC<ReportTableProps> = ({ reports, onEdit, onDelete }) => {
     // ... (Giữ nguyên nội dung)
     const getStatusClasses = (status: string) => {
         switch (status.toUpperCase()) {
@@ -38,6 +44,7 @@ const ReportTable: React.FC<{reports: ReportResponse[]}> = ({ reports }) => {
                         <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-blue-800">Technician</th>
                         <th className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-blue-800">Tổng Chi phí</th>
                         <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-blue-800">Trạng thái</th>
+                        <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-blue-800">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -55,11 +62,27 @@ const ReportTable: React.FC<{reports: ReportResponse[]}> = ({ reports }) => {
                                     {r.status}
                                 </span>
                             </td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-center">
+                                <div className="flex justify-center space-x-2">
+                                    <button
+                                        onClick={() => onEdit(r)}
+                                        className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700 transition-colors"
+                                    >
+                                        Sửa
+                                    </button>
+                                    <button
+                                        onClick={() => onDelete(r.id)}
+                                        className="bg-red-600 text-white px-3 py-1 rounded text-xs hover:bg-red-700 transition-colors"
+                                    >
+                                        Xóa
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
                     ))}
                     {reports.length === 0 && (
                         <tr>
-                            <td colSpan={6} className="px-4 py-10 text-center text-sm text-gray-500">
+                            <td colSpan={7} className="px-4 py-10 text-center text-sm text-gray-500">
                                 Không tìm thấy báo cáo nào.
                             </td>
                         </tr>
@@ -79,7 +102,8 @@ export default function AdminReportsPage() {
     const [reports, setReports] = useState<ReportResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [toast, setToast] = useState<string | null>(null);
-    const [isModalOpen, setIsModalOpen] = useState(false); // THÊM STATE QUẢN LÝ MODAL
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingReport, setEditingReport] = useState<ReportResponse | null>(null); // Report đang được chỉnh sửa
     
     const [dateRange, setDateRange] = useState({
         start: '',
@@ -115,15 +139,54 @@ export default function AdminReportsPage() {
         }
     };
 
-    const handleCreateReport = async (payload: ReportRequest) => {
+    const handleSaveReport = async (payload: ReportRequest) => {
         try {
-            await createReport(payload);
-            setToast("Tạo Báo cáo thành công!");
+            if (editingReport) {
+                // Cập nhật report
+                await updateReport(editingReport.id, payload);
+                setToast("Cập nhật Báo cáo thành công!");
+            } else {
+                // Tạo mới report
+                await createReport(payload);
+                setToast("Tạo Báo cáo thành công!");
+            }
             await loadReports();
-            setIsModalOpen(false); // Đóng modal sau khi thành công
+            setIsModalOpen(false);
+            setEditingReport(null);
         } catch (err: unknown) {
-            const errorMessage = axios.isAxiosError(err) && err.response?.data?.message ? err.response.data.message : "Lỗi khi tạo Báo cáo. Kiểm tra Claim ID, Vehicle ID, Center ID và Technician ID.";
+            const errorMessage = axios.isAxiosError(err) && err.response?.data?.message 
+                ? err.response.data.message 
+                : `Lỗi khi ${editingReport ? 'cập nhật' : 'tạo'} Báo cáo. Kiểm tra Claim ID, Vehicle ID, Center ID và Technician ID.`;
             throw new Error(errorMessage);
+        }
+    }
+
+    const handleEditReport = async (report: ReportResponse) => {
+        try {
+            // Load đầy đủ thông tin report để edit
+            const fullReport = await getReportById(report.id);
+            setEditingReport(fullReport);
+            setIsModalOpen(true);
+        } catch (err: unknown) {
+            const errorMessage = axios.isAxiosError(err) && err.response?.data?.message 
+                ? err.response.data.message 
+                : "Không thể tải thông tin báo cáo để chỉnh sửa.";
+            setToast(errorMessage);
+        }
+    }
+
+    const handleDeleteReport = async (id: number) => {
+        if (!confirm(`Bạn có chắc chắn muốn xóa Báo cáo #${id}?`)) return;
+        
+        try {
+            await deleteReport(id);
+            setToast("Đã xóa Báo cáo thành công!");
+            await loadReports();
+        } catch (err: unknown) {
+            const errorMessage = axios.isAxiosError(err) && err.response?.data?.message 
+                ? err.response.data.message 
+                : "Lỗi khi xóa Báo cáo.";
+            setToast(errorMessage);
         }
     }
 
@@ -188,7 +251,10 @@ export default function AdminReportsPage() {
                 {/* Nút Tạo Báo cáo */}
                 {user.role !== 'EVM_Staff' && ( // Chỉ Staff/Technician mới tạo Report
                     <button
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={() => {
+                            setEditingReport(null);
+                            setIsModalOpen(true);
+                        }}
                         className="bg-green-600 text-white px-5 py-2 rounded-lg font-semibold shadow-md hover:bg-green-700 transition-colors"
                     >
                         + Tạo Báo cáo
@@ -197,20 +263,28 @@ export default function AdminReportsPage() {
             </div>
 
             {/* Bảng dữ liệu */}
-            <ReportTable reports={reports} />
+            <ReportTable 
+                reports={reports} 
+                onEdit={handleEditReport}
+                onDelete={handleDeleteReport}
+            />
             
-            {/* Modal Tạo Báo cáo */}
+            {/* Modal Tạo/Cập nhật Báo cáo */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl p-8 w-full max-w-2xl shadow-2xl transform transition-all duration-300">
+                    <div className="bg-white rounded-xl p-8 w-full max-w-2xl shadow-2xl transform transition-all duration-300 max-h-[90vh] overflow-y-auto">
                         <ReportForm
-                            initialClaimId={0} 
-                            initialVehicleId={0} 
-                            initialCenterId={0} 
+                            initialData={editingReport}
+                            initialClaimId={editingReport?.claimId || 0} 
+                            initialVehicleId={editingReport?.vehicleId || 0} 
+                            initialCenterId={editingReport?.centerId || 0} 
                             currentUserId={user.id}
                             currentUsername={user.username}
-                            onSubmit={handleCreateReport}
-                            onClose={() => setIsModalOpen(false)}
+                            onSubmit={handleSaveReport}
+                            onClose={() => {
+                                setIsModalOpen(false);
+                                setEditingReport(null);
+                            }}
                         />
                     </div>
                 </div>
