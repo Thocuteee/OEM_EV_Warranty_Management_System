@@ -108,6 +108,18 @@ public class TechnicianController {
         return ResponseEntity.ok(toResponseDTO(technician.get()));
     }
 
+    // 3b. GET /api/technicians/username/{username} : Lấy chi tiết theo Username (phục vụ trang Profile)
+    @GetMapping("/username/{username}")
+    public ResponseEntity<TechnicianResponse> getTechnicianByUsername(@PathVariable String username) {
+        Optional<Technician> technician = technicianService.getTechnicianByUsername(username);
+
+        if (technician.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        return ResponseEntity.ok(toResponseDTO(technician.get()));
+    }
+
     // 4. PUT /api/technicians/{id} : Cập nhật Kỹ thuật viên
     @PutMapping("/{id}") 
     public ResponseEntity<?> updateTechnician(@PathVariable Long id, @Valid @RequestBody TechnicianRequest request) {

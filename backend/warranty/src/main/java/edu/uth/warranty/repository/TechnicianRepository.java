@@ -26,6 +26,9 @@ public interface TechnicianRepository extends JpaRepository<Technician, Long>{
 
     Optional<Technician> findByUsername(String username);
 
+    @Query("SELECT t FROM Technician t JOIN FETCH t.center WHERE t.username = :username")
+    Optional<Technician> findByUsernameWithCenter(String username);
+
     @Query("SELECT t FROM Technician t JOIN FETCH t.center WHERE t.technicianId = :id")
     Optional<Technician> findByIdWithCenter(Long id);
 }

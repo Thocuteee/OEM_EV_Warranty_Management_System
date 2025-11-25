@@ -123,6 +123,6 @@ public class TechnicianServiceImpl implements ITechnicianService{
 
     @Override
     public Optional<Technician> getTechnicianByUsername(String username) {
-        return technicianRepository.findByUsername(username);
+        return technicianRepository.findByUsernameWithCenter(username);
     }
 }

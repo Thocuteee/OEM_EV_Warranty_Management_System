@@ -14,17 +14,28 @@ import java.util.List;
 public interface StaffRepository extends JpaRepository<Staff, Long>{
     Optional<Staff> findByUsername(String username);
 
+    @Query("SELECT s FROM Staff s JOIN FETCH s.center WHERE s.username = :username")
+    Optional<Staff> findByUsernameWithCenter(String username);
+
     Optional<Staff> findByEmail(String email);
 
     Boolean existsByEmail(String email);
 
     Optional<Staff> findByPhone(String phone);
 
-    List<Staff> findByRole(Role role);
+    //! Sua 
 
-    List<Staff> findByCenter(ServiceCenter center);
+    @Query("SELECT s FROM Staff s JOIN FETCH s.center WHERE s.center = :center")
+    List<Staff> findByRoleWithCenter(Role role);
 
-    List<Staff> findByRoleAndCenter(Role role, ServiceCenter center);
+    @Query("SELECT s FROM Staff s JOIN FETCH s.center WHERE s.center = :center")
+    List<Staff> findByCenterWithCenter(ServiceCenter center);
+
+    @Query("SELECT s FROM Staff s JOIN FETCH s.center WHERE s.role = :role AND s.center = :center")
+    List<Staff> findByRoleAndCenterWithCenter(Role role, ServiceCenter center);
+
+    @Query("SELECT s FROM Staff s JOIN FETCH s.center")
+    List<Staff> findAllWithCenter();
 
     @Query("SELECT s FROM Staff s JOIN FETCH s.center WHERE s.staffId = :id")
     Optional<Staff> findByIdWithCenter(Long id);

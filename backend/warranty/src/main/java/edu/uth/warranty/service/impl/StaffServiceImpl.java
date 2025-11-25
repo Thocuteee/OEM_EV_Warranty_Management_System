@@ -30,12 +30,12 @@ public class StaffServiceImpl implements IStaffService{
 
     @Override
     public List<Staff> getAllStaffs() {
-        return staffRepository.findAll();
+        return staffRepository.findAllWithCenter();
     }
 
     @Override
     public Optional<Staff> getStaffById(Long id) {
-        return staffRepository.findById(id);
+        return staffRepository.findByIdWithCenter(id);
     }
 
     @Override
@@ -117,16 +117,16 @@ public Staff saveStaff(StaffRequest request) {
 
     @Override
     public List<Staff> getStaffsByRole(Role role) {
-        return staffRepository.findByRole(role);
+        return staffRepository.findByRoleWithCenter(role);
     }
 
     @Override
     public List<Staff> getStaffsByCenter(ServiceCenter center) {
-        return staffRepository.findByCenter(center);
+        return staffRepository.findByCenterWithCenter(center);
     }
 
     @Override
     public List<Staff> getStaffsByRoleAndCenter(Role role, ServiceCenter center) {
-        return staffRepository.findByRoleAndCenter(role, center);
+        return staffRepository.findByRoleAndCenterWithCenter(role, center);
     }
 }

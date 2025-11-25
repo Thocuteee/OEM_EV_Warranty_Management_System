@@ -114,6 +114,17 @@ public class StaffController {
         return ResponseEntity.ok(toResponseDTO(staff.get()));
     }
 
+    // 3b. GET /api/staffs/username/{username} : Lấy chi tiết Staff theo Username (phục vụ trang Profile)
+    @GetMapping("/username/{username}")
+    public ResponseEntity<StaffResponse> getStaffByUsername(@PathVariable String username) {
+        Optional<Staff> staff = staffService.getStaffByUsername(username);
+
+        if (staff.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(toResponseDTO(staff.get()));
+    }
+
     // 4. PUT /api/staffs/{id} : Cập nhật Staff
     @PutMapping("/{id}")
     public ResponseEntity<StaffResponse> updateStaff(@PathVariable Long id,@Valid @RequestBody StaffRequest request) {
