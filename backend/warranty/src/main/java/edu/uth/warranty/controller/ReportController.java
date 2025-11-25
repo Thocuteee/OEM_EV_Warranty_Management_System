@@ -89,8 +89,11 @@ public class ReportController {
             entity.setVehicle(new Vehicle(request.getVehicleId())); 
         }
 
-        if (request.getCampaignId() != null) {
+        // Campaign là optional - chỉ set nếu có campaignId, nếu không set null
+        if (request.getCampaignId() != null && request.getCampaignId() > 0) {
             entity.setCampaign(new RecallCampaign(request.getCampaignId())); 
+        } else {
+            entity.setCampaign(null); // Đảm bảo set null khi không có campaignId
         }
     
         if (request.getCreatedById() != null) {
@@ -109,6 +112,7 @@ public class ReportController {
         entity.setActualCost(request.getActualCost());
         entity.setCreatedByUsername(request.getCreatedByText()); 
         entity.setUpdatedBy(request.getUpdatedBy());
+        
         
         return entity;
     }
