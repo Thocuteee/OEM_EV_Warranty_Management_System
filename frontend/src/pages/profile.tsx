@@ -1,7 +1,7 @@
 // frontend/src/pages/profile.tsx
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Layout from '@/components/layout/Layout';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/router';
@@ -13,6 +13,8 @@ import { UserProfile } from '@/types/auth';
 
 import { getStaffByUsername } from '@/services/modules/staffService';
 import { getTechnicianByUsername } from '@/services/modules/technicianService';
+// Đã thêm import service mới
+import { initializeBusinessProfile } from '@/services/modules/userService';
 
 interface AuthUserMinimal {
     id: number;
@@ -31,11 +33,15 @@ interface BasicProfile {
 type ProfileUnion = StaffResponse | TechnicianResponse | BasicProfile;
 
 export default function UserProfilePage() {
-    const { user, isAuthenticated, updateProfile } = useAuth(); // Thêm updateProfile
+    const { user, isAuthenticated, updateProfile } = useAuth(); 
     const router = useRouter();
     
     const [profileData, setProfileData] = useState<ProfileUnion | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    
+    // ĐÃ SỬA LỖI: Khai báo state loading cho các thao tác phụ (như khởi tạo profile)
+    const [loading, setLoading] = useState(false); 
+    
     const [error, setError] = useState<string | null>(null);
     
     const [isEditing, setIsEditing] = useState(false); 
@@ -99,12 +105,42 @@ export default function UserProfilePage() {
         updateProfile({ 
             name: updatedData.name, 
             email: updatedData.email 
-        } as Partial<UserProfile>); 
+        } as Partial<UserProfile>);
 
         setProfileData(updatedData); 
         setIsEditing(false); 
         setError("Cập nhật hồ sơ thành công!"); // Hiển thị thông báo thành công
     };
+
+    // THÊM: Hàm xử lý khởi tạo hồ sơ
+    const handleInitializeProfile = async () => {
+        if (!user || !user.id) return;
+
+        if (!confirm("Hồ sơ nghiệp vụ bị thiếu. Bạn có muốn tự động tạo hồ sơ mặc định?")) return;
+        
+        setLoading(true); // Bắt đầu loading
+        setError(null);
+
+        try {
+            // Gọi API khởi tạo
+            const result = await initializeBusinessProfile(user.id);
+            alert(result.message);
+            // Tải lại profile
+            setRefreshTrigger(prev => prev + 1); 
+            
+        } catch (e: unknown) {
+            let message = "Lỗi không xác định khi khởi tạo profile.";
+            if (axios.isAxiosError(e) && e.response) {
+                const apiError = e.response.data as { message?: string, error?: string };
+                message = apiError.message || message;
+            } else if (e instanceof Error) {
+                message = e.message;
+            }
+            setError(message);
+        } finally {
+            setLoading(false); // Kết thúc loading
+        }
+    }
 
 
     useEffect(() => {
@@ -128,10 +164,8 @@ export default function UserProfilePage() {
         );
     }
     
-    // [ĐÃ SỬA]: Loại bỏ 'if (!profileData) return null;' gây màn hình trắng.
     if (!profileData) {
-        // Nếu load xong (isLoading=false) mà vẫn null, đây là lỗi nghiêm trọng không thể phục hồi bằng fallback
-         return (
+        return (
             <Layout>
                 <div className="p-6 text-red-600 bg-red-100 border border-red-300 rounded-lg">
                     Lỗi nghiêm trọng: Không thể khởi tạo Profile Data. Vui lòng kiểm tra console.
@@ -141,18 +175,47 @@ export default function UserProfilePage() {
     }
 
 
+    // Kiểm tra role từ user context để cho phép edit ngay cả khi profile chưa tồn tại
+    const userRole = user?.role || '';
+    const isStaffRole = userRole === 'Admin' || userRole === 'EVM_Staff' || userRole === 'SC_Staff';
+    const isTechnicianRole = userRole === 'SC_Technician';
+    
     const isStaff = 'address' in profileData && profileData.role !== 'SC_Technician';
     const isTechnician = 'specialization' in profileData;
-    const canEdit = isStaff || isTechnician;
+    // Cho phép edit nếu là staff/technician role, ngay cả khi profile chưa tồn tại
+    const canEdit = isStaff || isTechnician || isStaffRole || isTechnicianRole;
     
     const renderProfileDetails = () => {
         const data = profileData; 
+        
+        // Kiểm tra lỗi 404 (đã gán trong fetchProfile)
+        const isBasicFallbackProfile = !('address' in data) && !('specialization' in data) && error?.includes("404 Not Found");
 
         return (
             <div className="space-y-4">
-                <h2 className="text-2xl font-bold text-gray-800 border-b pb-2 mb-4">
-                    Hồ sơ {user.role} ({user.username})
-                </h2>
+                {/* ... (Các thẻ h2 giữ nguyên) */}
+                
+                {/* THÊM: Nút Khởi tạo Profile nếu bị thiếu */}
+                {isBasicFallbackProfile && (
+                    <div className="p-4 bg-yellow-100 text-yellow-800 rounded-lg border border-yellow-300">
+                        <p className="font-semibold">⚠️ Hồ sơ nghiệp vụ bị thiếu!</p>
+                        
+                        {/* ĐÃ SỬA LỖI: LOẠI BỎ DẤU NHÁY ĐƠN VÀ CHỈ SỬ DỤNG <strong> */}
+                        <p className="text-sm">
+                            Hệ thống không tìm thấy thông tin chi tiết 
+                            <strong>{user.role}</strong> trong cơ sở dữ liệu. Vui lòng bấm nút 
+                            <strong> Khởi tạo Profile Mặc định </strong> để tạo bản ghi ban đầu.
+                        </p>
+
+                        <button 
+                            onClick={handleInitializeProfile} 
+                            disabled={loading}
+                            className="mt-3 bg-red-600 text-white px-4 py-2 text-sm rounded-lg hover:bg-red-700 disabled:opacity-50"
+                        >
+                            {loading ? "Đang khởi tạo..." : "Khởi tạo Profile Mặc định"}
+                        </button>
+                    </div>
+                )}
                 
                 {/* Các trường cơ bản */}
                 <p><strong>Tên hiển thị:</strong> {data.name}</p>
@@ -181,7 +244,7 @@ export default function UserProfilePage() {
                     *ID hệ thống: {user.id}
                 </p>
                 {/* Hiển thị lỗi từ Backend hoặc Frontend */}
-                {error && <p className="text-sm text-red-500">{error}</p>}
+                {error && !isBasicFallbackProfile && <p className="text-sm text-red-500">{error}</p>}
             </div>
         );
     }
@@ -193,7 +256,7 @@ export default function UserProfilePage() {
                 
                 <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 max-w-4xl">
                     
-                    {isEditing && canEdit && (profileData as StaffResponse | TechnicianResponse) ? (
+                    {isEditing && canEdit ? (
                         <ProfileUpdateForm
                             initialData={profileData as StaffResponse | TechnicianResponse}
                             onUpdateSuccess={handleUpdateSuccess}
@@ -202,7 +265,8 @@ export default function UserProfilePage() {
                         <>
                             {renderProfileDetails()}
                             
-                            {canEdit && (
+                            {/* Nút cập nhật hiện khi có quyền Edit (staff hoặc technician) */}
+                            {canEdit && ( 
                                 <button 
                                     onClick={() => setIsEditing(true)} 
                                     className="mt-6 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"

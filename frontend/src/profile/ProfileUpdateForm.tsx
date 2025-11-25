@@ -8,7 +8,9 @@ import { updateStaff } from '@/services/modules/staffService';
 import { updateTechnician } from '@/services/modules/technicianService';
 import { useAuth } from '@/context/AuthContext';
 import axios from 'axios';
-import { UserProfile } from '@/types/auth'; 
+import { UserProfile } from '@/types/auth';
+import { getAllServiceCenters } from '@/services/modules/centerService';
+import { ServiceCenterResponse } from '@/types/center'; 
 
 // Định nghĩa Union Type cho Initial Data
 type ProfileData = StaffResponse | TechnicianResponse;
@@ -21,8 +23,15 @@ interface ProfileUpdateFormProps {
 const ProfileUpdateForm: React.FC<ProfileUpdateFormProps> = ({ initialData, onUpdateSuccess }) => {
     // Lấy hàm updateProfile an toàn
     const { user, updateProfile } = useAuth(); 
-    const isStaff = (initialData as StaffResponse).address !== undefined; 
-    const isTechnician = (initialData as TechnicianResponse).specialization !== undefined; 
+    
+    // Xác định loại profile dựa trên dữ liệu hoặc role của user
+    const hasAddress = (initialData as StaffResponse).address !== undefined;
+    const hasSpecialization = (initialData as TechnicianResponse).specialization !== undefined;
+    const userRole = user?.role || '';
+    
+    // Nếu profile chưa tồn tại, dùng role của user để xác định loại
+    const isStaff = hasAddress || (userRole === 'Admin' || userRole === 'EVM_Staff' || userRole === 'SC_Staff');
+    const isTechnician = hasSpecialization || userRole === 'SC_Technician'; 
 
     const [formState, setFormState] = useState({
         name: initialData.name,
@@ -30,28 +39,51 @@ const ProfileUpdateForm: React.FC<ProfileUpdateFormProps> = ({ initialData, onUp
         phone: initialData.phone,
         address: isStaff ? (initialData as StaffResponse).address : '',
         specialization: isTechnician ? (initialData as TechnicianResponse).specialization : '',
+        centerId: (initialData as StaffResponse | TechnicianResponse).centerId || 0,
         password: '',
         confirmPassword: '',
     });
     
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [serviceCenters, setServiceCenters] = useState<ServiceCenterResponse[]>([]);
     
     useEffect(() => {
+        // Load service centers if centerId is missing
+        const loadServiceCenters = async () => {
+            if (!(initialData as StaffResponse | TechnicianResponse).centerId) {
+                try {
+                    const centers = await getAllServiceCenters();
+                    setServiceCenters(centers);
+                    if (centers.length > 0 && !formState.centerId) {
+                        setFormState(prev => ({ ...prev, centerId: centers[0].id }));
+                    }
+                } catch (err) {
+                    console.error('Failed to load service centers:', err);
+                }
+            }
+        };
+        
         setFormState({
             name: initialData.name,
             email: initialData.email,
             phone: initialData.phone,
             address: isStaff ? (initialData as StaffResponse).address : '',
             specialization: isTechnician ? (initialData as TechnicianResponse).specialization : '',
+            centerId: (initialData as StaffResponse | TechnicianResponse).centerId || formState.centerId || 0,
             password: '',
             confirmPassword: '',
         });
+        
+        loadServiceCenters();
     }, [initialData, isStaff, isTechnician]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormState(prev => ({ ...prev, [name]: value }));
+        setFormState(prev => ({ 
+            ...prev, 
+            [name]: name === 'centerId' ? parseInt(value) || 0 : value 
+        }));
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -59,13 +91,22 @@ const ProfileUpdateForm: React.FC<ProfileUpdateFormProps> = ({ initialData, onUp
         setError('');
         setLoading(true);
 
+        // Kiểm tra nếu là profile mới (chưa có centerId ban đầu) thì cần password
+        const isNewProfile = !(initialData as StaffResponse | TechnicianResponse).centerId;
+        
+        if (isNewProfile && !formState.password) {
+            setError("Vui lòng nhập mật khẩu để tạo hồ sơ mới.");
+            setLoading(false);
+            return;
+        }
+        
         if (formState.password && formState.password.length < 6) {
              setError("Mật khẩu phải có ít nhất 6 ký tự.");
              setLoading(false);
              return;
         }
 
-        if (formState.password !== formState.confirmPassword) {
+        if (formState.password && formState.password !== formState.confirmPassword) {
             setError("Mật khẩu và xác nhận mật khẩu không khớp.");
             setLoading(false);
             return;
@@ -74,21 +115,31 @@ const ProfileUpdateForm: React.FC<ProfileUpdateFormProps> = ({ initialData, onUp
         try {
             let updatedProfile: ProfileData;
             
+            // Validate centerId
+            if (!formState.centerId || formState.centerId === 0) {
+                setError("Vui lòng chọn Trung tâm Dịch vụ.");
+                setLoading(false);
+                return;
+            }
+            
             const basePayload = {
                 id: initialData.id,
-                centerId: initialData.centerId, 
+                centerId: formState.centerId, 
                 name: formState.name,
                 email: formState.email,
                 phone: formState.phone,
                 username: initialData.username,
-                password: formState.password || undefined,
+                // Gửi password nếu có, nếu không gửi null (backend sẽ giữ password cũ)
+                password: formState.password || null,
             };
             
             if (isStaff) {
+                // Lấy role từ initialData hoặc user context
+                const staffRole = (initialData as StaffResponse).role || (userRole as any);
                 const staffPayload: StaffRequest = {
                     ...basePayload,
-                    role: (initialData as StaffResponse).role,
-                    address: formState.address,
+                    role: staffRole,
+                    address: formState.address || '',
                 } as StaffRequest;
                 
                 updatedProfile = await updateStaff(initialData.id, staffPayload); 
@@ -147,6 +198,25 @@ const ProfileUpdateForm: React.FC<ProfileUpdateFormProps> = ({ initialData, onUp
                     <label className="block text-sm font-medium text-gray-700 mb-1">Số điện thoại *</label>
                     <input type="tel" name="phone" value={formState.phone} onChange={handleChange} className="w-full border rounded-lg p-2 text-sm" required />
                 </div>
+                {(!(initialData as StaffResponse | TechnicianResponse).centerId || serviceCenters.length > 0) && (
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Trung tâm Dịch vụ *</label>
+                        <select 
+                            name="centerId" 
+                            value={formState.centerId} 
+                            onChange={handleChange} 
+                            className="w-full border rounded-lg p-2 text-sm" 
+                            required
+                        >
+                            <option value="0">-- Chọn Trung tâm Dịch vụ --</option>
+                            {serviceCenters.map(center => (
+                                <option key={center.id} value={center.id}>
+                                    {center.name} - {center.location}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
             </div>
 
             {isStaff && (

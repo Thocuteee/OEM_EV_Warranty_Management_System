@@ -18,3 +18,10 @@ export const createNewUser = async (userData: FullUserCreationRequest): Promise<
 export const deleteUser = async (id: number): Promise<void> => {
     await apiClient.delete(`/users/${id}`);
 };
+
+// 4. POST: Khởi tạo Business Profile cho User (dùng cho các user cũ bị thiếu profile)
+export const initializeBusinessProfile = async (userId: number): Promise<{ message: string }> => {
+    // Backend API: POST /api/users/{id}/init-profile
+    const response = await apiClient.post<{ message: string }>(`/users/${userId}/init-profile`);
+    return response.data;
+};
