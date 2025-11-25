@@ -33,6 +33,13 @@ public class ReportResponse {
     private Long technicianId;
     private String technicianName;
     private Long centerId;
+    private Long vehicleId;
+    private Long campaignId;
+    
+    // Mô tả và phụ tùng
+    private String description;
+    private String partUsed;
+    private String replacedPart;
     
     // Người tạo/cập nhật
     private String createdByText;

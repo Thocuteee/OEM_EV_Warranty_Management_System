@@ -61,6 +61,11 @@ public class ReportController {
             entity.getTechnician() != null ? entity.getTechnician().getTechnicianId() : null,
             technicianName,
             entity.getCenter() != null ? entity.getCenter().getCenterId() : null,
+            entity.getVehicle() != null ? entity.getVehicle().getVehicleId() : null,
+            entity.getCampaign() != null ? entity.getCampaign().getCampaignId() : null,
+            entity.getDescription(),
+            entity.getPartUsed(),
+            entity.getReplacedPart(),
             createdByUsername, 
             entity.getCreatedDate(),
             entity.getUpdatedAt()
