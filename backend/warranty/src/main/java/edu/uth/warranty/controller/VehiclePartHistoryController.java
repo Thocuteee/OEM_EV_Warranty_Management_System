@@ -147,7 +147,9 @@ public class VehiclePartHistoryController {
     public ResponseEntity<List<VehiclePartHistoryResponse>> getHistoryByVehicle(@PathVariable Long vehicelId) {
         Vehicle vehicle = new Vehicle(vehicelId);
 
-        List<VehiclePartHistoryResponse> responses = vehiclePartHistoryService.getHistoryByVehicle(vehicle).stream().map(this::toResponseDTO).collect(Collectors.toList());
+        List<VehiclePartHistoryResponse> responses = vehiclePartHistoryService.getHistoryByVehicle(vehicle).stream()
+            .map(this::toResponseDTO)
+            .collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
 
