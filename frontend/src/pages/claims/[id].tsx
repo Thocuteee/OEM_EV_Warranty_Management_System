@@ -9,12 +9,17 @@ import { TechnicianResponse } from '@/types/technician';
 import { ClaimPartResponse, ClaimPartRequest } from '@/types/claimPart';
 import { WorkLogResponse, WorkLogRequest } from '@/types/workLog';
 import { ReportRequest } from '@/types/report'; 
+// [MỚI] Attachment Types
+import { ClaimAttachmentResponse, ClaimAttachmentRequest } from '@/types/attachment'; 
+import { VehiclePartHistoryRequest } from '@/types/vehiclePartHistory';
 
 // IMPORT FORMS
 import ReportForm from "@/reports/ReportForm"; 
 import WorkLogForm from "@/worklogs/WorkLogForm"; 
 import ClaimPartForm from "@/claims/ClaimPartForm";
 import VehiclePartHistoryForm from "@/components/VehiclePartHistoryForm"; 
+// [MỚI] Attachment Form
+import ClaimAttachmentForm from "@/pages/claims/ClaimAttachmentForm"; 
 
 // IMPORT SERVICES
 import { getClaimById, updateClaimStatus, updateClaimTechnician } from '@/services/modules/claimService';
@@ -23,9 +28,97 @@ import { getClaimPartsByClaimId, createClaimPart, deleteClaimPartByCompositeId }
 import { getWorkLogsByClaimId, createWorkLog, deleteWorkLog } from '@/services/modules/workLogService'; 
 import { createReport } from '@/services/modules/reportService';
 import { createVehiclePartHistory } from '@/services/modules/vehiclePartHistoryService';
-import { VehiclePartHistoryRequest } from '@/types/vehiclePartHistory'; 
+// [MỚI] Attachment Service
+import { getAttachmentsByClaimId, createAttachment, deleteAttachment } from '@/services/modules/attachmentService'; 
 
 import axios from 'axios';
+
+// Component mới để quản lý Attachments
+interface AttachmentManagerProps {
+    claimId: number;
+    initialAttachments: ClaimAttachmentResponse[];
+    onAddAttachment: () => void;
+    onDeleteAttachment: (id: number) => void;
+}
+
+const AttachmentManager: React.FC<AttachmentManagerProps> = ({ claimId, initialAttachments, onAddAttachment, onDeleteAttachment }) => {
+    const { user } = useAuth();
+    const canDeleteAttachment = user?.role === 'SC_Staff' || user?.role === 'Admin' || user?.role === 'EVM_Staff';
+    
+    const getTypeIcon = (type: string) => {
+        switch (type?.toUpperCase()) {
+            case 'IMAGE': return '🖼️';
+            case 'DOCUMENT': return '📄';
+            case 'VIDEO': return '🎥';
+            case 'DIAGNOSTIC_REPORT': return '📊';
+            default: return '📎';
+        }
+    };
+
+    const getTypeColor = (type: string) => {
+        switch (type?.toUpperCase()) {
+            case 'IMAGE': return 'bg-blue-100 text-blue-800';
+            case 'DOCUMENT': return 'bg-green-100 text-green-800';
+            case 'VIDEO': return 'bg-purple-100 text-purple-800';
+            case 'DIAGNOSTIC_REPORT': return 'bg-orange-100 text-orange-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
+    };
+    
+    return (
+        <div className="bg-white p-4 rounded-lg border">
+            <h3 className="font-bold text-xl mb-3">File Đính kèm ({initialAttachments?.length || 0})</h3>
+            
+            {initialAttachments?.length === 0 ? (
+                <div className="text-center py-8">
+                    <p className="text-gray-500 italic text-sm">Chưa có file đính kèm nào.</p>
+                    <p className="text-gray-400 text-xs mt-2">Nhấn nút bên dưới để thêm file đính kèm mới.</p>
+                </div>
+            ) : (
+                <div className="mt-4 space-y-3 max-h-96 overflow-y-auto border-t pt-3">
+                    {initialAttachments?.map(a => (
+                        <div key={a.id} className="flex justify-between items-start p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-lg">{getTypeIcon(a.type)}</span>
+                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(a.type)}`}>
+                                        {a.type}
+                                    </span>
+                                </div>
+                                <a 
+                                    href={a.fileUrl} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="text-blue-600 hover:text-blue-800 hover:underline text-sm break-all block"
+                                >
+                                    {a.fileUrl}
+                                </a>
+                            </div>
+                            {canDeleteAttachment && (
+                                <button 
+                                    onClick={() => onDeleteAttachment(a.id)} 
+                                    className="ml-3 text-red-600 hover:text-red-800 hover:bg-red-50 text-xs font-semibold px-2 py-1 rounded transition-colors"
+                                    title="Xóa file đính kèm"
+                                >
+                                    🗑️ Xóa
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+            
+            <button 
+                onClick={onAddAttachment} 
+                className="mt-4 w-full bg-purple-600 text-white px-4 py-2 text-sm rounded-lg font-semibold hover:bg-purple-700 transition-colors shadow-md"
+            >
+                + Thêm File Đính kèm
+            </button>
+        </div>
+    );
+};
+
+// ... (ClaimPartsManager và WorkLogManager giữ nguyên)
 interface ClaimPartsManagerProps { 
     claimId: number; 
     technicianId: number | null | undefined;
@@ -49,8 +142,6 @@ interface AssignTechnicianProps {
     onAssign: (technicianId: number) => void; 
 }
 
-
-// 1. ClaimPartsManager (Đã kiểm tra, logic phụ tùng hoàn chỉnh)
 const ClaimPartsManager: React.FC<ClaimPartsManagerProps> = ({ claimId, initialParts, onAddPart, onDeletePart }) => (
     <div className="bg-white p-4 rounded-lg border">
         <h3 className="font-bold text-xl mb-3">Quản lý Phụ tùng ({initialParts?.length || 0})</h3>
@@ -77,7 +168,7 @@ const ClaimPartsManager: React.FC<ClaimPartsManagerProps> = ({ claimId, initialP
         )}
         
         <button 
-            onClick={onAddPart} // Gọi hàm handler ở lớp cha
+            onClick={onAddPart} 
             className="mt-4 bg-blue-600 text-white px-3 py-2 text-sm rounded hover:bg-blue-700"
         >
             + Thêm Phụ tùng
@@ -85,7 +176,6 @@ const ClaimPartsManager: React.FC<ClaimPartsManagerProps> = ({ claimId, initialP
     </div>
 );
 
-// 2. WorkLogManager (Đã kiểm tra, logic Work Log hoàn chỉnh)
 const WorkLogManager: React.FC<WorkLogManagerProps> = ({ claimId, initialLogs, technicianId, onAddLog, onDeleteLog }) => (
     <div className="bg-white p-4 rounded-lg border">
         <h3 className="font-bold text-xl mb-3">Nhật ký Công việc ({initialLogs?.length || 0})</h3>
@@ -115,7 +205,7 @@ const WorkLogManager: React.FC<WorkLogManagerProps> = ({ claimId, initialLogs, t
         )}
         
         <button 
-            onClick={onAddLog} // Gọi hàm handler ở lớp cha
+            onClick={onAddLog} 
             className="mt-4 bg-indigo-600 text-white px-3 py-2 text-sm rounded hover:bg-indigo-700"
         >
             + Thêm Log Công việc
@@ -123,18 +213,14 @@ const WorkLogManager: React.FC<WorkLogManagerProps> = ({ claimId, initialLogs, t
     </div>
 );
 
-
-// 3. AssignTechnician (KHÔNG ĐỔI)
 const AssignTechnician: React.FC<AssignTechnicianProps> = ({ claim, technicians, onAssign }) => {
     const { user } = useAuth();
     const canAssign = user && ['Admin', 'EVM_Staff', 'SC_Staff'].includes(user.role);
     
-    // Tìm tech hiện tại để hiển thị tên
     const currentTech = technicians.find(t => t.id === claim.technicianId);
 
     const [selectedTech, setSelectedTech] = useState(claim.technicianId ? String(claim.technicianId) : '');
     
-    // Chỉ cho phép gán nếu Claim chưa hoàn thành hoặc bị từ chối phê duyệt
     const isModificationAllowed = !['COMPLETED', 'REJECTED'].includes(claim.status.toUpperCase()) && canAssign;
 
     const handleAssignClick = () => {
@@ -190,35 +276,46 @@ export default function ClaimDetailPage() {
     const [technicians, setTechnicians] = useState<TechnicianResponse[]>([]);
     const [claimParts, setClaimParts] = useState<ClaimPartResponse[]>([]);
     const [workLogs, setWorkLogs] = useState<WorkLogResponse[]>([]);
+    // [MỚI] State cho Attachments
+    const [attachments, setAttachments] = useState<ClaimAttachmentResponse[]>([]); 
+    
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
-    const [activeTab, setActiveTab] = useState<'parts' | 'logs'>('parts'); 
+    // [CẬP NHẬT] Thêm tab attachments
+    const [activeTab, setActiveTab] = useState<'parts' | 'logs' | 'attachments'>('parts'); 
     
     const [isReportModalOpen, setIsReportModalOpen] = useState(false); 
     const [isWorkLogModalOpen, setIsWorkLogModalOpen] = useState(false);
     const [isClaimPartModalOpen, setIsClaimPartModalOpen] = useState(false);
     const [isVehiclePartHistoryModalOpen, setIsVehiclePartHistoryModalOpen] = useState(false);
+    // [MỚI] Modal cho Attachment
+    const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false); 
 
     // Định nghĩa quyền
     const isEVMApprover = user?.role === 'Admin' || user?.role === 'EVM_Staff';
     const canSendOrDelete = user?.role === 'SC_Staff';
     const isTech = user?.role === 'SC_Technician';
+    // Mọi role có quyền xem và SC Staff/Admin có quyền chỉnh sửa Attachment
+    const canModifyAttachment = user?.role === 'SC_Staff' || user?.role === 'Admin' || user?.role === 'EVM_Staff';
+
 
     const fetchData = useCallback(async () => {
         if (!claimId) return;
         setIsLoading(true);
         try {
-            const [claimData, techs, parts, logs] = await Promise.all([
+            const [claimData, techs, parts, logs, attachmentsData] = await Promise.all([
                 getClaimById(claimId),
                 getAllTechnicians(),
                 getClaimPartsByClaimId(claimId),
-                getWorkLogsByClaimId(claimId)
-            ]) as [WarrantyClaimResponse, TechnicianResponse[], ClaimPartResponse[], WorkLogResponse[]];
+                getWorkLogsByClaimId(claimId),
+                getAttachmentsByClaimId(claimId), // [MỚI] Tải Attachments
+            ]) as [WarrantyClaimResponse, TechnicianResponse[], ClaimPartResponse[], WorkLogResponse[], ClaimAttachmentResponse[]];
             
             setClaim(claimData);
             setTechnicians(techs);
             setClaimParts(parts);
             setWorkLogs(logs);
+            setAttachments(attachmentsData); // [MỚI] Lưu Attachments
 
         } catch (e: unknown) {
             console.error("Failed to load claim detail:", e);
@@ -351,42 +448,100 @@ export default function ClaimDetailPage() {
             throw new Error(message);
         }
     }
+
+    // [MỚI] Attachment Handlers
+    const handleAddAttachment = async (payload: ClaimAttachmentRequest) => {
+        if (!claim) return;
+        
+        try {
+            // Đảm bảo claimId được set đúng
+            const finalPayload: ClaimAttachmentRequest = {
+                ...payload,
+                claimId: claim.id,
+            };
+            
+            await createAttachment(finalPayload);
+            alert("Đã thêm File Đính kèm thành công!");
+            setIsAttachmentModalOpen(false);
+            fetchData();
+        } catch (e: unknown) {
+            let message = 'Lỗi thêm File đính kèm.';
+            if (axios.isAxiosError(e)) {
+                if (e.response) {
+                    const apiError = e.response.data as { message?: string, error?: string };
+                    message = apiError.message || apiError.error || message;
+                } else if (e.request) {
+                    message = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.';
+                } else {
+                    message = e.message || message;
+                }
+            } else if (e instanceof Error) {
+                message = e.message;
+            }
+            throw new Error(message);
+        }
+    }
+
+    const handleDeleteAttachment = async (id: number) => {
+        if (!confirm(`Bạn có chắc muốn xóa File đính kèm ID ${id}?`)) return;
+        
+        // Kiểm tra quyền (chỉ cho phép xóa nếu là SC Staff/Admin và Claim không hoàn thành)
+        if (!canModifyAttachment || claim?.status.toUpperCase() === 'COMPLETED') {
+            alert('Bạn không có quyền xóa file đính kèm này.');
+            return;
+        }
+
+        try {
+            await deleteAttachment(id);
+            alert("Đã xóa File đính kèm.");
+            fetchData();
+        } catch (e: unknown) {
+            alert('Lỗi khi xóa File đính kèm.');
+        }
+    }
     
     // ĐỊNH NGHĨA BIẾN KIỂM TRA QUYỀN
-    // Chấp nhận cả IN_PROCESS và IN_PROGRESS (do có thể có dữ liệu cũ)
     const statusUpper = claim?.status.toUpperCase();
     const isClaimInProgress = statusUpper === 'IN_PROCESS' || statusUpper === 'IN_PROGRESS'; 
     const isAllowedToWork = (isEVMApprover || canSendOrDelete || isTech) && isClaimInProgress;
     const canCreateReport = isAllowedToWork;
     
-    const handleAddWorkDataClick = (type: 'log' | 'part') => {
+    const handleAddWorkDataClick = (type: 'log' | 'part' | 'attachment') => {
         const currentStatus = claim?.status.toUpperCase();
+        
+        // Logic cho Attachment (đã tách)
+        if (type === 'attachment') {
+            if (canModifyAttachment) {
+                setIsAttachmentModalOpen(true);
+            } else {
+                alert("Bạn không có quyền thêm File Đính kèm.");
+            }
+            return;
+        }
 
+        // Logic cho log/part (giữ nguyên)
         if (isAllowedToWork) {
-            // Trường hợp 1: ĐƯỢC PHÉP THAO TÁC -> MỞ MODAL
             if (type === 'part') {
                 setIsClaimPartModalOpen(true);
             } else {
                 setIsWorkLogModalOpen(true);
             }
         } else {
-            // Trường hợp 2: BỊ CHẶN -> HIỂN THỊ LỖI RÕ RÀNG
             let message = "Bạn không có quyền thực hiện thao tác này.";
             
             if (currentStatus === 'COMPLETED' || currentStatus === 'REJECTED') {
                 message = `Claim đã ở trạng thái ${currentStatus}. Không thể thêm dữ liệu mới.`;
             } 
-            // SỬA LỖI LOGIC: Nếu không phải là trạng thái sẵn sàng làm việc (IN_PROCESS hoặc IN_PROGRESS)
             else if (currentStatus !== 'IN_PROCESS' && currentStatus !== 'IN_PROGRESS') { 
                 message = `Claim hiện đang ở trạng thái ${currentStatus}. Vui lòng chờ Claim được chuyển sang IN_PROCESS để bắt đầu công việc.`;
             } else {
-                // Trạng thái là IN_PROCESS nhưng isAllowedToWork là false => Lỗi quyền
                  message = "Bạn không thuộc nhóm Nhân viên/Kỹ thuật viên có quyền cập nhật công việc.";
             }
 
             alert(message);
         }
     }
+
 
     if (!claimId || isLoading) {
         return (
@@ -412,7 +567,7 @@ export default function ClaimDetailPage() {
         switch (status.toUpperCase().trim()) {
             case "APPROVED": 
             case "IN_PROCESS": 
-            case "IN_PROGRESS": // Hỗ trợ cả hai format (cũ và mới)
+            case "IN_PROGRESS": 
             case "COMPLETED": 
                 return "bg-green-500";
             case "SENT": return "bg-indigo-500";
@@ -511,6 +666,13 @@ export default function ClaimDetailPage() {
                         >
                             Nhật ký Công việc
                         </button>
+                        {/* [MỚI] NÚT CHUYỂN TAB ATTACHMENTS */}
+                        <button 
+                            onClick={() => setActiveTab('attachments')}
+                            className={`pb-2 font-semibold ${activeTab === 'attachments' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500 hover:text-purple-500'}`}
+                        >
+                            File Đính kèm ({attachments.length})
+                        </button>
                     </div>
 
                     <div>
@@ -531,6 +693,15 @@ export default function ClaimDetailPage() {
                                 initialLogs={workLogs} 
                                 onAddLog={() => handleAddWorkDataClick('log')}
                                 onDeleteLog={handleDeleteWorkLog}
+                            />
+                        )}
+                        {/* [MỚI] HIỂN THỊ ATTACHMENTS */}
+                        {activeTab === 'attachments' && (
+                            <AttachmentManager 
+                                claimId={claim.id} 
+                                initialAttachments={attachments} 
+                                onAddAttachment={() => handleAddWorkDataClick('attachment')}
+                                onDeleteAttachment={handleDeleteAttachment}
                             />
                         )}
                     </div>
@@ -590,6 +761,19 @@ export default function ClaimDetailPage() {
                             claimId={claim.id}
                             onSubmit={handleCreateVehiclePartHistory}
                             onClose={() => setIsVehiclePartHistoryModalOpen(false)}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* [MỚI] MODAL TẠO ATTACHMENT */}
+            {isAttachmentModalOpen && claim && canModifyAttachment && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl p-8 w-full max-w-lg shadow-2xl transform transition-all duration-300">
+                        <ClaimAttachmentForm
+                            claimId={claim.id}
+                            onSubmit={handleAddAttachment}
+                            onClose={() => setIsAttachmentModalOpen(false)}
                         />
                     </div>
                 </div>
