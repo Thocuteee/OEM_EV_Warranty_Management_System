@@ -35,13 +35,14 @@ const ClaimForm: React.FC<ClaimFormProps> = ({ initialData, onSuccess }) => {
     const [error, setError] = useState('');
 
     const [formState, setFormState] = useState<WarrantyClaimRequest>({
-        staffId: staffId, 
-        vehicleId: vehicle.id, 
-        customerId: vehicle.customerId, 
-        centerId: centers.length > 0 ? centers[0].id : 0, 
+        staffId: staffId,
+        vehicleId: vehicle.id,
+        customerId: vehicle.customerId,
+        centerId: centers.length > 0 ? centers[0].id : 0,
         totalCost: 0,
         description: '',
         technicianId: null,
+        currentMileage: 0,
     });
     
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -53,6 +54,7 @@ const ClaimForm: React.FC<ClaimFormProps> = ({ initialData, onSuccess }) => {
                     name === 'centerId' ? (value ? parseInt(value) : 0) : 
                     // 3. LOGIC XỬ LÝ ID TECHNICIAN (Chuyển chuỗi sang số hoặc null)
                     name === 'technicianId' ? (value ? parseInt(value) : null) :
+                    name === 'currentMileage' ? (value ? parseInt(value) : 0) :
                     value,
         } as WarrantyClaimRequest));
     };
@@ -66,6 +68,7 @@ const ClaimForm: React.FC<ClaimFormProps> = ({ initialData, onSuccess }) => {
             ...formState,
             totalCost: formState.totalCost || 0,
             technicianId: formState.technicianId || null,
+            currentMileage: formState.currentMileage || 0,
         }
         
         if (!payloadToSend.centerId || payloadToSend.centerId === 0) {
@@ -127,7 +130,27 @@ const ClaimForm: React.FC<ClaimFormProps> = ({ initialData, onSuccess }) => {
                     </select>
                 </div>
             </div>
-
+                    {/* [MỚI] 3. Số KM hiện tại (Odometer) - BẮT BUỘC ĐỂ CHECK BẢO HÀNH */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Số KM hiện tại (Odometer) *</label>
+                        <div className="relative">
+                            <input 
+                                type="number" 
+                                name="currentMileage"
+                                required
+                                min="0"
+                                value={formState.currentMileage}
+                                onChange={handleChange}
+                                className="w-full rounded-lg border border-gray-300 pl-4 pr-12 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                placeholder="VD: 50000"
+                            />
+                            <span className="absolute right-4 top-2 text-gray-400 text-sm">km</span>
+                        </div>
+                        <p className="text-xs text-blue-600 mt-1">
+                            ℹ️ Hệ thống sẽ dùng số này để kiểm tra chính sách bảo hành.
+                        </p>
+                    </div>
+                
             {/* 3. Mô tả & Chi phí */}
             <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1">Mô tả vấn đề *</label>

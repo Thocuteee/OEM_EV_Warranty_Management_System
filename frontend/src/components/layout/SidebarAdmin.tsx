@@ -19,7 +19,7 @@ export default function SidebarAdmin() {
         // --- CHUỖI NGHIỆP VỤ (CLAIMS & PARTS) ---
         { name: "Quản lý Xe", href: "/admin/vehicles", icon: "🚗" },
         { name: "Yêu cầu Bảo hành (Claims)", href: "/admin/claims", icon: "📄" }, 
-        
+        { name: "Chính sách Bảo hành", href: "/admin/policies", icon: "🛡️" },
         // --- MODULE HỖ TRỢ VÀ TỒN KHO ---
         { name: "Quản lý Linh kiện/Tồn kho", href: "/admin/parts", icon: "🔧" }, 
         { name: "Quản lý Trung tâm Dịch vụ", href: "/admin/centers", icon: "📍" },

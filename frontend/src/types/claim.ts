@@ -6,6 +6,7 @@ export interface WarrantyClaimRequest {
     totalCost: number; // BigDecimal
     description: string;
     technicianId?: number | null;
+    currentMileage: number;
 }
 
 export interface WarrantyClaimResponse {
