@@ -33,5 +33,8 @@ public class WarrantyClaimRequest {
     @NotNull(message = "Tổng chi phí là bắt buộc")
     private BigDecimal TotalCost;
 
+    // Số KM hiện tại của xe (Odometer)
+    private Integer currentMileage;
+
     // Lưu ý: status, created_at, updated_at sẽ do Service tự thiết lập sau -.- 
 }

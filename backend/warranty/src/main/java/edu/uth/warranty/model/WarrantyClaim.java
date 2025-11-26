@@ -57,6 +57,9 @@ public class WarrantyClaim {
     @Column(name = "approval_status")
     private String approvalStatus;
 
+    @Column(name = "current_mileage")
+    private Integer currentMileage;
+
     public WarrantyClaim(Long claimId) {
         this.claimId = claimId;
     }
