@@ -11,6 +11,7 @@ public class WarrantyPolicyResponse {
     private Long id;
     private String policyName;
     private Integer durationMonths;
-    private Long mileageLimit;
+    private Integer mileageLimit;
     private String coverageDescription;
 }
+

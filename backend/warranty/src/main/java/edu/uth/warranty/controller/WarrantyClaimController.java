@@ -54,7 +54,8 @@ public class WarrantyClaimController {
             claim.getTotalCost(),
             claim.getCreatedAt(),
             claim.getUpdatedAt(),
-            claim.getDescription()
+            claim.getDescription(),
+            claim.getCurrentMileage()
         );
     }
 
@@ -79,6 +80,7 @@ public class WarrantyClaimController {
 
         claim.setDescription(request.getDescription());
         claim.setTotalCost(request.getTotalCost());
+        claim.setCurrentMileage(request.getCurrentMileage());
         return claim;
     }
 

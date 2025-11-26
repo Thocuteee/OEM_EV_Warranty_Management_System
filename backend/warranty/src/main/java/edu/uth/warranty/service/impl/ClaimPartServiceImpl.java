@@ -69,6 +69,12 @@ public class ClaimPartServiceImpl implements IClaimPartService{
     @Override
     public void deleteClaimParts(Long claimId, Long partId) {
         ClaimPart.IdClass id = new ClaimPart.IdClass(claimId, partId);
+        
+        // Kiểm tra xem bản ghi có tồn tại không trước khi xóa
+        if (!claimPartRepository.existsById(id)) {
+            throw new IllegalArgumentException("Không tìm thấy Linh kiện với Claim ID " + claimId + " và Part ID " + partId + ".");
+        }
+        
         claimPartRepository.deleteById(id);
     }
 

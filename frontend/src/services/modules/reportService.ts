@@ -1,6 +1,11 @@
 // frontend/src/services/modules/reportService.ts
 import { apiClient } from "../coreApiClient";
 import { ReportRequest, ReportResponse } from "@/types/report";
+import { AxiosResponse } from "axios";
+
+export interface MonthlyCostAnalysis {
+    [month: string]: number; 
+}
 
 // 1. GET: Lấy tất cả Reports
 export const getAllReports = async (): Promise<ReportResponse[]> => {
@@ -36,4 +41,27 @@ export const updateReport = async (id: number, reportData: ReportRequest): Promi
 // 5. DELETE: Xóa Report
 export const deleteReport = async (id: number): Promise<void> => {
     await apiClient.delete(`/reports/${id}`); 
+};
+
+// [MỚI] 8. Phân tích Tổng Chi phí Claims theo Tháng/Năm
+export const getMonthlyCostAnalysis = async (year: number): Promise<MonthlyCostAnalysis> => {
+    // API: GET /api/reports/analysis/monthly-cost?year=...
+    const response: AxiosResponse<Record<string, number | string>> = await apiClient.get(
+        `/reports/analysis/monthly-cost`,
+        {
+            params: { year: year }
+        }
+    );
+    
+    // Convert BigDecimal từ backend (có thể là string hoặc number) sang number
+    const data: MonthlyCostAnalysis = {};
+    if (response.data) {
+        Object.keys(response.data).forEach(month => {
+            const value = response.data[month];
+            // Convert string hoặc number sang number
+            data[month] = typeof value === 'string' ? parseFloat(value) : (typeof value === 'number' ? value : 0);
+        });
+    }
+    
+    return data;
 };

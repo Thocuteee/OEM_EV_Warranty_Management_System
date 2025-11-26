@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -217,7 +218,15 @@ public class ReportController {
         return ResponseEntity.ok(responses);
     }
 
-
-
-
+    // 11. GET /api/reports/analysis/monthly-cost?year={year} : Phân tích Tổng Chi phí Claims theo Tháng/Năm
+    @GetMapping("/analysis/monthly-cost")
+    public ResponseEntity<Map<String, BigDecimal>> getMonthlyCostAnalysis(@RequestParam int year) {
+        try {
+            Map<String, BigDecimal> analysis = reportService.getMonthlyTotalCostAnalysis(year);
+            return ResponseEntity.ok(analysis);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

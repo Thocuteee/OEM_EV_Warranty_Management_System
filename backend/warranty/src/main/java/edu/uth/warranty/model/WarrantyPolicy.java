@@ -1,15 +1,10 @@
 package edu.uth.warranty.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 @Entity
 @Getter
@@ -18,6 +13,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Table(name = "WarrantyPolicy")
 public class WarrantyPolicy {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long policyId;
@@ -29,8 +25,9 @@ public class WarrantyPolicy {
     private Integer durationMonths;
 
     @Column(name = "mileage_limit", nullable = false)
-    private Long mileageLimit;
+    private Integer mileageLimit;
 
     @Column(name = "coverage_description", columnDefinition = "TEXT")
     private String coverageDescription;
 }
+
