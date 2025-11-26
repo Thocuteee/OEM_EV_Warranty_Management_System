@@ -41,7 +41,7 @@ public class InventoryController {
 
         if(entity.getPart() != null && entity.getPart().getPartId() != null) {
             Optional<Part> partOpt = partService.getPartById(entity.getPart().getPartId());
-            if(partOpt.isEmpty()) {
+            if(partOpt.isPresent()) { 
                 partNumber = partOpt.get().getPartNumber();
                 partName = partOpt.get().getName();
             }
@@ -49,7 +49,7 @@ public class InventoryController {
 
         if(entity.getCenter() != null && entity.getCenter().getCenterId() != null) {
             Optional<ServiceCenter> centerOpt = serviceCenterService.getServiceCenterById(entity.getCenter().getCenterId());
-            if(centerOpt.isEmpty()) {
+            if(centerOpt.isPresent()) {
                 centerName = centerOpt.get().getName();
             }
         }

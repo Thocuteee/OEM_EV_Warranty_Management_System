@@ -13,5 +13,6 @@ public class CampaignVehicleResponse {
 
     private String campaignTitle; 
     private String vehicleVIN;
+    private String vehicleModel;
     private String status;
 }
