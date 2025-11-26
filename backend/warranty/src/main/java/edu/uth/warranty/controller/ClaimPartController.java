@@ -110,16 +110,22 @@ public class ClaimPartController {
 
     // 4. DELETE /api/claim-parts/{claimId}/{partId} : Xóa 1 bản ghi theo Composite ID
     @DeleteMapping("/{claimId}/{partId}")
-    public ResponseEntity<Void> deleteClaimPart(@PathVariable Long claimId, @PathVariable Long partId) {
-        Optional<ClaimPart> partOpt = claimPartService.getClaimPartById(claimId, partId);
+    public ResponseEntity<?> deleteClaimPart(@PathVariable Long claimId, @PathVariable Long partId) {
+        try {
+            Optional<ClaimPart> partOpt = claimPartService.getClaimPartById(claimId, partId);
 
-        if(partOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
+            if(partOpt.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Không tìm thấy Linh kiện với Claim ID " + claimId + " và Part ID " + partId + "."));
+            }
+            
+            claimPartService.deleteClaimParts(claimId, partId);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Lỗi máy chủ khi xóa Linh kiện: " + e.getMessage()));
         }
-        
-        claimPartService.deleteClaimParts(claimId, partId);
-        return ResponseEntity.noContent().build();
-
     }
 
     // 5. GET /api/claim-parts/by-claim/{claimId} : Lấy tất cả Linh kiện thuộc một Claim

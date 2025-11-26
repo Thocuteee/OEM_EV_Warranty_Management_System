@@ -165,7 +165,7 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
             }
             return warrantyClaimRepository.save(claim);
         } else {
-            throw new IllegalArgumentException("Khong thể phê duyệt ở trạng thái SENT.");
+            throw new IllegalArgumentException("Chỉ có thể phê duyệt/từ chối Claim khi ở trạng thái SENT. Trạng thái hiện tại: " + claim.getStatus() + ".");
         }
     }
 
