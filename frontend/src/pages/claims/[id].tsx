@@ -13,14 +13,17 @@ import { ReportRequest } from '@/types/report';
 // IMPORT FORMS
 import ReportForm from "@/reports/ReportForm"; 
 import WorkLogForm from "@/worklogs/WorkLogForm"; 
-import ClaimPartForm from "@/claims/ClaimPartForm"; 
+import ClaimPartForm from "@/claims/ClaimPartForm";
+import VehiclePartHistoryForm from "@/components/VehiclePartHistoryForm"; 
 
 // IMPORT SERVICES
 import { getClaimById, updateClaimStatus, updateClaimTechnician } from '@/services/modules/claimService';
 import { getAllTechnicians } from '@/services/modules/technicianService';
 import { getClaimPartsByClaimId, createClaimPart, deleteClaimPartByCompositeId } from '@/services/modules/claimPartService'; 
 import { getWorkLogsByClaimId, createWorkLog, deleteWorkLog } from '@/services/modules/workLogService'; 
-import { createReport } from '@/services/modules/reportService'; 
+import { createReport } from '@/services/modules/reportService';
+import { createVehiclePartHistory } from '@/services/modules/vehiclePartHistoryService';
+import { VehiclePartHistoryRequest } from '@/types/vehiclePartHistory'; 
 
 import axios from 'axios';
 interface ClaimPartsManagerProps { 
@@ -194,6 +197,7 @@ export default function ClaimDetailPage() {
     const [isReportModalOpen, setIsReportModalOpen] = useState(false); 
     const [isWorkLogModalOpen, setIsWorkLogModalOpen] = useState(false);
     const [isClaimPartModalOpen, setIsClaimPartModalOpen] = useState(false);
+    const [isVehiclePartHistoryModalOpen, setIsVehiclePartHistoryModalOpen] = useState(false);
 
     // Định nghĩa quyền
     const isEVMApprover = user?.role === 'Admin' || user?.role === 'EVM_Staff';
@@ -326,6 +330,20 @@ export default function ClaimDetailPage() {
             throw new Error(message); 
         }
     }
+
+    const handleCreateVehiclePartHistory = async (payload: VehiclePartHistoryRequest) => {
+        if (!claim) return;
+        
+        try {
+            await createVehiclePartHistory(payload);
+            alert("Đã ghi nhận lịch sử linh kiện thành công!");
+            setIsVehiclePartHistoryModalOpen(false);
+            fetchData();
+        } catch (e: unknown) {
+            const message = axios.isAxiosError(e) ? e.response?.data?.message || 'Lỗi ghi nhận lịch sử linh kiện. Kiểm tra Vehicle ID, Part Serial ID và Claim ID.' : 'Lỗi không xác định.';
+            throw new Error(message);
+        }
+    }
     
     // ĐỊNH NGHĨA BIẾN KIỂM TRA QUYỀN
     // Chấp nhận cả IN_PROCESS và IN_PROGRESS (do có thể có dữ liệu cũ)
@@ -444,12 +462,20 @@ export default function ClaimDetailPage() {
                         
                         {/* NÚT TẠO REPORT */}
                         {canCreateReport && (
-                            <button
-                                onClick={() => setIsReportModalOpen(true)}
-                                className="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700"
-                            >
-                                📝 Tạo Báo cáo Công việc
-                            </button>
+                            <div className="mt-4 flex gap-3">
+                                <button
+                                    onClick={() => setIsReportModalOpen(true)}
+                                    className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700"
+                                >
+                                    📝 Tạo Báo cáo Công việc
+                                </button>
+                                <button
+                                    onClick={() => setIsVehiclePartHistoryModalOpen(true)}
+                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700"
+                                >
+                                    🔧 Ghi nhận Lịch sử Linh kiện
+                                </button>
+                            </div>
                         )}
                     </div>
 
@@ -543,6 +569,20 @@ export default function ClaimDetailPage() {
                             claimId={claim.id}
                             onSubmit={handleCreateClaimPart}
                             onClose={() => setIsClaimPartModalOpen(false)}
+                        />
+                    </div>
+                </div>
+            )}
+            
+            {/* MODAL TẠO VEHICLE PART HISTORY */}
+            {isVehiclePartHistoryModalOpen && claim && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl p-8 w-full max-w-lg shadow-2xl transform transition-all duration-300">
+                        <VehiclePartHistoryForm
+                            vehicleId={claim.vehicleId}
+                            claimId={claim.id}
+                            onSubmit={handleCreateVehiclePartHistory}
+                            onClose={() => setIsVehiclePartHistoryModalOpen(false)}
                         />
                     </div>
                 </div>
