@@ -25,9 +25,7 @@ const HistoryTable: React.FC<{history: VehiclePartHistoryResponse[]}> = ({ histo
             <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                     <tr>
-                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">ID</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Serial Number</th>
-                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Claim ID</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Trạng thái Claim</th>
                         <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Ngày Lắp đặt</th>
                     </tr>
@@ -35,12 +33,18 @@ const HistoryTable: React.FC<{history: VehiclePartHistoryResponse[]}> = ({ histo
                 <tbody className="divide-y divide-gray-100">
                     {history.map((record) => (
                         <tr key={record.id} className="hover:bg-gray-50 transition-colors">
-                            <td className="whitespace-nowrap px-6 py-4 text-sm font-semibold text-gray-900">{record.id}</td>
-                            <td className="px-6 py-4 text-sm text-indigo-600 font-mono">{record.partSerialNumber}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
-                                <a href={`/claims/${record.claimId}`} className="hover:underline">#{record.claimId}</a>
+                            <td className="px-6 py-4 text-sm text-indigo-600 font-mono font-semibold">{record.partSerialNumber}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                    record.claimStatus === 'COMPLETED' || record.claimStatus === 'APPROVED' 
+                                        ? 'bg-green-100 text-green-800'
+                                        : record.claimStatus === 'IN_PROCESS' || record.claimStatus === 'IN_PROGRESS'
+                                        ? 'bg-blue-100 text-blue-800'
+                                        : 'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                    {record.claimStatus}
+                                </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{record.claimStatus}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                                 {record.dateInstalled 
                                     ? (typeof record.dateInstalled === 'string' 
@@ -80,16 +84,10 @@ export default function CarDetailPage() {
 
             // 2. Lấy lịch sử linh kiện theo Vehicle ID (có thể không có lịch sử)
             try {
-                console.log("Đang tải lịch sử cho Vehicle ID:", vehicleData.id);
                 const historyData = await getHistoryByVehicleId(vehicleData.id);
-                console.log("Lịch sử nhận được:", historyData);
                 setHistory(historyData || []);
             } catch (historyError) {
-                console.error("Lỗi chi tiết khi tải lịch sử linh kiện:", historyError);
-                if (axios.isAxiosError(historyError)) {
-                    console.error("Response status:", historyError.response?.status);
-                    console.error("Response data:", historyError.response?.data);
-                }
+                console.error("Lỗi khi tải lịch sử linh kiện:", historyError);
                 // Nếu không load được history, vẫn hiển thị thông tin xe nhưng history rỗng
                 setHistory([]);
             }
@@ -203,21 +201,6 @@ export default function CarDetailPage() {
                             🔄 Tải lại
                         </button>
                     </div>
-                    {vehicle && (
-                        <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800 space-y-1">
-                            <p><strong>Vehicle ID trong DB:</strong> {vehicle.id}</p>
-                            <p><strong>VIN:</strong> {vehicle.vin}</p>
-                            <p><strong>Số lượng lịch sử tìm thấy:</strong> {history.length}</p>
-                            {history.length > 0 && (
-                                <details className="mt-2">
-                                    <summary className="cursor-pointer font-semibold">Xem chi tiết lịch sử (Debug)</summary>
-                                    <pre className="mt-2 bg-white p-2 rounded text-xs overflow-auto max-h-40">
-                                        {JSON.stringify(history, null, 2)}
-                                    </pre>
-                                </details>
-                            )}
-                        </div>
-                    )}
                     <HistoryTable history={history} />
                 </div>
                 

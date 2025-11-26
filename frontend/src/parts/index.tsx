@@ -32,33 +32,53 @@ type PartSerialResponseInterface = PartSerialResponse;
 // ---------------------------------------
 const PartTable: React.FC<{parts: PartResponseInterface[], onEdit: (p: PartResponseInterface) => void, onDelete: (id: number) => void, canModify: boolean}> = ({ parts, onEdit, onDelete, canModify }) => (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md">
-        <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-blue-50">
-                <tr>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-blue-800">ID</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-blue-800">Tên Linh kiện</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-blue-800">Part Number</th>
-                    <th className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-blue-800">Giá (VND)</th>
-                    {canModify && <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-blue-800">Thao tác</th>}
-                </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-                {parts.map((p) => (
-                    <tr key={p.id} className="hover:bg-blue-50 transition-colors">
-                        <td className="whitespace-nowrap px-4 py-3 text-sm font-semibold text-gray-900">{p.id}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700">{p.name}</td>
-                        <td className="px-4 py-3 text-sm font-medium text-gray-700">{p.partNumber}</td>
-                        <td className="px-4 py-3 text-sm font-medium text-right text-green-700">{p.price.toLocaleString('vi-VN')}</td>
-                        {canModify && (
-                            <td className="whitespace-nowrap px-4 py-3 text-sm">
-                                <button onClick={() => onEdit(p)} className="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-2 p-1">Sửa</button>
-                                <button onClick={() => onDelete(p.id)} className="text-red-600 hover:text-red-800 text-xs font-semibold p-1">Xóa</button>
-                            </td>
-                        )}
+        <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-blue-50">
+                    <tr>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-blue-800">ID</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-blue-800">Tên Linh kiện</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-blue-800">Part Number</th>
+                        <th className="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-blue-800">Giá (VND)</th>
+                        {canModify && <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-blue-800">Thao tác</th>}
                     </tr>
-                ))}
-            </tbody>
-        </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100 bg-white">
+                    {parts.length === 0 ? (
+                        <tr>
+                            <td colSpan={canModify ? 5 : 4} className="px-4 py-10 text-center text-gray-500">
+                                Không có linh kiện nào.
+                            </td>
+                        </tr>
+                    ) : (
+                        parts.map((p) => (
+                            <tr key={p.id} className="hover:bg-blue-50 transition-colors">
+                                <td className="whitespace-nowrap px-4 py-3 text-sm font-semibold text-gray-900">{p.id}</td>
+                                <td className="px-4 py-3 text-sm text-gray-700">{p.name}</td>
+                                <td className="px-4 py-3 text-sm font-medium text-gray-700">{p.partNumber}</td>
+                                <td className="px-4 py-3 text-sm font-medium text-right text-green-700">{p.price.toLocaleString('vi-VN')}</td>
+                                {canModify && (
+                                    <td className="whitespace-nowrap px-4 py-3 text-sm">
+                                        <button 
+                                            onClick={() => onEdit(p)} 
+                                            className="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-2 p-1 hover:bg-blue-50 rounded transition-colors"
+                                        >
+                                            Sửa
+                                        </button>
+                                        <button 
+                                            onClick={() => onDelete(p.id)} 
+                                            className="text-red-600 hover:text-red-800 text-xs font-semibold p-1 hover:bg-red-50 rounded transition-colors"
+                                        >
+                                            Xóa
+                                        </button>
+                                    </td>
+                                )}
+                            </tr>
+                        ))
+                    )}
+                </tbody>
+            </table>
+        </div>
     </div>
 );
 
@@ -67,33 +87,58 @@ const PartTable: React.FC<{parts: PartResponseInterface[], onEdit: (p: PartRespo
 // ---------------------------------------
 const PartSerialTable: React.FC<{serials: PartSerialResponseInterface[], onEdit: (p: PartSerialResponseInterface) => void, onDelete: (id: number) => void, canModify: boolean}> = ({ serials, onEdit, onDelete, canModify }) => (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md">
-        <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-green-50">
-                <tr>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-green-800">ID</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-green-800">Serial Number</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-green-800">Linh kiện Gốc (Part No)</th>
-                    <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-green-800">Ngày Nhận</th>
-                    {canModify && <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-green-800">Thao tác</th>}
-                </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-                {serials.map((s) => (
-                    <tr key={s.id} className="hover:bg-green-50/50 transition-colors">
-                        <td className="whitespace-nowrap px-4 py-3 text-sm font-semibold text-gray-900">{s.id}</td>
-                        <td className="px-4 py-3 text-sm text-gray-700 font-mono">{s.serialNumber}</td>
-                        <td className="px-4 py-3 text-sm font-medium text-blue-600">{s.partName} <span className="text-gray-500">({s.partNumber})</span></td>
-                        <td className="px-4 py-3 text-sm text-gray-700">{s.dateReceived}</td>
-                        {canModify && (
-                            <td className="whitespace-nowrap px-4 py-3 text-sm">
-                                <button onClick={() => onEdit(s)} className="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-2 p-1">Sửa</button>
-                                <button onClick={() => onDelete(s.id)} className="text-red-600 hover:text-red-800 text-xs font-semibold p-1">Xóa</button>
-                            </td>
-                        )}
+        <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-green-50">
+                    <tr>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-green-800">ID</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-green-800">Serial Number</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-green-800">Linh kiện Gốc (Part No)</th>
+                        <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-green-800">Ngày Nhận</th>
+                        {canModify && <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-green-800">Thao tác</th>}
                     </tr>
-                ))}
-            </tbody>
-        </table>
+                </thead>
+                <tbody className="divide-y divide-gray-100 bg-white">
+                    {serials.length === 0 ? (
+                        <tr>
+                            <td colSpan={canModify ? 5 : 4} className="px-4 py-10 text-center text-gray-500">
+                                Không có serial nào.
+                            </td>
+                        </tr>
+                    ) : (
+                        serials.map((s) => (
+                            <tr key={s.id} className="hover:bg-green-50/50 transition-colors">
+                                <td className="whitespace-nowrap px-4 py-3 text-sm font-semibold text-gray-900">{s.id}</td>
+                                <td className="px-4 py-3 text-sm text-gray-700 font-mono">{s.serialNumber}</td>
+                                <td className="px-4 py-3 text-sm font-medium text-blue-600">
+                                    <span className="truncate block max-w-xs">{s.partName}</span>
+                                    <span className="text-gray-500 text-xs">({s.partNumber})</span>
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
+                                    {s.dateReceived ? new Date(s.dateReceived).toLocaleDateString('vi-VN') : 'N/A'}
+                                </td>
+                                {canModify && (
+                                    <td className="whitespace-nowrap px-4 py-3 text-sm">
+                                        <button 
+                                            onClick={() => onEdit(s)} 
+                                            className="text-blue-600 hover:text-blue-800 text-xs font-semibold mr-2 p-1 hover:bg-blue-50 rounded transition-colors"
+                                        >
+                                            Sửa
+                                        </button>
+                                        <button 
+                                            onClick={() => onDelete(s.id)} 
+                                            className="text-red-600 hover:text-red-800 text-xs font-semibold p-1 hover:bg-red-50 rounded transition-colors"
+                                        >
+                                            Xóa
+                                        </button>
+                                    </td>
+                                )}
+                            </tr>
+                        ))
+                    )}
+                </tbody>
+            </table>
+        </div>
     </div>
 );
 
@@ -287,22 +332,40 @@ export default function PartsPage() {
 
             {/* Bảng dữ liệu */}
             {activeTab === 'parts' ? (
-                <PartTable
-                    parts={filteredParts}
-                    onEdit={(p) => { setEditingPart(p); setIsPartModalOpen(true); }}
-                    onDelete={handleDeletePart}
-                    canModify={canModify}
-                />
+                filteredParts.length === 0 ? (
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-md p-10 text-center">
+                        <p className="text-gray-500 text-lg">Không tìm thấy linh kiện nào.</p>
+                        {searchKeyword && (
+                            <p className="text-sm text-gray-400 mt-2">Thử tìm kiếm với từ khóa khác.</p>
+                        )}
+                    </div>
+                ) : (
+                    <PartTable
+                        parts={filteredParts}
+                        onEdit={(p) => { setEditingPart(p); setIsPartModalOpen(true); }}
+                        onDelete={handleDeletePart}
+                        canModify={canModify}
+                    />
+                )
             ) : (
-                <PartSerialTable
-                    serials={filteredSerials}
-                    onEdit={(s) => { 
-                        setEditingSerial(s); 
-                        setIsSerialModalOpen(true); 
-                    }}
-                    onDelete={handleDeleteSerial}
-                    canModify={canModify}
-                />
+                filteredSerials.length === 0 ? (
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-md p-10 text-center">
+                        <p className="text-gray-500 text-lg">Không tìm thấy serial nào.</p>
+                        {searchKeyword && (
+                            <p className="text-sm text-gray-400 mt-2">Thử tìm kiếm với từ khóa khác.</p>
+                        )}
+                    </div>
+                ) : (
+                    <PartSerialTable
+                        serials={filteredSerials}
+                        onEdit={(s) => { 
+                            setEditingSerial(s); 
+                            setIsSerialModalOpen(true); 
+                        }}
+                        onDelete={handleDeleteSerial}
+                        canModify={canModify}
+                    />
+                )
             )}
             
             {/* Modal tạo/cập nhật Linh kiện (Chỉ mở nếu canModify) */}

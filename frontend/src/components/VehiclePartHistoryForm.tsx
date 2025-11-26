@@ -64,6 +64,10 @@ const VehiclePartHistoryForm: React.FC<VehiclePartHistoryFormProps> = ({
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        
+        // Ngăn chặn double submit
+        if (loading) return;
+        
         setError('');
         setLoading(true);
         

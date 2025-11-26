@@ -340,7 +340,14 @@ export default function ClaimDetailPage() {
             setIsVehiclePartHistoryModalOpen(false);
             fetchData();
         } catch (e: unknown) {
-            const message = axios.isAxiosError(e) ? e.response?.data?.message || 'Lỗi ghi nhận lịch sử linh kiện. Kiểm tra Vehicle ID, Part Serial ID và Claim ID.' : 'Lỗi không xác định.';
+            let message = 'Lỗi ghi nhận lịch sử linh kiện.';
+            if (axios.isAxiosError(e)) {
+                if (e.response?.status === 400) {
+                    message = e.response?.data?.message || 'Dữ liệu không hợp lệ. Có thể đã tồn tại bản ghi tương tự.';
+                } else {
+                    message = e.response?.data?.message || 'Lỗi ghi nhận lịch sử linh kiện. Kiểm tra Vehicle ID, Part Serial ID và Claim ID.';
+                }
+            }
             throw new Error(message);
         }
     }
