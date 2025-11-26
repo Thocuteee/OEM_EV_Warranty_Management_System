@@ -35,6 +35,8 @@ public interface IWarrantyClaimService {
 
     WarrantyClaim updateClaimTechnician(Long claimId, Long technicianId);
 
+    WarrantyClaim createClaim(WarrantyClaim warrantyClaim, Long currentMileage);
+
     List<WarrantyClaim> getWarrantyClaimsByVehicle(Vehicle vehicle);
     List<WarrantyClaim> getWarrantyClaimsByCustomer(Customer customer);
     List<WarrantyClaim> getWarrantyClaimsByCenter(ServiceCenter center);

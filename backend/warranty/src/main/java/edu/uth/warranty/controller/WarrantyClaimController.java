@@ -1,19 +1,32 @@
 package edu.uth.warranty.controller;
 
-import edu.uth.warranty.dto.WarrantyClaimRequest;
-import edu.uth.warranty.dto.WarrantyClaimResponse;
-import edu.uth.warranty.dto.MessageResponse;
-import edu.uth.warranty.model.*;
-import edu.uth.warranty.service.*;
-import jakarta.validation.Valid;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import edu.uth.warranty.dto.MessageResponse;
+import edu.uth.warranty.dto.WarrantyClaimRequest;
+import edu.uth.warranty.dto.WarrantyClaimResponse;
+import edu.uth.warranty.model.Customer;
+import edu.uth.warranty.model.ServiceCenter;
+import edu.uth.warranty.model.Staff;
+import edu.uth.warranty.model.Technician;
+import edu.uth.warranty.model.Vehicle;
+import edu.uth.warranty.model.WarrantyClaim;
+import edu.uth.warranty.service.IWarrantyClaimService;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/warranty-claims")
@@ -75,16 +88,21 @@ public class WarrantyClaimController {
         return claim;
     }
 
-    // 1. POST /api/claims : Tạo mới Claim (luôn khởi tạo DRAFT/PENDING)
+    
+   // 1. POST /api/warranty-claims : Tạo mới Claim (CÓ CHECK POLICY)
     @PostMapping
     public ResponseEntity<?> createClaim(@Valid @RequestBody WarrantyClaimRequest request) {
-        try{
+        try {
             WarrantyClaim newClaim = toEntity(request);
             newClaim.setClaimId(null);
-            WarrantyClaim saveClaim = warrantyClaimService.saveWarrantyClaim(newClaim);
+            
+            // gọi method mới, truyền thêm currentMileage
+            WarrantyClaim saveClaim = warrantyClaimService.createClaim(newClaim, request.getCurrentMileage());
+            
             return ResponseEntity.status(HttpStatus.CREATED).body(toResponseDTO(saveClaim));
 
         } catch(IllegalArgumentException e) {
+            // Trả về lỗi 400 nếu xe hết hạn bảo hành hoặc sai logic
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
     }

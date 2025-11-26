@@ -13,15 +13,14 @@ import edu.uth.warranty.model.Staff;
 import edu.uth.warranty.model.Technician;
 import edu.uth.warranty.model.Vehicle;
 import edu.uth.warranty.model.WarrantyClaim;
-
 import edu.uth.warranty.repository.CustomerRepository;
 import edu.uth.warranty.repository.ServiceCenterRepository;
 import edu.uth.warranty.repository.StaffRepository;
 import edu.uth.warranty.repository.TechnicianRepository;
 import edu.uth.warranty.repository.VehicleRepository;
 import edu.uth.warranty.repository.WarrantyClaimRepository;
-
 import edu.uth.warranty.service.IWarrantyClaimService;
+import edu.uth.warranty.service.IWarrantyPolicyService;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -34,13 +33,15 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
     private final TechnicianRepository technicianRepository;
     private final StaffRepository staffRepository;
     private final ServiceCenterRepository serviceCenterRepository;
+    private final IWarrantyPolicyService warrantyPolicyService;
     
     public WarrantyClaimImpl(WarrantyClaimRepository warrantyClaimRepository,
             CustomerRepository customerRepository,
             VehicleRepository vehicleRepository,
             TechnicianRepository technicianRepository,
             StaffRepository staffRepository,
-            ServiceCenterRepository serviceCenterRepository)
+            ServiceCenterRepository serviceCenterRepository,
+            IWarrantyPolicyService warrantyPolicyService)
             {
         this.warrantyClaimRepository = warrantyClaimRepository;
         this.customerRepository = customerRepository;
@@ -48,9 +49,31 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
         this.technicianRepository = technicianRepository;
         this.staffRepository = staffRepository;
         this.serviceCenterRepository = serviceCenterRepository;
-    
+        this.warrantyPolicyService = warrantyPolicyService;
     }
-
+    @Override
+    public WarrantyClaim createClaim(WarrantyClaim warrantyClaim, Long currentMileage) {
+        // 1. Lấy xe từ DB để đảm bảo dữ liệu mới nhất
+        Long vehicleId = warrantyClaim.getVehicle().getVehicleId();
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> new IllegalArgumentException("Xe không tồn tại."));
+        
+        // 2. Cập nhật số KM mới (nếu có)
+        if (currentMileage != null) {
+            // Kiểm tra logic: ODO mới không được nhỏ hơn ODO cũ
+            if (vehicle.getCurrentMileage() != null && currentMileage < vehicle.getCurrentMileage()) {
+                throw new IllegalArgumentException("Số KM mới (" + currentMileage + ") không được nhỏ hơn số KM cũ (" + vehicle.getCurrentMileage() + ").");
+            }
+            vehicle.setCurrentMileage(currentMileage);
+            vehicleRepository.save(vehicle);
+        }
+        
+        // 3. GỌI SERVICE CHECK POLICY
+        warrantyPolicyService.checkWarrantyValidity(vehicle);
+        
+        // 4. Gọi lại hàm save cũ để chạy tiếp logic nghiệp vụ tạo claim
+        return this.saveWarrantyClaim(warrantyClaim);
+    }
     @Override
     public List<WarrantyClaim> getAllWarrantyClaims() {
         return warrantyClaimRepository.findAll();
