@@ -27,14 +27,16 @@ public class CampaignVehicleController {
     }
 
     private CampaignVehicleResponse toResponseDTO(CampaignVehicle campaignVehicle) {
-        String campaigntitle = campaignVehicle.getRecallCampaignEntity() != null ? campaignVehicle.getRecallCampaignEntity().getTitle():null;
-        String vehicleVIN = campaignVehicle.getVehicleEntity() != null ? campaignVehicle.getVehicleEntity().getVIN():null;
+        String campaigntitle = campaignVehicle.getRecallCampaignEntity() != null ? campaignVehicle.getRecallCampaignEntity().getTitle() : null;
+        String vehicleVIN = campaignVehicle.getVehicleEntity() != null ? campaignVehicle.getVehicleEntity().getVIN() : null;
+        String vehicleModel = campaignVehicle.getVehicleEntity() != null ? campaignVehicle.getVehicleEntity().getModel() : null;
 
         return new CampaignVehicleResponse(
-            campaignVehicle.getRecallCampaignEntity().getCampaignId(), // Lấy ID từ Entity
-            campaignVehicle.getVehicleEntity().getVehicleId(), // Lấy ID từ Entity
+            campaignVehicle.getRecallCampaignEntity() != null ? campaignVehicle.getRecallCampaignEntity().getCampaignId() : null,
+            campaignVehicle.getVehicleEntity() != null ? campaignVehicle.getVehicleEntity().getVehicleId() : null,
             campaigntitle,
             vehicleVIN,
+            vehicleModel,
             campaignVehicle.getStatus()
         );
     }
@@ -46,6 +48,10 @@ public class CampaignVehicleController {
         vehicle.setVehicleId(request.getVehicleId()); // Lấy ID từ Request
 
         CampaignVehicle entity = new CampaignVehicle();
+        
+        // Set composite key IDs trước khi set entities
+        entity.setCampaignId(request.getCampaignId());
+        entity.setVehicleId(request.getVehicleId());
         
         entity.setRecallCampaignEntity(campaign);
         entity.setVehicleEntity(vehicle);
@@ -63,6 +69,11 @@ public class CampaignVehicleController {
             return ResponseEntity.status(HttpStatus.CREATED).body(toResponseDTO(saveEntity));
         } catch(IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
+        } catch(Exception e) {
+            // Log lỗi để debug
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new MessageResponse("Lỗi máy chủ: " + e.getMessage()));
         }
     }
 
@@ -106,6 +117,29 @@ public class CampaignVehicleController {
         List<CampaignVehicleResponse> responses = entity.stream().map(this::toResponseDTO).collect(Collectors.toList());
 
         return ResponseEntity.ok(responses);
+    }
 
+    // 6. GET /api/campaign-vehicles/by-campaign/{campaignId} : Lấy tất cả xe trong một chiến dịch
+    @GetMapping("/by-campaign/{campaignId}")
+    public ResponseEntity<List<CampaignVehicleResponse>> getCampaignVehiclesByCampaignId(@PathVariable Long campaignId) {
+        RecallCampaign campaign = new RecallCampaign();
+        campaign.setCampaignId(campaignId);
+        
+        List<CampaignVehicle> entities = campaignVehicleService.getCampaignVehiclesByCampaign(campaign);
+        List<CampaignVehicleResponse> responses = entities.stream().map(this::toResponseDTO).collect(Collectors.toList());
+        
+        return ResponseEntity.ok(responses);
+    }
+
+    // 7. GET /api/campaign-vehicles/by-vehicle/{vehicleId} : Lấy tất cả chiến dịch của một xe
+    @GetMapping("/by-vehicle/{vehicleId}")
+    public ResponseEntity<List<CampaignVehicleResponse>> getCampaignVehiclesByVehicleId(@PathVariable Long vehicleId) {
+        Vehicle vehicle = new Vehicle();
+        vehicle.setVehicleId(vehicleId);
+        
+        List<CampaignVehicle> entities = campaignVehicleService.getCampaignsByVehicle(vehicle);
+        List<CampaignVehicleResponse> responses = entities.stream().map(this::toResponseDTO).collect(Collectors.toList());
+        
+        return ResponseEntity.ok(responses);
     }
 }
