@@ -58,7 +58,6 @@ public class VehicleServiceImpl implements IVehicleService{
         
         // [2] Sửa lỗi Logic Tạo mới/Cập nhật
         if (vehicle.getVehicleId() == null) {
-            // --- LOGIC TẠO MỚI ---
             vehicle.setRegistrationStatus("PENDING"); 
             
             if (vehicle.getRegisteredBy() == null || vehicle.getRegisteredBy().getId() == null) {
@@ -71,7 +70,6 @@ public class VehicleServiceImpl implements IVehicleService{
             vehicle.setRegisteredBy(user);
             
         } else {
-            // --- LOGIC CẬP NHẬT (ID != null) ---
             Optional<Vehicle> existingVehicle = vehicleRepository.findById(vehicle.getVehicleId());
             
             if (existingVehicle.isEmpty()) {

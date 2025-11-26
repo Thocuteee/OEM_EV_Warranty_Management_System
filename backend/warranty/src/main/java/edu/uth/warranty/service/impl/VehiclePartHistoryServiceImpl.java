@@ -64,6 +64,22 @@ public class VehiclePartHistoryServiceImpl implements IVehiclePartHistoryService
             record.setDateInstalled(LocalDate.now());
         }
         
+        // Kiểm tra duplicate: Nếu đang tạo mới (historyId == null), check xem đã có record tương tự chưa
+        if (record.getHistoryId() == null) {
+            List<VehiclePartHistory> existingRecords = historyRepository.findByVehicle(record.getVehicle());
+            boolean isDuplicate = existingRecords.stream()
+                .anyMatch(existing -> 
+                    existing.getPartserial() != null && 
+                    existing.getPartserial().getPartSerialId().equals(record.getPartserial().getPartSerialId()) &&
+                    existing.getClaim() != null &&
+                    existing.getClaim().getClaimId().equals(record.getClaim().getClaimId())
+                );
+            
+            if (isDuplicate) {
+                throw new IllegalArgumentException("Lịch sử linh kiện này đã được ghi nhận trước đó. Mỗi Part Serial chỉ có thể được ghi nhận một lần cho mỗi Claim.");
+            }
+        }
+        
         return historyRepository.save(record);
     }
 

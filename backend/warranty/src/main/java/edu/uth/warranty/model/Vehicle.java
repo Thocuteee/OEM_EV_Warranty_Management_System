@@ -1,4 +1,3 @@
-
 package edu.uth.warranty.model;
 
 import java.util.List;
@@ -44,16 +43,16 @@ public class Vehicle {
     private String registrationStatus = "PENDING";
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "registered_by_user_id") // Người đã tạo yêu cầu đăng ký
+    @JoinColumn(name = "registered_by_user_id") 
     private User registeredBy;
 
     public Vehicle(Long vehicleId, Customer customer, String VIN, String model, String year, String registrationStatus, User registeredBy) {
-    this.vehicleId = vehicleId;
-    this.customer = customer;
-    this.VIN = VIN;
-    this.model = model; 
-    this.year = year;
-    this.registrationStatus = registrationStatus;
-    this.registeredBy = registeredBy;
-}
+        this.vehicleId = vehicleId;
+        this.customer = customer;
+        this.VIN = VIN;
+        this.model = model; 
+        this.year = year;
+        this.registrationStatus = registrationStatus;
+        this.registeredBy = registeredBy;
+    }
 }

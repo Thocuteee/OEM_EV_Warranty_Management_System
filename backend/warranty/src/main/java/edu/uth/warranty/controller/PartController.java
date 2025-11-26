@@ -95,7 +95,6 @@ public class PartController {
             Part updated = partService.savePart(entity);
             return ResponseEntity.ok(toResponse(updated));
         } catch (IllegalArgumentException e) {
-            // BẮT LỖI: Xử lý lỗi nghiệp vụ (ví dụ: duplicate part number)
             return ResponseEntity.badRequest().body(new MessageResponse(e.getMessage()));
         }
     }

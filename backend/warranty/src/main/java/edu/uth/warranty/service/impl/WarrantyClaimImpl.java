@@ -64,7 +64,7 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
     @Override
     public WarrantyClaim saveWarrantyClaim(WarrantyClaim warrantyClaim){
         
-        // --- 1. XÁC ĐỊNH NGƯỜI TẠO VÀ GÁN STAFF ENTITY HỢP LỆ ---
+     // --- 1. XÁC ĐỊNH NGƯỜI TẠO VÀ GÁN STAFF ENTITY HỢP LỆ ---
     Long creatorId = warrantyClaim.getStaff() != null ? warrantyClaim.getStaff().getStaffId() : null;
     Staff assignedStaff = null;
 
@@ -82,53 +82,37 @@ public class WarrantyClaimImpl implements IWarrantyClaimService {
         Optional<Technician> techOpt = technicianRepository.findById(creatorId);
         
         if (techOpt.isPresent()) {
-            // Nếu là Technician, gán Staff đại diện (ID 1) cho trường staff (FK bắt buộc)
-            // Lưu ý: ID 1 phải tồn tại và là Admin/Staff hợp lệ
-            assignedStaff = staffRepository.findById(1L)
-                .orElseThrow(() -> new IllegalArgumentException("Hồ sơ Staff đại diện (ID 1) không tồn tại. Vui lòng đăng ký Admin Staff đầu tiên."));
+            assignedStaff = staffRepository.findById(1L).orElseThrow(() -> new IllegalArgumentException("Hồ sơ Staff đại diện (ID 1) không tồn tại. Vui lòng đăng ký Admin Staff đầu tiên."));
         } else {
             // Không phải Staff, không phải Technician -> Lỗi
             throw new IllegalArgumentException("ID người tạo (" + creatorId + ") không tồn tại là Staff hoặc Technician.");
         }
     }
     
-    // Gán lại Staff Entity đã xác thực/đại diện
     warrantyClaim.setStaff(assignedStaff);
-    // ----------------------------------------------------
-
-
     // --- 2. KIỂM TRA CÁC KHÓA NGOẠI KHÁC (Tối ưu hóa và kiểm tra ID chi tiết) ---
     
-    // VEHICLE ID (BẮT BUỘC)
     Long vehicleId = warrantyClaim.getVehicle() != null ? warrantyClaim.getVehicle().getVehicleId() : null;
-    Vehicle vehicle = vehicleId != null ? vehicleRepository.findById(vehicleId).orElseThrow(() -> 
-        new IllegalArgumentException("Xe (Vehicle ID: " + vehicleId + ") không tồn tại.")
-    ) : null;
+    Vehicle vehicle = vehicleId != null ? vehicleRepository.findById(vehicleId).orElseThrow(() -> new IllegalArgumentException("Xe (Vehicle ID: " + vehicleId + ") không tồn tại.")) : null;
     warrantyClaim.setVehicle(vehicle);
 
     
     // CUSTOMER ID (BẮT BUỘC)
     Long customerId = warrantyClaim.getCustomer() != null ? warrantyClaim.getCustomer().getCustomerId() : null;
-    Customer customer = customerId != null ? customerRepository.findById(customerId).orElseThrow(() -> 
-        new IllegalArgumentException("Khách hàng (Customer ID: " + customerId + ") không tồn tại.")
-    ) : null;
+    Customer customer = customerId != null ? customerRepository.findById(customerId).orElseThrow(() -> new IllegalArgumentException("Khách hàng (Customer ID: " + customerId + ") không tồn tại.")) : null;
     warrantyClaim.setCustomer(customer);
     
     
     // SERVICE CENTER ID (BẮT BUỘC)
     Long centerId = warrantyClaim.getCenter() != null ? warrantyClaim.getCenter().getCenterId() : null;
-    ServiceCenter center = centerId != null ? serviceCenterRepository.findById(centerId).orElseThrow(() -> 
-        new IllegalArgumentException("Trung tâm dịch vụ (Center ID: " + centerId + ") không tồn tại.")
-    ) : null;
+    ServiceCenter center = centerId != null ? serviceCenterRepository.findById(centerId).orElseThrow(() -> new IllegalArgumentException("Trung tâm dịch vụ (Center ID: " + centerId + ") không tồn tại.")) : null;
     warrantyClaim.setCenter(center);
     
     
     // TECHNICIAN ID (TÙY CHỌN)
     if (warrantyClaim.getTechnician() != null && warrantyClaim.getTechnician().getTechnicianId() != null) {
         Long technicianId = warrantyClaim.getTechnician().getTechnicianId();
-        Technician technician = technicianRepository.findById(technicianId).orElseThrow(() -> 
-            new IllegalArgumentException("Kỹ thuật viên (Technician ID: " + technicianId + ") không tồn tại.")
-        );
+        Technician technician = technicianRepository.findById(technicianId).orElseThrow(() -> new IllegalArgumentException("Kỹ thuật viên (Technician ID: " + technicianId + ") không tồn tại."));
         warrantyClaim.setTechnician(technician);
     } else {
         // Gán null nếu không gán Technician

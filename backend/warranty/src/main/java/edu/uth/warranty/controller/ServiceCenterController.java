@@ -44,7 +44,6 @@ public class ServiceCenterController {
 
     // 1. POST /api/centers : Tạo mới Trung tâm Dịch vụ
     @PostMapping
-    // SỬA LỖI 1: Thay đổi kiểu trả về thành CenterResponse DTO
     public ResponseEntity<CenterResponse> createCenter(@Valid @RequestBody CenterRequest request) { 
         ServiceCenter newCenter = toEntity(request);
         ServiceCenter saveCenter = serviceCenterService.saveServiceCenter(newCenter);

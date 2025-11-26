@@ -138,7 +138,6 @@ public class WarrantyClaimController {
     }
 
     // 6. PUT /api/claims/{id}/status/approve : Cập nhật trạng thái phê duyệt (dành cho EVM Staff)
-    // Endpoint này giả định EVM Staff sẽ gọi API này để APPROVED/REJECTED Claim đã được gửi (SENT)
     @PutMapping("/{id}/status/approve")
     public ResponseEntity<?> updateApprovalStatus(@PathVariable Long id, @RequestParam String approvalStatus) {
         try {
@@ -171,7 +170,6 @@ public class WarrantyClaimController {
 
     @GetMapping("/search/statuses")
     public ResponseEntity<List<WarrantyClaimResponse>> getClaimsByStatuses(@RequestParam List<String> statuses) {
-        // Sử dụng service method mới (giả định đã cập nhật IWarrantyClaimService và impl)
         List<WarrantyClaim> claims = warrantyClaimService.getWarrantyClaimsByStatusIn(statuses); 
         List<WarrantyClaimResponse> responses = claims.stream().map(this::toResponseDTO).collect(Collectors.toList());
         return ResponseEntity.ok(responses);

@@ -34,12 +34,10 @@ public class StaffController {
     private StaffResponse toResponseDTO(Staff staff) {
         String centerName = null;
         Long centerId = null;
-
-        // FIX LỖI 500: Chỉ sử dụng các thuộc tính đã được tải sẵn từ Entity Staff
         ServiceCenter center = staff.getCenter();
         
         if (center != null) {
-            // centerId và centerName đã được tải (do ServiceImpl đã buộc tải Lazy Load)
+            // centerId và centerName đã được tải 
             centerId = center.getCenterId();
             centerName = center.getName();
         }

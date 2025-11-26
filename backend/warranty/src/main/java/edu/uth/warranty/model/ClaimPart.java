@@ -44,23 +44,21 @@ public class ClaimPart {
         }
     }
 
-    // THÊM CÁC TRƯỜNG ID THÔ VÀO ENTITY
     @Id
-    private Long claim; // FIX: Khóa thô (primitive key)
-    
-    @Id
-    private Long part;  // FIX: Khóa thô (primitive key)
+    private Long claim;
 
-    // ÁNH XẠ KHÓA NGOẠI SANG KHÓA CHÍNH BẰNG @MapsId
+    @Id
+    private Long part;  
+
     @MapsId("claim") 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "claim_id", nullable = false)
-    private WarrantyClaim claimEntity; // Đổi tên thành claimEntity để tránh xung đột
+    private WarrantyClaim claimEntity; 
 
     @MapsId("part") 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "part_id", nullable = false)
-    private Part partEntity; // Đổi tên thành partEntity
+    private Part partEntity; 
 
     @Column(name = "quantity")
     private Integer quantity;
@@ -71,5 +69,4 @@ public class ClaimPart {
     @Column(name = "total_price", precision = 10, scale = 2, nullable = false)
     private BigDecimal totalPrice;
 
-    
 }

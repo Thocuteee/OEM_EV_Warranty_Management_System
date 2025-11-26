@@ -28,8 +28,6 @@ public class TechnicianController {
     private TechnicianResponse toResponseDTO(Technician technician) {
         String centerName = null;
         Long centerId = null;
-        
-        // FIX LỖI 500: Dựa vào Entity đã được Service tải
         ServiceCenter center = technician.getCenter();
         
         if (center != null) {
@@ -96,7 +94,7 @@ public class TechnicianController {
         return ResponseEntity.ok(responseList);
     }
 
-    // 3. GET /api/technicians/{id} : Lấy chi tiết Kỹ thuật viên theo ID
+    // 3a. GET /api/technicians/{id} : Lấy chi tiết Kỹ thuật viên theo ID
     @GetMapping("/{id}")
     public ResponseEntity<TechnicianResponse> getTechnicianById(@PathVariable Long id) {
         Optional<Technician> technician = technicianService.getTechnicianById(id);

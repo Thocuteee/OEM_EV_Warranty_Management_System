@@ -149,7 +149,18 @@ export default function ReportsPage() {
             setReports(data);
         } catch(err) {
             console.error("Lỗi tải báo cáo:", err);
-            setToast("Không thể tải danh sách Báo cáo.");
+            let errorMessage = "Không thể tải danh sách Báo cáo.";
+            if (err instanceof Error) {
+                errorMessage = err.message;
+            } else if (axios.isAxiosError(err)) {
+                if (!err.response) {
+                    errorMessage = "Không thể kết nối đến máy chủ. Vui lòng kiểm tra backend có đang chạy không.";
+                } else {
+                    errorMessage = err.message || errorMessage;
+                }
+            }
+            setToast(errorMessage);
+            setReports([]); // Set empty array on error
         } finally {
             setIsLoading(false);
         }

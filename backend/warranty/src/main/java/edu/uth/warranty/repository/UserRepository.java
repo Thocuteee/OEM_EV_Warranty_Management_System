@@ -11,15 +11,15 @@ import java.util.List;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     
-    // Phương thức này sẽ được Spring Data JPA tự động triển khai
+    
     Optional<User> findByUsername(String username);
     
     Boolean existsByUsername(String username);
 
     List<User> findByRole(Role role);
 
-    Optional<User> findByEmail(String email); // Tìm kiếm User bằng Email
+    Optional<User> findByEmail(String email); 
     
-    Boolean existsByEmail(String email);   // Kiểm tra tồn tại Email
+    Boolean existsByEmail(String email);  
 }
 

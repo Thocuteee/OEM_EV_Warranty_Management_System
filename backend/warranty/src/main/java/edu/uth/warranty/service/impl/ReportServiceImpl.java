@@ -6,7 +6,7 @@ import edu.uth.warranty.model.Technician;
 import edu.uth.warranty.model.ServiceCenter;
 import edu.uth.warranty.model.User;
 
-import edu.uth.warranty.repository.*; // Import tất cả các Repository cần thiết
+import edu.uth.warranty.repository.*; 
 import edu.uth.warranty.service.IReportService;
 
 import org.springframework.stereotype.Service;

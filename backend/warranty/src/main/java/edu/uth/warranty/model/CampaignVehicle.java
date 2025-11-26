@@ -19,7 +19,6 @@ import lombok.AllArgsConstructor;
 @IdClass(CampaignVehicle.CampaignVehicleId.class)
 public class CampaignVehicle {
     public static class CampaignVehicleId implements Serializable {
-        // ĐÃ SỬA: Đổi tên trường để khớp với quy ước @MapsId
         private Long campaignId; 
         private Long vehicleId;
 
@@ -45,19 +44,19 @@ public class CampaignVehicle {
     }
 
     @Id
-    private Long campaignId; // MATCHES CampaignVehicleId.campaignId
+    private Long campaignId; 
 
     @Id
-    private Long vehicleId;  // MATCHES CampaignVehicleId.vehicleId
+    private Long vehicleId;  
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("campaignId") // Map tới tên trường mới
+    @MapsId("campaignId") 
     @JoinColumn(name = "campaign_id", nullable = false)
     private RecallCampaign recallCampaignEntity; 
     
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("vehicleId") // Map tới tên trường mới
+    @MapsId("vehicleId")
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicleEntity;
 

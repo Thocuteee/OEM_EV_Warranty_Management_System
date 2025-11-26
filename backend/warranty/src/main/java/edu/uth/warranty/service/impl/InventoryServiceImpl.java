@@ -54,7 +54,6 @@ public class InventoryServiceImpl implements IInventoryService{
             throw new IllegalArgumentException("Trung tâm Dịch vụ không tồn tại hoặc không hợp lệ.");
         }
         
-        //Đảm bảo chỉ có một bản ghi tồn kho duy nhất cho mỗi cặp (Part, Center)
         Optional<Inventory> existingInventory = inventoryRepository.findByPartAndCenter(inventory.getPart(), inventory.getCenter());
 
         if (existingInventory.isPresent()) {

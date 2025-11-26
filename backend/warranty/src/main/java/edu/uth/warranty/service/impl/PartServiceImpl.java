@@ -62,7 +62,6 @@ public class PartServiceImpl implements IPartService{
 
     @Override
     public List<Part> getPartsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
-        // Sử dụng hai phương thức của Repository để tạo range check
         if (minPrice == null && maxPrice == null) {
             return partRepository.findAll();
         }
