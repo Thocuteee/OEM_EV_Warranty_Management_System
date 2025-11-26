@@ -48,8 +48,6 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
-    // KHÔNG dùng setAllowedOrigins("*") khi allowCredentials=true
-    // Dùng patterns để cho phép localhost các cổng phổ biến
     config.setAllowedOriginPatterns(List.of(
       "http://localhost:*",
       "http://127.0.0.1:*",
