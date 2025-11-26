@@ -39,12 +39,16 @@ public class InvoiceController {
 
         if(entity.getPart() != null && entity.getPart().getPartId() != null) {
             Optional<Part> partOpt = partService.getPartById(entity.getPart().getPartId());
-            partName = partOpt.map(Part::getName).orElse(partName);
+            if(partOpt.isPresent()) { 
+                partName = partOpt.get().getName();
+            }
         }
 
         if(entity.getCenter() != null && entity.getCenter().getCenterId() != null) {
             Optional<ServiceCenter> centerOpt = serviceCenterService.getServiceCenterById(entity.getCenter().getCenterId());
-            centerName = centerOpt.map(ServiceCenter::getName).orElse(centerName);
+            if(centerOpt.isPresent()) {
+                centerName = centerOpt.get().getName();
+            }
         }
 
         return new InvoiceResponse(
@@ -115,7 +119,7 @@ public class InvoiceController {
     public ResponseEntity<InvoiceResponse> getInvoiceById(@PathVariable Long id) {
         Optional<Invoice> invoiceOpt = invoiceService.getInvoiceById(id);
 
-        if(invoiceOpt.isEmpty()) {
+        if(invoiceOpt.isPresent()) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(toResponseDTO(invoiceOpt.get()));
@@ -163,18 +167,14 @@ public class InvoiceController {
         ServiceCenter center = new ServiceCenter();
         center.setCenterId(centerId);
         
-        List<InvoiceResponse> responses = invoiceService.getInvoicesByCenter(center).stream()
-                .map(this::toResponseDTO)
-                .collect(Collectors.toList());
+        List<InvoiceResponse> responses = invoiceService.getInvoicesByCenter(center).stream().map(this::toResponseDTO).collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
 
     // 8. GET /api/invoices/search/status?paymentsStatus={status} : Tìm kiếm theo Trạng thái Thanh toán
     @GetMapping("/search/status")
     public ResponseEntity<List<InvoiceResponse>> getInvoicesByPaymentsStatus(@RequestParam String paymentsStatus) {
-        List<InvoiceResponse> responses = invoiceService.getInvoicesByPaymentsStatus(paymentsStatus).stream()
-                .map(this::toResponseDTO)
-                .collect(Collectors.toList());
+        List<InvoiceResponse> responses = invoiceService.getInvoicesByPaymentsStatus(paymentsStatus).stream().map(this::toResponseDTO).collect(Collectors.toList());
         return ResponseEntity.ok(responses);
     }
 }

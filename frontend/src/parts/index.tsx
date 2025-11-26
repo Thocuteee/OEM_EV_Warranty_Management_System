@@ -10,17 +10,25 @@ import { useRouter } from "next/router";
 // Import types cần thiết
 import { PartRequest, PartResponse } from "@/types/part"; 
 import { PartSerialRequest, PartSerialResponse } from "@/types/partSerial"; 
+// [MỚI] Import Inventory Types
+import { InventoryRequest, InventoryResponse } from "@/types/inventory";
 
 // Import Service functions
 import { getAllParts, createPart, updatePart, deletePart } from "@/services/modules/partService";
 import { getAllPartSerials, createPartSerial, updatePartSerial, deletePartSerial } from "@/services/modules/partSerialService";
+// [MỚI] Import Inventory Service
+import { getAllInventory, createOrUpdateInventory, updateInventory, deleteInventory } from "@/services/modules/inventoryService";
+
 
 // Import Form Components
 import PartForm from "@/parts/PartForm"; 
 import PartSerialForm from "@/parts/PartSerialForm"; 
+// [MỚI] Import Inventory Components
+import InventoryTable from "./InventoryTable"; 
+import InventoryForm from "./InventoryForm"; 
 
 
-// Dùng types đã được import (loại bỏ Interface nội bộ)
+// Dùng types đã được import
 type PartRequestPayload = PartRequest;
 type PartResponseInterface = PartResponse;
 type PartSerialRequestPayload = PartSerialRequest;
@@ -28,7 +36,7 @@ type PartSerialResponseInterface = PartSerialResponse;
 
 
 // ---------------------------------------
-// Component: PartTable (Copy từ admin/parts.tsx)
+// Component: PartTable (Giữ nguyên)
 // ---------------------------------------
 const PartTable: React.FC<{parts: PartResponseInterface[], onEdit: (p: PartResponseInterface) => void, onDelete: (id: number) => void, canModify: boolean}> = ({ parts, onEdit, onDelete, canModify }) => (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md">
@@ -83,7 +91,7 @@ const PartTable: React.FC<{parts: PartResponseInterface[], onEdit: (p: PartRespo
 );
 
 // ---------------------------------------
-// Component: PartSerialTable (Copy từ admin/parts.tsx)
+// Component: PartSerialTable (Giữ nguyên)
 // ---------------------------------------
 const PartSerialTable: React.FC<{serials: PartSerialResponseInterface[], onEdit: (p: PartSerialResponseInterface) => void, onDelete: (id: number) => void, canModify: boolean}> = ({ serials, onEdit, onDelete, canModify }) => (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md">
@@ -149,6 +157,9 @@ export default function PartsPage() {
 
     const [parts, setParts] = useState<PartResponseInterface[]>([]);
     const [serials, setSerials] = useState<PartSerialResponseInterface[]>([]);
+    // [MỚI] State cho Inventory Records
+    const [inventory, setInventory] = useState<InventoryResponse[]>([]); 
+    
     const [isLoading, setIsLoading] = useState(true);
     const [searchKeyword, setSearchKeyword] = useState("");
     const [toast, setToast] = useState<string | null>(null);
@@ -157,10 +168,16 @@ export default function PartsPage() {
     const [editingPart, setEditingPart] = useState<PartResponseInterface | null>(null);
     const [isSerialModalOpen, setIsSerialModalOpen] = useState(false);
     const [editingSerial, setEditingSerial] = useState<PartSerialResponseInterface | null>(null);
+    // [MỚI] State cho Inventory Modal
+    const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
+    const [editingInventory, setEditingInventory] = useState<InventoryResponse | null>(null);
 
-    const [activeTab, setActiveTab] = useState<'parts' | 'serials'>('parts');
+
+    // [MỚI] Thêm tab Inventory
+    const [activeTab, setActiveTab] = useState<'parts' | 'serials' | 'inventory'>('parts');
 
     const allowedViewRoles = ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"];
+    // Chỉ Admin/EVM Staff có thể quản lý Part/Serial/Inventory
     const canModify = user?.role === "Admin" || user?.role === "EVM_Staff";
 
     useEffect(() => {
@@ -174,21 +191,24 @@ export default function PartsPage() {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            const [partsData, serialsData] = await Promise.all([
+            // [CẬP NHẬT] Thêm getAllInventory()
+            const [partsData, serialsData, inventoryData] = await Promise.all([
                 getAllParts(),
                 getAllPartSerials(),
+                getAllInventory(), 
             ]);
             setParts(partsData);
             setSerials(serialsData);
+            setInventory(inventoryData); 
         } catch(err) {
             console.error("Lỗi tải dữ liệu:", err);
-            setToast("Không thể tải danh sách Linh kiện/Serial.");
+            setToast("Không thể tải danh sách Linh kiện/Serial/Tồn kho.");
         } finally {
             setIsLoading(false);
         }
     };
     
-    // --- Handlers (Logic không đổi) ---
+    // --- Handlers (Part / Serial - Giữ nguyên) ---
     const handleSavePart = async (payload: PartRequestPayload) => {
         try {
             if (payload.id) {
@@ -246,23 +266,72 @@ export default function PartsPage() {
             setToast("Lỗi khi xóa Serial. Đảm bảo không có liên kết FK.");
         }
     };
+    
+    // --- Handlers (Inventory - MỚI) ---
+    const handleSaveInventory = async (payload: InventoryRequest) => {
+        try {
+            if (payload.id) {
+                await updateInventory(payload.id, payload);
+                setToast("Cập nhật Tồn kho thành công!");
+            } else {
+                // Sử dụng API tạo/cập nhật chung (Upsert logic ở backend)
+                await createOrUpdateInventory(payload); 
+                setToast("Thêm/Cập nhật Tồn kho thành công!");
+            }
+            await loadData(); 
+            setIsInventoryModalOpen(false);
+            setEditingInventory(null);
+        } catch(err: unknown) {
+             const errorMessage = axios.isAxiosError(err) && err.response?.data?.message ? err.response.data.message : "Lỗi khi lưu Tồn kho. Kiểm tra Part/Center ID.";
+             throw new Error(errorMessage);
+        }
+    };
+    
+    const handleDeleteInventory = async (id: number) => {
+        if (!confirm("Bạn chắc chắn muốn xóa Bản ghi tồn kho này?")) return;
+        try {
+            await deleteInventory(id);
+            setToast("Đã xóa Bản ghi tồn kho thành công.");
+            await loadData();
+        } catch {
+            setToast("Lỗi khi xóa Bản ghi tồn kho.");
+        }
+    };
     // --- End Handlers ---
 
     const filteredParts = useMemo(() => {
+        if (!parts || parts.length === 0) return [];
         const keyword = searchKeyword.toLowerCase();
-        return parts.filter(p => 
-            p.name.toLowerCase().includes(keyword) || 
-            p.partNumber.toLowerCase().includes(keyword)
-        );
+        return parts.filter(p => {
+            if (!p) return false;
+            const name = p.name?.toLowerCase() || '';
+            const partNumber = p.partNumber?.toLowerCase() || '';
+            return name.includes(keyword) || partNumber.includes(keyword);
+        });
     }, [parts, searchKeyword]);
 
     const filteredSerials = useMemo(() => {
+        if (!serials || serials.length === 0) return [];
         const keyword = searchKeyword.toLowerCase();
-        return serials.filter(s => 
-            s.serialNumber.toLowerCase().includes(keyword) || 
-            s.partName.toLowerCase().includes(keyword)
-        );
+        return serials.filter(s => {
+            if (!s) return false;
+            const serialNumber = s.serialNumber?.toLowerCase() || '';
+            const partName = s.partName?.toLowerCase() || '';
+            return serialNumber.includes(keyword) || partName.includes(keyword);
+        });
     }, [serials, searchKeyword]);
+
+    // [MỚI] Lọc Inventory
+    const filteredInventory = useMemo(() => {
+        if (!inventory || inventory.length === 0) return [];
+        const keyword = searchKeyword.toLowerCase();
+        return inventory.filter(i => {
+            if (!i) return false;
+            const partName = i.partName?.toLowerCase() || '';
+            const centerName = i.centerName?.toLowerCase() || '';
+            return partName.includes(keyword) || centerName.includes(keyword);
+        });
+    }, [inventory, searchKeyword]);
     
     
     if (isLoading || !user) return <Layout><p>Đang tải dữ liệu...</p></Layout>;
@@ -271,8 +340,8 @@ export default function PartsPage() {
         <Layout>
             {/* Header section with enhanced style */}
             <div className="bg-white p-6 rounded-xl shadow-md border mb-6">
-                <h1 className="text-3xl font-bold text-gray-900">Quản lý Linh kiện & Serial</h1>
-                <p className="text-gray-600 mt-1">Quản lý danh mục linh kiện gốc (Part) và theo dõi từng số Serial (Part Serial) nhập kho.</p>
+                <h1 className="text-3xl font-bold text-gray-900">Quản lý Linh kiện & Tồn kho</h1>
+                <p className="text-gray-600 mt-1">Quản lý danh mục linh kiện gốc, theo dõi từng số Serial và số lượng tồn kho tại các trung tâm.</p>
             </div>
             
             {/* Tab Selector */}
@@ -289,12 +358,19 @@ export default function PartsPage() {
                 >
                     Serial Linh kiện ({serials.length})
                 </button>
+                 {/* [MỚI] Tab Tồn kho */}
+                <button 
+                    onClick={() => setActiveTab('inventory')}
+                    className={`pb-2 font-semibold text-lg transition-colors ${activeTab === 'inventory' ? 'text-yellow-600 border-b-2 border-yellow-600' : 'text-gray-500 hover:text-yellow-500'}`}
+                >
+                    Tồn kho Chi tiết ({inventory.length})
+                </button>
             </div>
 
             {/* Search + Button */}
             <div className="flex justify-between items-center mb-6">
                 <input 
-                    placeholder={activeTab === 'parts' ? "Tìm theo Tên, Part Number..." : "Tìm theo Serial Number..."}
+                    placeholder={activeTab === 'parts' ? "Tìm theo Tên, Part Number..." : activeTab === 'serials' ? "Tìm theo Serial Number..." : "Tìm theo Part Name, Center..."}
                     className="border border-gray-300 rounded-lg px-4 py-2 w-1/3 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
                     value={searchKeyword}
                     onChange={(e) => setSearchKeyword(e.target.value)}
@@ -323,6 +399,21 @@ export default function PartsPage() {
                     >
                         + Thêm Serial
                     </button>
+                ) : canModify && activeTab === 'inventory' ? ( // [MỚI] Nút Thêm Tồn kho
+                    <button
+                        onClick={() => { 
+                            if (parts.length === 0) {
+                                setToast("Vui lòng thêm Linh kiện gốc và Trung tâm dịch vụ trước.");
+                            } else {
+                                setEditingInventory(null);
+                                setIsInventoryModalOpen(true);
+                            }
+                        }}
+                        className="bg-yellow-600 text-white px-5 py-2 rounded-lg font-semibold shadow-md hover:bg-yellow-700 transition-colors disabled:opacity-50"
+                        disabled={parts.length === 0}
+                    >
+                        + Thêm Tồn kho
+                    </button>
                 ) : (
                     <div className="w-1/3 text-right">
                         <span className="text-sm text-gray-500">Chỉ Admin/EVM Staff có thể thay đổi.</span>
@@ -331,44 +422,36 @@ export default function PartsPage() {
             </div>
 
             {/* Bảng dữ liệu */}
-            {activeTab === 'parts' ? (
-                filteredParts.length === 0 ? (
-                    <div className="bg-white rounded-xl border border-gray-200 shadow-md p-10 text-center">
-                        <p className="text-gray-500 text-lg">Không tìm thấy linh kiện nào.</p>
-                        {searchKeyword && (
-                            <p className="text-sm text-gray-400 mt-2">Thử tìm kiếm với từ khóa khác.</p>
-                        )}
-                    </div>
-                ) : (
-                    <PartTable
-                        parts={filteredParts}
-                        onEdit={(p) => { setEditingPart(p); setIsPartModalOpen(true); }}
-                        onDelete={handleDeletePart}
-                        canModify={canModify}
-                    />
-                )
-            ) : (
-                filteredSerials.length === 0 ? (
-                    <div className="bg-white rounded-xl border border-gray-200 shadow-md p-10 text-center">
-                        <p className="text-gray-500 text-lg">Không tìm thấy serial nào.</p>
-                        {searchKeyword && (
-                            <p className="text-sm text-gray-400 mt-2">Thử tìm kiếm với từ khóa khác.</p>
-                        )}
-                    </div>
-                ) : (
-                    <PartSerialTable
-                        serials={filteredSerials}
-                        onEdit={(s) => { 
-                            setEditingSerial(s); 
-                            setIsSerialModalOpen(true); 
-                        }}
-                        onDelete={handleDeleteSerial}
-                        canModify={canModify}
-                    />
-                )
+            {activeTab === 'parts' && (
+                <PartTable
+                    parts={filteredParts}
+                    onEdit={(p) => { setEditingPart(p); setIsPartModalOpen(true); }}
+                    onDelete={handleDeletePart}
+                    canModify={canModify}
+                />
+            )}
+            {activeTab === 'serials' && (
+                <PartSerialTable
+                    serials={filteredSerials}
+                    onEdit={(s) => { 
+                        setEditingSerial(s); 
+                        setIsSerialModalOpen(true); 
+                    }}
+                    onDelete={handleDeleteSerial}
+                    canModify={canModify}
+                />
+            )}
+            {/* [MỚI] Bảng Inventory */}
+            {activeTab === 'inventory' && (
+                <InventoryTable
+                    inventoryRecords={filteredInventory}
+                    onEdit={(r) => { setEditingInventory(r); setIsInventoryModalOpen(true); }}
+                    onDelete={handleDeleteInventory}
+                    canModify={canModify}
+                />
             )}
             
-            {/* Modal tạo/cập nhật Linh kiện (Chỉ mở nếu canModify) */}
+            {/* Modal tạo/cập nhật Linh kiện (Giữ nguyên) */}
             {isPartModalOpen && canModify && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl p-8 w-full max-w-lg shadow-2xl transform transition-all duration-300">
@@ -381,7 +464,7 @@ export default function PartsPage() {
                 </div>
             )}
 
-            {/* Modal tạo/cập nhật Part Serial (Chỉ mở nếu canModify) */}
+            {/* Modal tạo/cập nhật Part Serial (Giữ nguyên) */}
             {isSerialModalOpen && canModify && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl p-8 w-full max-w-lg shadow-2xl transform transition-all duration-300">
@@ -390,6 +473,19 @@ export default function PartsPage() {
                             initialData={editingSerial}
                             onSubmit={handleSaveSerial}
                             onClose={() => { setIsSerialModalOpen(false); setEditingSerial(null); }}
+                        />
+                    </div>
+                </div>
+            )}
+            
+            {/* [MỚI] Modal tạo/cập nhật Inventory */}
+            {isInventoryModalOpen && canModify && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl p-8 w-full max-w-lg shadow-2xl transform transition-all duration-300">
+                        <InventoryForm
+                            initialData={editingInventory}
+                            onSubmit={handleSaveInventory}
+                            onClose={() => { setIsInventoryModalOpen(false); setEditingInventory(null); }}
                         />
                     </div>
                 </div>
