@@ -9,6 +9,7 @@ import edu.uth.warranty.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -35,4 +36,6 @@ public interface IReportService {
     List<Report> getReportsByReportDateBetween(LocalDate startDate, LocalDate endDate);
 
     List<Report> getReportsByActualCostGreaterThan(BigDecimal minCost);
+
+    Map<String, BigDecimal> getMonthlyTotalCostAnalysis(int year);
 }

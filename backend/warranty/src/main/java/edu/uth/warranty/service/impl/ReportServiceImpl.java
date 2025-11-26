@@ -11,17 +11,20 @@ import edu.uth.warranty.service.IReportService;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class ReportServiceImpl implements IReportService{
     private final ReportRepository reportRepository;
-    private final WarrantyClaimRepository claimRepository;
+    private final WarrantyClaimRepository warrantyClaimRepository;
     private final TechnicianRepository technicianRepository;
     private final ServiceCenterRepository centerRepository;
     private final VehicleRepository vehicleRepository;
@@ -30,7 +33,7 @@ public class ReportServiceImpl implements IReportService{
 
     public ReportServiceImpl(
         ReportRepository reportRepository,
-        WarrantyClaimRepository claimRepository,
+        WarrantyClaimRepository warrantyClaimRepository,
         TechnicianRepository technicianRepository,
         ServiceCenterRepository centerRepository,
         VehicleRepository vehicleRepository,
@@ -38,7 +41,7 @@ public class ReportServiceImpl implements IReportService{
         UserRepository userRepository) {
         
         this.reportRepository = reportRepository;
-        this.claimRepository = claimRepository;
+        this.warrantyClaimRepository = warrantyClaimRepository;
         this.technicianRepository = technicianRepository;
         this.centerRepository = centerRepository;
         this.vehicleRepository = vehicleRepository;
@@ -60,7 +63,7 @@ public class ReportServiceImpl implements IReportService{
     public Report saveReport(Report report) {
 
         // 1. Kiểm tra Claim (WarrantyClaim)
-        if (report.getClaim() == null || report.getClaim().getClaimId() == null || claimRepository.findById(report.getClaim().getClaimId()).isEmpty()) {
+        if (report.getClaim() == null || report.getClaim().getClaimId() == null || warrantyClaimRepository.findById(report.getClaim().getClaimId()).isEmpty()) {
             throw new IllegalArgumentException("Report phải liên kết với một Claim tồn tại.");
         }
         
@@ -142,5 +145,16 @@ public class ReportServiceImpl implements IReportService{
     @Override
     public List<Report> getReportsByActualCostGreaterThan(BigDecimal minCost) {
         return reportRepository.findByActualCostGreaterThanEqual(minCost);
+    }
+
+    @Override
+    public Map<String, BigDecimal> getMonthlyTotalCostAnalysis(int year) {
+        List<Object[]> results = warrantyClaimRepository.findMonthlyTotalCostByYear(year);
+
+        return results.stream()
+            .collect(Collectors.toMap(
+                row -> String.format("%02d", (Integer) row[0]), 
+                row -> (BigDecimal) row[1] 
+            ));
     }
 }
