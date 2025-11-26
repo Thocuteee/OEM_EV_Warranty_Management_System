@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
 import { WarrantyClaimResponse } from "@/types/claim"; 
 import { getAllWarrantyClaims } from "@/services/modules/claimService"; 
+import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import Link from "next/link"; // Cần thiết để tạo link trên thẻ
 
@@ -50,6 +51,7 @@ export default function Home() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [otherSections, setOtherSections] = useState<OtherSectionItem[]>(initialOtherSections);
+    const { isAuthenticated } = useAuth();
 
     const loadClaims = async () => {
         setIsLoading(true);
@@ -59,13 +61,28 @@ export default function Home() {
             setClaimData(data);
         } catch (err) {
             console.error("Lỗi tải Claim:", err);
-            setError("Không thể tải danh sách Yêu cầu Bảo hành.");
+            let errorMessage = "Không thể tải danh sách Yêu cầu Bảo hành.";
+            if (err instanceof Error) {
+                errorMessage = err.message;
+            } else if (axios.isAxiosError(err)) {
+                if (!err.response) {
+                    errorMessage = "Không thể kết nối đến máy chủ. Vui lòng kiểm tra backend có đang chạy không.";
+                } else {
+                    errorMessage = err.message || errorMessage;
+                }
+            }
+            setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
     };
 
     useEffect(() => {
+        if (!isAuthenticated) {
+            setError("Vui lòng đăng nhập để xem dữ liệu.");
+            setIsLoading(false);
+            return;
+        }
         loadClaims();
         
         // Cập nhật các mục sau 2 giây (giữ nguyên logic demo của bạn)
@@ -101,7 +118,20 @@ export default function Home() {
 
 
     if (isLoading) return <Layout><div className="py-20 text-center text-lg text-blue-600">Đang tải Claims...</div></Layout>;
-    if (error) return <Layout><div className="p-6 text-red-600 bg-red-100 border border-red-300 rounded-lg">{error}</div></Layout>;
+    if (error) return (
+        <Layout>
+            <div className="p-6 text-red-600 bg-red-100 border border-red-300 rounded-lg">
+                <h2 className="text-xl font-bold mb-2">Lỗi tải dữ liệu</h2>
+                <p className="mb-4">{error}</p>
+                <button
+                    onClick={loadClaims}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                >
+                    Thử lại
+                </button>
+            </div>
+        </Layout>
+    );
 
     return (
         <Layout>
@@ -125,7 +155,8 @@ export default function Home() {
                     {claimData.map((item) => (
                     <tr
                         key={item.id}
-                        className="bg-white hover:bg-gray-50 transition-colors"
+                        className="bg-white hover:bg-gray-50 transition-colors cursor-pointer"
+                        onClick={() => window.location.href = `/claims/${item.id}`}
                     >
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {item.id}

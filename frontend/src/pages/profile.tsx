@@ -1,4 +1,3 @@
-// frontend/src/pages/profile.tsx
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';

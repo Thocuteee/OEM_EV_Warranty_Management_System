@@ -54,8 +54,16 @@ const CarListView: React.FC = () => {
                 console.error("Lỗi tải danh sách xe:", err);
                 // Xử lý lỗi API để hiển thị thông báo
                 let errorMessage = "Không thể tải dữ liệu xe từ máy chủ.";
-                if (axios.isAxiosError(err) && err.response && err.response.data.message) {
-                    errorMessage = err.response.data.message;
+                if (err instanceof Error) {
+                    errorMessage = err.message;
+                } else if (axios.isAxiosError(err)) {
+                    if (!err.response) {
+                        errorMessage = "Không thể kết nối đến máy chủ. Vui lòng kiểm tra backend có đang chạy không.";
+                    } else if (err.response.data?.message) {
+                        errorMessage = err.response.data.message;
+                    } else {
+                        errorMessage = err.message || errorMessage;
+                    }
                 }
                 setError(errorMessage);
             } finally {
@@ -83,7 +91,18 @@ const CarListView: React.FC = () => {
     
     
     if (isLoading) return <div className="p-6 text-center text-gray-500 text-lg">Đang tải dữ liệu xe...</div>;
-    if (error) return <div className="p-6 text-center text-red-600 text-lg border border-red-300 rounded-lg">{error}</div>;
+    if (error) return (
+        <div className="p-6 text-center text-red-600 bg-red-100 border border-red-300 rounded-lg">
+            <h2 className="text-xl font-bold mb-2">Lỗi tải dữ liệu</h2>
+            <p className="mb-4">{error}</p>
+            <button
+                onClick={() => window.location.reload()}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+            >
+                Thử lại
+            </button>
+        </div>
+    );
 
     return (
         <>

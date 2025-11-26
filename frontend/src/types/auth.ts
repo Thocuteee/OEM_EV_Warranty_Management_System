@@ -17,7 +17,7 @@ export interface AuthContextType {
     isAuthenticated: boolean;
     login: (userData: UserProfile) => void;
     logout: () => void;
-    updateProfile: (profileUpdate: Partial<UserProfile>) => void; 
+    updateProfile: (profileUpdate: Partial<UserProfile>) => void;
 }
 
 export interface UserProfile {
