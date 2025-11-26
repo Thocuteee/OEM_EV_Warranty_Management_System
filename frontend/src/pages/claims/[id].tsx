@@ -333,15 +333,42 @@ export default function ClaimDetailPage() {
     const handleApproval = async (status: 'APPROVED' | 'REJECTED') => {
         if (!claim || !user || claim.approvalStatus !== 'PENDING') return;
 
+        // Kiểm tra trạng thái claim trước khi phê duyệt/từ chối
+        if (claim.status !== 'SENT') {
+            alert(`Không thể ${status === 'APPROVED' ? 'phê duyệt' : 'từ chối'} Claim này. Claim phải ở trạng thái SENT. Trạng thái hiện tại: ${claim.status}.`);
+            return;
+        }
+
         if (!confirm(`Bạn có chắc muốn ${status === 'APPROVED' ? 'PHÊ DUYỆT' : 'TỪ CHỐI'} Claim ID ${claim.id}?`)) return;
         
         try {
             await updateClaimStatus(claim.id, status);
-            alert(`Claim đã được cập nhật thành ${status}.`);
+            alert(`Claim đã được ${status === 'APPROVED' ? 'phê duyệt' : 'từ chối'} thành công!`);
             fetchData();
         } catch (e: unknown) {
-            const message = axios.isAxiosError(e) ? e.response?.data?.message || 'Lỗi server khi phê duyệt.' : 'Lỗi không xác định.';
-            alert(message);
+            let errorMessage = 'Lỗi khi phê duyệt/từ chối Claim.';
+            if (axios.isAxiosError(e)) {
+                if (e.response) {
+                    const responseData = e.response.data;
+                    if (typeof responseData === 'object' && responseData !== null) {
+                        if ('message' in responseData) {
+                            errorMessage = (responseData as { message?: string }).message || errorMessage;
+                        } else {
+                            errorMessage = `Lỗi ${e.response.status}: ${e.response.statusText}`;
+                        }
+                    } else {
+                        errorMessage = `Lỗi ${e.response.status}: ${e.response.statusText}`;
+                    }
+                } else if (e.request) {
+                    errorMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra backend có đang chạy không.';
+                } else {
+                    errorMessage = e.message || errorMessage;
+                }
+            } else if (e instanceof Error) {
+                errorMessage = e.message;
+            }
+            alert(errorMessage);
+            console.error("Lỗi chi tiết khi phê duyệt/từ chối:", e);
         }
     }
 
@@ -400,10 +427,32 @@ export default function ClaimDetailPage() {
         if (!confirm(`Bạn có chắc muốn xóa Linh kiện ID ${partId} khỏi Claim này?`)) return;
         try {
             await deleteClaimPartByCompositeId(claimId!, partId); 
-            alert("Đã xóa Linh kiện khỏi Claim.");
+            alert("Đã xóa Linh kiện khỏi Claim thành công!");
             fetchData();
         } catch (e: unknown) {
-            alert('Lỗi khi xóa Claim Part.');
+            let errorMessage = 'Lỗi khi xóa Linh kiện khỏi Claim.';
+            if (axios.isAxiosError(e)) {
+                if (e.response) {
+                    const responseData = e.response.data;
+                    if (typeof responseData === 'object' && responseData !== null) {
+                        if ('message' in responseData) {
+                            errorMessage = (responseData as { message?: string }).message || errorMessage;
+                        } else {
+                            errorMessage = `Lỗi ${e.response.status}: ${e.response.statusText}`;
+                        }
+                    } else {
+                        errorMessage = `Lỗi ${e.response.status}: ${e.response.statusText}`;
+                    }
+                } else if (e.request) {
+                    errorMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra backend có đang chạy không.';
+                } else {
+                    errorMessage = e.message || errorMessage;
+                }
+            } else if (e instanceof Error) {
+                errorMessage = e.message;
+            }
+            alert(errorMessage);
+            console.error("Lỗi chi tiết khi xóa Claim Part:", e);
         }
     }
 
