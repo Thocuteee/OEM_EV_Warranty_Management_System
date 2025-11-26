@@ -9,8 +9,16 @@ export const getAllVehiclePartHistory = async (): Promise<VehiclePartHistoryResp
 
 // 2. GET: Lấy lịch sử theo Vehicle ID (Trả về MẢNG)
 export const getHistoryByVehicleId = async (vehicleId: number): Promise<VehiclePartHistoryResponse[]> => {
-    const response = await apiClient.get<VehiclePartHistoryResponse[]>(`/vehicle-history/by-vehicle/${vehicleId}`);
-    return response.data;
+    console.log(`[VehiclePartHistoryService] Fetching history for vehicle ID: ${vehicleId}`);
+    try {
+        const response = await apiClient.get<VehiclePartHistoryResponse[]>(`/vehicle-history/by-vehicle/${vehicleId}`);
+        console.log(`[VehiclePartHistoryService] Received ${response.data?.length || 0} history records`);
+        console.log(`[VehiclePartHistoryService] Data:`, response.data);
+        return response.data || [];
+    } catch (error) {
+        console.error(`[VehiclePartHistoryService] Error fetching history for vehicle ${vehicleId}:`, error);
+        throw error;
+    }
 };
 
 // 3. POST: Tạo mới Lịch sử Linh kiện (Trả về ĐỐI TƯỢNG ĐƠN LẺ)

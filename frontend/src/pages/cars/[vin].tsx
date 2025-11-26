@@ -42,7 +42,11 @@ const HistoryTable: React.FC<{history: VehiclePartHistoryResponse[]}> = ({ histo
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{record.claimStatus}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                                {record.dateInstalled ? new Date(record.dateInstalled).toLocaleDateString('vi-VN') : 'N/A'}
+                                {record.dateInstalled 
+                                    ? (typeof record.dateInstalled === 'string' 
+                                        ? new Date(record.dateInstalled).toLocaleDateString('vi-VN')
+                                        : new Date(record.dateInstalled).toLocaleDateString('vi-VN'))
+                                    : 'N/A'}
                             </td>
                         </tr>
                     ))}
@@ -76,10 +80,16 @@ export default function CarDetailPage() {
 
             // 2. Lấy lịch sử linh kiện theo Vehicle ID (có thể không có lịch sử)
             try {
+                console.log("Đang tải lịch sử cho Vehicle ID:", vehicleData.id);
                 const historyData = await getHistoryByVehicleId(vehicleData.id);
+                console.log("Lịch sử nhận được:", historyData);
                 setHistory(historyData || []);
             } catch (historyError) {
-                console.warn("Không thể tải lịch sử linh kiện:", historyError);
+                console.error("Lỗi chi tiết khi tải lịch sử linh kiện:", historyError);
+                if (axios.isAxiosError(historyError)) {
+                    console.error("Response status:", historyError.response?.status);
+                    console.error("Response data:", historyError.response?.data);
+                }
                 // Nếu không load được history, vẫn hiển thị thông tin xe nhưng history rỗng
                 setHistory([]);
             }
@@ -183,7 +193,33 @@ export default function CarDetailPage() {
                 </div>
 
                 {/* Bảng Lịch sử Linh kiện */}
-                <HistoryTable history={history} />
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-2xl font-bold text-gray-900">Lịch sử Linh kiện</h2>
+                        <button
+                            onClick={fetchData}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+                        >
+                            🔄 Tải lại
+                        </button>
+                    </div>
+                    {vehicle && (
+                        <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-800 space-y-1">
+                            <p><strong>Vehicle ID trong DB:</strong> {vehicle.id}</p>
+                            <p><strong>VIN:</strong> {vehicle.vin}</p>
+                            <p><strong>Số lượng lịch sử tìm thấy:</strong> {history.length}</p>
+                            {history.length > 0 && (
+                                <details className="mt-2">
+                                    <summary className="cursor-pointer font-semibold">Xem chi tiết lịch sử (Debug)</summary>
+                                    <pre className="mt-2 bg-white p-2 rounded text-xs overflow-auto max-h-40">
+                                        {JSON.stringify(history, null, 2)}
+                                    </pre>
+                                </details>
+                            )}
+                        </div>
+                    )}
+                    <HistoryTable history={history} />
+                </div>
                 
             </div>
         </Layout>
