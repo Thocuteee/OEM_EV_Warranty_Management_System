@@ -27,7 +27,6 @@ public class CampaignVehicleController {
     }
 
     private CampaignVehicleResponse toResponseDTO(CampaignVehicle campaignVehicle) {
-        // SỬA LỖI: Dùng recallCampaignEntity và vehicleEntity
         String campaigntitle = campaignVehicle.getRecallCampaignEntity() != null ? campaignVehicle.getRecallCampaignEntity().getTitle():null;
         String vehicleVIN = campaignVehicle.getVehicleEntity() != null ? campaignVehicle.getVehicleEntity().getVIN():null;
 
@@ -42,14 +41,12 @@ public class CampaignVehicleController {
 
     private CampaignVehicle toEntity(CampaignVehicleRequest request) {
         RecallCampaign campaign = new RecallCampaign(request.getCampaignId());
-        // campaign.setCampaignId(campaign.getCampaignId()); // Dòng này là thừa
 
         Vehicle vehicle = new Vehicle();
         vehicle.setVehicleId(request.getVehicleId()); // Lấy ID từ Request
 
         CampaignVehicle entity = new CampaignVehicle();
         
-        // SỬA LỖI: Gán Entity vào trường mới
         entity.setRecallCampaignEntity(campaign);
         entity.setVehicleEntity(vehicle);
         

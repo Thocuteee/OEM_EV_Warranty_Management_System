@@ -144,8 +144,8 @@ public class VehiclePartHistoryController {
 
     // 6. GET /api/vehicle-history/by-vehicle/{vehicleId} : Lấy lịch sử theo Xe
     @GetMapping("/by-vehicle/{vehicleId}")
-    public ResponseEntity<List<VehiclePartHistoryResponse>> getHistoryByVehicle(@PathVariable Long vehicelId) {
-        Vehicle vehicle = new Vehicle(vehicelId);
+    public ResponseEntity<List<VehiclePartHistoryResponse>> getHistoryByVehicle(@PathVariable Long vehicleId) {
+        Vehicle vehicle = new Vehicle(vehicleId);
 
         List<VehiclePartHistoryResponse> responses = vehiclePartHistoryService.getHistoryByVehicle(vehicle).stream()
             .map(this::toResponseDTO)

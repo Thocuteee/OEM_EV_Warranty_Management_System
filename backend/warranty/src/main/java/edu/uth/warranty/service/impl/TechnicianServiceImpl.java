@@ -10,7 +10,6 @@ import edu.uth.warranty.service.ITechnicianService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.hibernate.Hibernate;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
@@ -48,27 +47,22 @@ public class TechnicianServiceImpl implements ITechnicianService{
         ServiceCenter center = serviceCenterRepository.findById(request.getCenterId()).orElseThrow(() -> new IllegalArgumentException("Trung tâm Dịch vụ không tồn tại."));
 
         Technician technician;
-        Optional<Technician> existingTechnicianOpt = Optional.empty(); // Khai báo ngoài để giữ scope
-        boolean isNewProfileWithId = false; // Flag để xác định có phải tạo mới với ID đã set không
+        Optional<Technician> existingTechnicianOpt = Optional.empty(); 
+        boolean isNewProfileWithId = false; 
 
-        // BƯỚC SỬA: Kiểm tra xem hồ sơ Technician đã tồn tại chưa
         if (request.getId() != null) {
             existingTechnicianOpt = technicianRepository.findById(request.getId());
 
             if (existingTechnicianOpt.isPresent()) {
-                // Trường hợp 1: CẬP NHẬT hồ sơ đã có
                 technician = existingTechnicianOpt.get();
             } else {
-                // Trường hợp 2: TẠO MỚI PROFILE cho User ID đã tồn tại
                 technician = new Technician();
-                technician.setTechnicianId(request.getId()); // <<< QUAN TRỌNG: Gán ID của User
-                isNewProfileWithId = true; // Đánh dấu là tạo mới với ID đã set
+                technician.setTechnicianId(request.getId());
+                isNewProfileWithId = true; 
             }
 
         } else {
-            // Trường hợp 3: Tạo mới hoàn toàn (ID là null)
             technician = new Technician();
-            // Áp dụng kiểm tra duy nhất cho TẠO MỚI hoàn toàn
             if (technicianRepository.findByUsername(request.getUsername()).isPresent() || technicianRepository.findByEmail(request.getEmail()).isPresent()) {
                 throw new IllegalArgumentException("Username hoặc Email đã tồn tại.");
             }
@@ -87,20 +81,15 @@ public class TechnicianServiceImpl implements ITechnicianService{
             if (!request.getPassword().startsWith("$2a$")) {
                 technician.setPassword(passwordEncoder.encode(request.getPassword()));
             } else {
-                // Mật khẩu đã được hash (từ UserServiceImpl), chỉ gán
                 technician.setPassword(request.getPassword());
             }
         } else if (request.getId() != null && !isNewProfileWithId && existingTechnicianOpt.isPresent()) { 
-            // KHẮC PHỤC THIẾU: Nếu là cập nhật và không có mật khẩu mới, giữ lại mật khẩu cũ
             technician.setPassword(existingTechnicianOpt.get().getPassword());
         }
         
-        // Khi tạo mới với ID đã set, sử dụng native query để insert trực tiếp
-        // vì @GeneratedValue sẽ ignore ID đã set khi dùng save() hoặc merge()
         if (isNewProfileWithId) {
             // Sử dụng native query để insert với ID đã set
-            String sql = "INSERT INTO Technician (technician_id, center_id, name, phone, email, specialization, username, password) " +
-                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO Technician (technician_id, center_id, name, phone, email, specialization, username, password) " +"VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             entityManager.createNativeQuery(sql)
                 .setParameter(1, technician.getTechnicianId())
                 .setParameter(2, technician.getCenter().getCenterId())
@@ -113,7 +102,6 @@ public class TechnicianServiceImpl implements ITechnicianService{
                 .executeUpdate();
             
             entityManager.flush();
-            // Tìm lại entity từ database sau khi insert
             return technicianRepository.findByIdWithCenter(technician.getTechnicianId())
                 .orElseThrow(() -> new IllegalStateException("Không thể tìm thấy Technician sau khi tạo mới"));
         } else {

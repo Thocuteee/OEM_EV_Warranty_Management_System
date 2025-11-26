@@ -50,7 +50,6 @@ public class ClaimPartServiceImpl implements IClaimPartService{
             throw new IllegalArgumentException("Linh kiện (Part) không tồn tại hoặc không hợp lệ.");
         }
 
-        // THÊM VALIDATION LOGIC
         if (entity.getQuantity() == null || entity.getQuantity() <= 0) {
             throw new IllegalArgumentException("Số lượng linh kiện phải lớn hơn 0.");
         }

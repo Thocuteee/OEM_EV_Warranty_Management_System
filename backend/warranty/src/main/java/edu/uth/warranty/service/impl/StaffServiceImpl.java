@@ -11,7 +11,6 @@ import edu.uth.warranty.service.IStaffService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.hibernate.Hibernate;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.List;
@@ -50,32 +49,26 @@ public Staff saveStaff(StaffRequest request) {
         .orElseThrow(() -> new IllegalArgumentException("Trung tâm dịch vụ không tồn tại."));
 
     Staff staff;
-    boolean isNewProfileWithId = false; // Flag để xác định có phải tạo mới với ID đã set không
+    boolean isNewProfileWithId = false;
     
-    // BƯỚC SỬA 1: Xử lý TẠO MỚI PROFILE cho User ID đã tồn tại
     if (request.getId() != null) {
         Optional<Staff> existingStaffOpt = staffRepository.findById(request.getId());
 
         if (existingStaffOpt.isPresent()) {
-            // Trường hợp A: CẬP NHẬT hồ sơ đã có 
+            
             staff = existingStaffOpt.get();
         } else {
-            // Trường hợp B: TẠO MỚI PROFILE cho User ID đã có (KHÔNG có Staff cũ)
-            // Khởi tạo entity MỚI và GÁN ID TỪ REQUEST
             staff = new Staff();
-            staff.setStaffId(request.getId()); // <<< Gán ID của User để đồng bộ với bảng User
-            isNewProfileWithId = true; // Đánh dấu là tạo mới với ID đã set
+            staff.setStaffId(request.getId()); 
+            isNewProfileWithId = true; 
         }
     } else {
-        // Trường hợp C: Tạo mới hoàn toàn (ID là null, sẽ được auto-increment)
         staff = new Staff();
-        // Áp dụng kiểm tra duy nhất cho tạo mới (nếu gọi API Staff riêng)
         if (staffRepository.findByUsername(request.getUsername()).isPresent() || staffRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Username hoặc Email đã tồn tại.");
         }
     }
     
-    // ... (Ánh xạ dữ liệu và xử lý mật khẩu)
     staff.setCenter(center); 
     staff.setName(request.getName());
     staff.setRole(request.getRole());
@@ -92,15 +85,12 @@ public Staff saveStaff(StaffRequest request) {
             staff.setPassword(request.getPassword());
         }
     } else if (request.getId() != null && !isNewProfileWithId) {
-        // Giữ lại mật khẩu cũ nếu là cập nhật (không phải tạo mới)
         Staff existingUser = staffRepository.findById(request.getId()).orElse(null);
         if (existingUser != null && existingUser.getPassword() != null) {
             staff.setPassword(existingUser.getPassword());
         }
     }
     
-    // Khi tạo mới với ID đã set, sử dụng native query để insert trực tiếp
-    // vì @GeneratedValue sẽ ignore ID đã set khi dùng save() hoặc merge()
     if (isNewProfileWithId) {
         // Sử dụng native query để insert với ID đã set
         String sql = "INSERT INTO Staff (staff_id, center_id, name, role, phone, address, email, username, password) " + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -117,7 +107,6 @@ public Staff saveStaff(StaffRequest request) {
             .executeUpdate();
         
         entityManager.flush();
-        // Tìm lại entity từ database sau khi insert
         return staffRepository.findByIdWithCenter(staff.getStaffId())
             .orElseThrow(() -> new IllegalStateException("Không thể tìm thấy Staff sau khi tạo mới"));
     } else {

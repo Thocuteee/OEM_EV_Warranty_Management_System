@@ -17,7 +17,6 @@ import edu.uth.warranty.dto.TechnicianRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PostMapping;
 
 import java.util.Optional;
 import java.util.List;
@@ -48,17 +47,14 @@ public class UserServiceImpl implements IUserService {
         Optional<User> userOpt = Optional.empty();
         String identifier = loginRequest.getUsername();
         
-        // Bước 1: Kiểm tra xem identifier có phải là email không
         if (identifier != null && identifier.contains("@")) {
             userOpt = userRepository.findByEmail(identifier);
         }
 
-        // Bước 2: Nếu không phải email hoặc không tìm thấy, thử tìm theo username
         if (userOpt.isEmpty() && identifier != null) {
             userOpt = userRepository.findByUsername(identifier);
         }
         
-        // Bước 3: Xác thực mật khẩu
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
@@ -129,12 +125,10 @@ public class UserServiceImpl implements IUserService {
         return savedUser;
     }
 
-    // PHƯƠNG THỨC ĐÃ SỬA: TẠO HỒ SƠ NGHIỆP VỤ TỰ ĐỘNG
     private void createBusinessProfile(User user) {
         Role role = user.getRole();
         Long userId = user.getId();
         
-        // Luôn sử dụng Service Center ID 1 (giả định tồn tại)
         Long defaultCenterId = 1L; 
 
         try {
@@ -142,9 +136,7 @@ public class UserServiceImpl implements IUserService {
             String name = user.getUsername(); 
             String email = user.getEmail();
             String passwordHash = user.getPassword(); // Mật khẩu đã được hash
-            
-            // TẠO DỮ LIỆU MOCK DUY NHẤT VÀ HỢP LỆ (Quan trọng để tránh lỗi UNIQUE KEY)
-            // Phone: Sử dụng 0900 + ID 6 chữ số (để đảm bảo tính duy nhất)
+
             String uniquePhone = String.format("09%08d", userId); 
             
             String address = "Địa chỉ mặc định"; 
@@ -179,7 +171,6 @@ public class UserServiceImpl implements IUserService {
                 technicianRequest.setPhone(uniquePhone); // Dùng SĐT duy nhất
                 technicianRequest.setSpecialization(specialization); 
                 technicianRequest.setUsername(user.getUsername());
-                // Truyền HASHED PASSWORD đã có
                 technicianRequest.setPassword(passwordHash); 
                 
                 technicianService.saveTechnician(technicianRequest); 
@@ -221,7 +212,7 @@ public class UserServiceImpl implements IUserService {
     public void createBusinessProfileIfMissing(User user) {
         // Kiểm tra logic để đảm bảo các trường cần thiết đã có
         if (user.getId() == null) {
-             throw new IllegalArgumentException("Không thể tạo Business Profile: User ID không tồn tại.");
+            throw new IllegalArgumentException("Không thể tạo Business Profile: User ID không tồn tại.");
         }
         
         Role role = user.getRole();
@@ -237,9 +228,7 @@ public class UserServiceImpl implements IUserService {
         }
         
         if (!profileExists) {
-            // Nếu hồ sơ nghiệp vụ bị thiếu, gọi lại logic tạo (đã sửa lỗi Phone/Email duy nhất)
             createBusinessProfile(user);
         }
-        // Nếu hồ sơ đã tồn tại, không làm gì cả
     }
 }
