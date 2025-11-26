@@ -6,6 +6,7 @@ export interface WarrantyClaimRequest {
     totalCost: number; // BigDecimal
     description: string;
     technicianId?: number | null;
+    currentMileage?: number; // Số KM hiện tại của xe
 }
 
 export interface WarrantyClaimResponse {
@@ -22,4 +23,5 @@ export interface WarrantyClaimResponse {
     createdAt: string;
     updatedAt: string;
     description: string;
+    currentMileage?: number; // Số KM hiện tại của xe
 }
