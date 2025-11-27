@@ -111,6 +111,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"], // Phần 1d: SC Staff/Technician cần xem và thực hiện chiến dịch
     },
     { 
+      name: "Chuỗi Cung ứng Phụ tùng", 
+      icon: "📦", 
+      href: "/admin/supply-chain", 
+      roles: ["Admin", "EVM_Staff"], 
+    },
+    { 
       name: "Quản lý Hóa đơn", 
       icon: "🧾", 
       href: "/admin/invoices", 
