@@ -27,11 +27,13 @@ public class WarrantyClaimController {
     private WarrantyClaimResponse toResponseDTO(WarrantyClaim claim) {
         String customerName = claim.getCustomer() != null ? claim.getCustomer().getName() : null;
         String vehicleVIN = claim.getVehicle() != null ? claim.getVehicle().getVIN() : null;
+        String vehicleModel = claim.getVehicle() != null ? claim.getVehicle().getModel() : null;
 
         return new WarrantyClaimResponse(
             claim.getClaimId(),
             claim.getVehicle() != null ? claim.getVehicle().getVehicleId() : null,
             vehicleVIN,
+            vehicleModel,
             claim.getCustomer() != null ? claim.getCustomer().getCustomerId() : null,
             customerName,
             claim.getCenter() != null ? claim.getCenter().getCenterId() : null,

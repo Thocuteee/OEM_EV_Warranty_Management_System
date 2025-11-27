@@ -33,20 +33,35 @@ public class ClaimPartController {
     }
 
     private ClaimPartResponse toResponseDTO(ClaimPart entity) {
+        // Sử dụng Long IDs trực tiếp từ entity (không phụ thuộc vào lazy loading)
+        Long claimId = entity.getClaim() != null ? entity.getClaim() : 
+                      (entity.getClaimEntity() != null ? entity.getClaimEntity().getClaimId() : null);
+        Long partId = entity.getPart() != null ? entity.getPart() : 
+                     (entity.getPartEntity() != null ? entity.getPartEntity().getPartId() : null);
+        
         String partNumber = null;
         String partName = null;
 
-        if(entity.getPartEntity() != null && entity.getPartEntity().getPartId() != null) {
-            Optional<Part> partOpt = partService.getPartById(entity.getPartEntity().getPartId());
+        // Nếu có partId, lấy thông tin part
+        if(partId != null) {
+            Optional<Part> partOpt = partService.getPartById(partId);
             if(partOpt.isPresent()) {
                 partNumber = partOpt.get().getPartNumber();
                 partName = partOpt.get().getName();
             }
         }
 
+        // Đảm bảo không null cho các giá trị bắt buộc
+        if(claimId == null) {
+            throw new IllegalArgumentException("Claim ID không thể null trong ClaimPart.");
+        }
+        if(partId == null) {
+            throw new IllegalArgumentException("Part ID không thể null trong ClaimPart.");
+        }
+
         return new ClaimPartResponse(
-            entity.getClaimEntity().getClaimId(),
-            entity.getPartEntity().getPartId(),
+            claimId,
+            partId,
             partNumber,
             partName,
             entity.getQuantity(),
@@ -130,11 +145,31 @@ public class ClaimPartController {
 
     // 5. GET /api/claim-parts/by-claim/{claimId} : Lấy tất cả Linh kiện thuộc một Claim
     @GetMapping("/by-claim/{claimId}")
-    public ResponseEntity<List<ClaimPartResponse>> getClaimPartsByClaim(@PathVariable Long claimId) {
-        WarrantyClaim claim = new WarrantyClaim(claimId);
-
-        List<ClaimPartResponse> responses = claimPartService.getClaimPartsByClaim(claim).stream().map(this::toResponseDTO).collect(Collectors.toList());
-        return ResponseEntity.ok(responses);
+    public ResponseEntity<?> getClaimPartsByClaim(@PathVariable Long claimId) {
+        try {
+            WarrantyClaim claim = new WarrantyClaim(claimId);
+            List<ClaimPart> claimParts = claimPartService.getClaimPartsByClaim(claim);
+            
+            // Map to DTO với error handling
+            List<ClaimPartResponse> responses = claimParts.stream()
+                .map(entity -> {
+                    try {
+                        return toResponseDTO(entity);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        // Log lỗi nhưng vẫn tiếp tục với các entity khác
+                        return null;
+                    }
+                })
+                .filter(response -> response != null) // Loại bỏ các response null
+                .collect(Collectors.toList());
+            
+            return ResponseEntity.ok(responses);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new MessageResponse("Lỗi khi lấy danh sách Linh kiện: " + e.getMessage()));
+        }
     }
 
     // 6. GET /api/claim-parts/by-total-cost?minCost={minCost} : Tìm kiếm theo Tổng Chi phí (>= minCost)

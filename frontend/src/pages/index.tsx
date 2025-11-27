@@ -165,8 +165,7 @@ export default function Home() {
                         {item.vehicleVIN}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            {/* Model không có trong response, chỉ có Model nằm trong Vehicle */}
-                            N/A 
+                            {item.vehicleModel || 'N/A'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         {item.customerName}
