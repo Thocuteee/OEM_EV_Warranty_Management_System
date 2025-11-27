@@ -33,6 +33,6 @@ public class WarrantyClaimResponse {
 
     private String description;
 
-    private Integer currentMileage; // Số KM hiện tại của xe
+    private Long currentMileage; // Số KM hiện tại của xe
 
 }

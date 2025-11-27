@@ -34,7 +34,7 @@ public class WarrantyClaimRequest {
     private BigDecimal TotalCost;
 
     // Số KM hiện tại của xe (Odometer)
-    private Integer currentMileage;
+    private Long currentMileage;
 
     // Lưu ý: status, created_at, updated_at sẽ do Service tự thiết lập sau -.- 
 }

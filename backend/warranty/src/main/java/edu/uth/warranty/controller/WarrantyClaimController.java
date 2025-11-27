@@ -58,6 +58,7 @@ public class WarrantyClaimController {
             claim.getUpdatedAt(),
             claim.getDescription(),
             claim.getCurrentMileage()
+            
         );
     }
 
