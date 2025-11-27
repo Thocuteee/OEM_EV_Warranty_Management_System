@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
@@ -20,7 +19,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.removeItem('user');
     };
     
-    // THÊM: Định nghĩa hàm updateProfile (BƯỚC 1)
     const updateProfile = (profileUpdate: Partial<UserProfile>) => {
         setUser(prevUser => {
             if (!prevUser) return null;
@@ -28,7 +26,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             // Cập nhật state một cách bất biến
             const newUser = { ...prevUser, ...profileUpdate };
             
-            localStorage.setItem('user', JSON.stringify(newUser));
+            // Cập nhật cả localStorage
+            localStorage.setItem('user', JSON.stringify(newUser)); 
             
             return newUser;
         });
@@ -48,7 +47,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             isAuthenticated: !!user,
             login,
             logout,
-            updateProfile // ĐÃ KHẮC PHỤC LỖI THIẾU
+            updateProfile 
         }}>
             {children}
         </AuthContext.Provider>
@@ -60,6 +59,5 @@ export const useAuth = () => {
     if (context === undefined) {
         throw new Error('useAuth must be used within an AuthProvider');
     }
-    // SỬA: Ép kiểu trả về để đảm bảo type đầy đủ (BƯỚC 2)
     return context as AuthContextType; 
 };

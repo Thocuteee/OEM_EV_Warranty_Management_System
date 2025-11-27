@@ -16,6 +16,7 @@ public class WarrantyClaimResponse {
     // Thông tin FK
     private Long vehicleId;
     private String vehicleVIN;
+    private String vehicleModel; // Model của xe
     private Long customerId;
     private String customerName;
     private Long centerId;

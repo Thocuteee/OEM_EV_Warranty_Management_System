@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import AdminLayout from "@/components/layout/AdminLayout";
+import Layout from "@/components/layout/Layout";
 import { VehicleRequest, VehicleResponse } from "@/types/vehicle"; 
 import axios from "axios"; 
 import { useAuth } from "@/context/AuthContext";
@@ -117,8 +117,11 @@ export default function AdminVehiclesPage() {
     if (!user) return null;
 
     return (
-        <AdminLayout>
-            <h1 className="text-3xl font-bold mb-4">Quản lý Xe</h1>
+        <Layout>
+            <div className="bg-white p-6 rounded-xl shadow-md border mb-6">
+                <h1 className="text-3xl font-bold text-gray-900">Quản lý Xe</h1>
+                <p className="text-gray-600 mt-1">Quản lý thông tin xe điện trong hệ thống</p>
+            </div>
 
             <div className="flex justify-between mb-4">
                  {/* Search bar */}
@@ -166,10 +169,10 @@ export default function AdminVehiclesPage() {
 
             {/* Toast thông báo */}
             {toast && (
-                <div className="fixed bottom-6 right-6 bg-green-600 text-white px-4 py-2 rounded shadow">
+                <div className="fixed bottom-6 right-6 bg-green-600 text-white px-5 py-3 rounded-xl shadow-lg transition-opacity duration-300 z-50" onClick={() => setToast(null)}>
                     {toast}
                 </div>
             )}
-        </AdminLayout>
+        </Layout>
     );
 }

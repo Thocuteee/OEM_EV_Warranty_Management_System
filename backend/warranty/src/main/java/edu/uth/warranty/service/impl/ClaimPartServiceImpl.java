@@ -80,6 +80,11 @@ public class ClaimPartServiceImpl implements IClaimPartService{
 
     @Override
     public List<ClaimPart> getClaimPartsByClaim(WarrantyClaim claim) {
+        // Sử dụng claimId trực tiếp để tránh vấn đề với lazy loading
+        if (claim != null && claim.getClaimId() != null) {
+            // Sử dụng method với JOIN FETCH để đảm bảo load các entity liên quan
+            return claimPartRepository.findByClaimIdWithFetch(claim.getClaimId());
+        }
         return claimPartRepository.findByClaim(claim);
     }
 

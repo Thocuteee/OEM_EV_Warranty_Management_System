@@ -142,39 +142,56 @@ interface AssignTechnicianProps {
     onAssign: (technicianId: number) => void; 
 }
 
-const ClaimPartsManager: React.FC<ClaimPartsManagerProps> = ({ claimId, initialParts, onAddPart, onDeletePart }) => (
-    <div className="bg-white p-4 rounded-lg border">
-        <h3 className="font-bold text-xl mb-3">Quản lý Phụ tùng ({initialParts?.length || 0})</h3>
-        
-        {initialParts?.length === 0 ? (
-            <p className="text-gray-500 italic">Chưa có linh kiện nào được ghi nhận cho yêu cầu này.</p>
-        ) : (
-            <ul className="mt-4 space-y-2 text-sm max-h-60 overflow-y-auto border-t pt-3">
-                {initialParts?.map(p => (
-                    <li key={`${p.partNumber}-${p.claimId}`} className="flex justify-between items-center border-b pb-1">
-                        <div>
-                            <span className="font-medium text-gray-700">{p.partName} <span className="text-gray-500">({p.partNumber})</span></span>
-                            <div className="text-blue-700 font-bold text-xs">{p.quantity} cái x {p.unitPrice.toLocaleString('vi-VN')} VND</div>
-                        </div>
-                        <button 
-                            onClick={() => onDeletePart(p.partId)} 
-                            className="text-red-500 hover:text-red-700 text-xs font-semibold p-1"
-                        >
-                            Xóa
-                        </button>
-                    </li>
-                ))}
-            </ul>
-        )}
-        
-        <button 
-            onClick={onAddPart} 
-            className="mt-4 bg-blue-600 text-white px-3 py-2 text-sm rounded hover:bg-blue-700"
-        >
-            + Thêm Phụ tùng
-        </button>
-    </div>
-);
+const ClaimPartsManager: React.FC<ClaimPartsManagerProps> = ({ claimId, initialParts, onAddPart, onDeletePart }) => {
+    // Lọc bỏ các phần tử không hợp lệ (không có partId hoặc partId = 0)
+    const validParts = (initialParts || []).filter(p => p && p.partId && p.partId > 0);
+    
+    return (
+        <div className="bg-white p-4 rounded-lg border">
+            <h3 className="font-bold text-xl mb-3">Quản lý Phụ tùng ({validParts.length})</h3>
+            
+            {validParts.length === 0 ? (
+                <p className="text-gray-500 italic">Chưa có linh kiện nào được ghi nhận cho yêu cầu này.</p>
+            ) : (
+                <ul className="mt-4 space-y-2 text-sm max-h-60 overflow-y-auto border-t pt-3">
+                    {validParts.map(p => (
+                        <li key={`${p.claimId}-${p.partId}`} className="flex justify-between items-center border-b pb-1">
+                            <div>
+                                <span className="font-medium text-gray-700">
+                                    {p.partName || 'N/A'} 
+                                    {p.partNumber && <span className="text-gray-500"> ({p.partNumber})</span>}
+                                </span>
+                                <div className="text-blue-700 font-bold text-xs">
+                                    {p.quantity} cái x {p.unitPrice?.toLocaleString('vi-VN') || '0'} VND
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => {
+                                    if (p.partId && p.partId > 0) {
+                                        onDeletePart(p.partId);
+                                    } else {
+                                        alert('Linh kiện này không hợp lệ. Vui lòng tải lại trang.');
+                                    }
+                                }} 
+                                className="text-red-500 hover:text-red-700 text-xs font-semibold p-1"
+                                disabled={!p.partId || p.partId <= 0}
+                            >
+                                Xóa
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
+            
+            <button 
+                onClick={onAddPart} 
+                className="mt-4 bg-blue-600 text-white px-3 py-2 text-sm rounded hover:bg-blue-700"
+            >
+                + Thêm Phụ tùng
+            </button>
+        </div>
+    );
+};
 
 const WorkLogManager: React.FC<WorkLogManagerProps> = ({ claimId, initialLogs, technicianId, onAddLog, onDeleteLog }) => (
     <div className="bg-white p-4 rounded-lg border">
@@ -270,7 +287,8 @@ export default function ClaimDetailPage() {
     const { id } = router.query;
     const { user } = useAuth();
     
-    const claimId = typeof id === 'string' ? parseInt(id) : null;
+    // Đảm bảo router đã sẵn sàng và id là string hợp lệ
+    const claimId = router.isReady && typeof id === 'string' ? parseInt(id, 10) : null;
     
     const [claim, setClaim] = useState<WarrantyClaimResponse | null>(null);
     const [technicians, setTechnicians] = useState<TechnicianResponse[]>([]);
@@ -300,8 +318,14 @@ export default function ClaimDetailPage() {
 
 
     const fetchData = useCallback(async () => {
-        if (!claimId) return;
+        if (!claimId) {
+            setIsLoading(false);
+            return;
+        }
+        
         setIsLoading(true);
+        setError('');
+        
         try {
             const [claimData, techs, parts, logs, attachmentsData] = await Promise.all([
                 getClaimById(claimId),
@@ -313,21 +337,65 @@ export default function ClaimDetailPage() {
             
             setClaim(claimData);
             setTechnicians(techs);
-            setClaimParts(parts);
-            setWorkLogs(logs);
-            setAttachments(attachmentsData); // [MỚI] Lưu Attachments
+            // Đảm bảo parts là mảng hợp lệ (không null/undefined)
+            setClaimParts(Array.isArray(parts) ? parts : []);
+            setWorkLogs(Array.isArray(logs) ? logs : []);
+            setAttachments(Array.isArray(attachmentsData) ? attachmentsData : []); // [MỚI] Lưu Attachments
 
         } catch (e: unknown) {
             console.error("Failed to load claim detail:", e);
-            setError("Không thể tải chi tiết Claim này.");
+            let errorMessage = "Không thể tải chi tiết Claim này.";
+            
+            if (axios.isAxiosError(e)) {
+                if (e.response) {
+                    const status = e.response.status;
+                    if (status === 404) {
+                        errorMessage = "Không tìm thấy Claim này.";
+                    } else if (status === 403) {
+                        errorMessage = "Bạn không có quyền xem Claim này.";
+                    } else if (status >= 500) {
+                        errorMessage = "Lỗi máy chủ. Vui lòng thử lại sau.";
+                    } else {
+                        const responseData = e.response.data;
+                        if (typeof responseData === 'object' && responseData !== null && 'message' in responseData) {
+                            errorMessage = (responseData as { message?: string }).message || errorMessage;
+                        }
+                    }
+                } else if (e.request) {
+                    errorMessage = "Không thể kết nối đến máy chủ. Vui lòng kiểm tra backend có đang chạy không.";
+                }
+            }
+            
+            setError(errorMessage);
+            // Đảm bảo state được reset ngay cả khi có lỗi
+            setClaimParts([]);
+            setWorkLogs([]);
+            setAttachments([]);
         } finally {
             setIsLoading(false);
         }
     }, [claimId]);
 
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        // Chờ router sẵn sàng trước khi fetch data
+        if (!router.isReady) {
+            return;
+        }
+        
+        // Reset state khi claimId thay đổi
+        if (claimId && !isNaN(claimId)) {
+            setClaimParts([]);
+            setWorkLogs([]);
+            setAttachments([]);
+            setClaim(null);
+            setError('');
+            fetchData();
+        } else if (router.isReady && !claimId) {
+            // Nếu router đã sẵn sàng nhưng không có claimId hợp lệ
+            setError('Claim ID không hợp lệ.');
+            setIsLoading(false);
+        }
+    }, [router.isReady, claimId, fetchData]);
 
     
     const handleApproval = async (status: 'APPROVED' | 'REJECTED') => {
@@ -413,35 +481,82 @@ export default function ClaimDetailPage() {
 
     const handleCreateClaimPart = async (payload: ClaimPartRequest) => {
         try {
-            await createClaimPart(payload); 
+            const response = await createClaimPart(payload); 
+            console.log("Claim part created successfully:", response);
             alert("Phụ tùng đã được thêm/cập nhật thành công!");
             setIsClaimPartModalOpen(false);
-            fetchData(); 
+            // Đợi một chút để đảm bảo backend đã lưu xong, sau đó refresh
+            setTimeout(() => {
+                fetchData();
+            }, 300);
         } catch (e: unknown) {
-            const message = axios.isAxiosError(e) ? e.response?.data?.message || 'Lỗi thêm Phụ tùng Claim. Kiểm tra Part ID và Claim ID.' : 'Lỗi không xác định.';
+            console.error("Error creating claim part:", e);
+            let message = 'Lỗi thêm Phụ tùng Claim.';
+            if (axios.isAxiosError(e)) {
+                if (e.response) {
+                    const responseData = e.response.data;
+                    if (typeof responseData === 'object' && responseData !== null) {
+                        if ('message' in responseData) {
+                            message = (responseData as { message?: string }).message || message;
+                        } else {
+                            message = `Lỗi ${e.response.status}: ${e.response.statusText}`;
+                        }
+                    } else {
+                        message = `Lỗi ${e.response.status}: ${e.response.statusText}`;
+                    }
+                } else if (e.request) {
+                    message = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra backend có đang chạy không.';
+                } else {
+                    message = e.message || message;
+                }
+            } else if (e instanceof Error) {
+                message = e.message;
+            }
+            alert(message);
             throw new Error(message); 
         }
     }
     
     const handleDeleteClaimPart = async (partId: number) => {
+        if (!claimId || !partId) {
+            alert('Thông tin không hợp lệ. Vui lòng thử lại.');
+            return;
+        }
+        
         if (!confirm(`Bạn có chắc muốn xóa Linh kiện ID ${partId} khỏi Claim này?`)) return;
+        
         try {
-            await deleteClaimPartByCompositeId(claimId!, partId); 
+            await deleteClaimPartByCompositeId(claimId, partId); 
             alert("Đã xóa Linh kiện khỏi Claim thành công!");
             fetchData();
         } catch (e: unknown) {
             let errorMessage = 'Lỗi khi xóa Linh kiện khỏi Claim.';
             if (axios.isAxiosError(e)) {
                 if (e.response) {
+                    const status = e.response.status;
                     const responseData = e.response.data;
-                    if (typeof responseData === 'object' && responseData !== null) {
-                        if ('message' in responseData) {
+                    
+                    if (status === 404) {
+                        // Nếu không tìm thấy, có thể đã bị xóa rồi hoặc chưa được lưu vào database
+                        errorMessage = 'Linh kiện không tồn tại hoặc đã bị xóa. Đang tải lại danh sách...';
+                        // Tự động refresh để đồng bộ với database
+                        setTimeout(() => fetchData(), 1000);
+                    } else if (status === 400) {
+                        if (typeof responseData === 'object' && responseData !== null && 'message' in responseData) {
                             errorMessage = (responseData as { message?: string }).message || errorMessage;
                         } else {
-                            errorMessage = `Lỗi ${e.response.status}: ${e.response.statusText}`;
+                            errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
                         }
                     } else {
-                        errorMessage = `Lỗi ${e.response.status}: ${e.response.statusText}`;
+                        if (typeof responseData === 'object' && responseData !== null) {
+                            if ('message' in responseData) {
+                                errorMessage = (responseData as { message?: string }).message || errorMessage;
+                            } else {
+                                errorMessage = `Lỗi ${status}: ${e.response.statusText}`;
+                            }
+                        } else {
+                            errorMessage = `Lỗi ${status}: ${e.response.statusText}`;
+                        }
                     }
                 } else if (e.request) {
                     errorMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra backend có đang chạy không.';
@@ -592,11 +707,30 @@ export default function ClaimDetailPage() {
     }
 
 
-    if (!claimId || isLoading) {
+    // Hiển thị loading khi router chưa sẵn sàng hoặc đang fetch data
+    if (!router.isReady || isLoading) {
         return (
             <Layout>
                 <div className="py-20 text-center text-lg text-blue-600">
-                    {isLoading ? "Đang tải chi tiết Claim..." : "Claim ID không hợp lệ."}
+                    {!router.isReady ? "Đang tải..." : "Đang tải chi tiết Claim..."}
+                </div>
+            </Layout>
+        );
+    }
+    
+    // Kiểm tra claimId hợp lệ
+    if (!claimId || isNaN(claimId)) {
+        return (
+            <Layout>
+                <div className="p-6 text-red-600 bg-red-100 border border-red-300 rounded-lg">
+                    <h2 className="text-xl font-bold mb-2">Lỗi</h2>
+                    <p>Claim ID không hợp lệ. Vui lòng quay lại danh sách và thử lại.</p>
+                    <button
+                        onClick={() => router.push('/')}
+                        className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors"
+                    >
+                        Quay lại Trang chủ
+                    </button>
                 </div>
             </Layout>
         );

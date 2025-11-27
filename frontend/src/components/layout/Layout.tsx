@@ -86,6 +86,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       href: "/admin/users",
       roles: ["Admin"], // CHỈ ADMIN
     },
+    {
+      name: "Quản lý Khách hàng", 
+      icon: "👥",
+      href: "/admin/customers",
+      roles: ["Admin", "EVM_Staff"], 
+    },
+    { 
+      name: "Chính sách Bảo hành", 
+      icon: "🛡️", 
+      href: "/admin/policies", 
+      roles: ["Admin", "EVM_Staff"], 
+    },
     { 
       name: "Trung tâm Dịch vụ", 
       icon: "📍", 

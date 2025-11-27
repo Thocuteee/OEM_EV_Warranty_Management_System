@@ -13,6 +13,7 @@ export interface WarrantyClaimResponse {
     id: number;
     vehicleId: number;
     vehicleVIN: string;
+    vehicleModel?: string; // Model của xe
     customerId: number;
     customerName: string;
     centerId: number;
