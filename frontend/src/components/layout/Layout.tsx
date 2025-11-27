@@ -55,7 +55,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       name: "Quản lý Xe", 
       icon: "🚗", 
       href: "/cars", 
-      roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"], 
+      roles: ["SC_Staff", "SC_Technician"], // Phần 1a: Dành cho SC Staff và SC Technician
     },
 
     // SỬA: Chuyển Claims ra khỏi Admin
@@ -63,12 +63,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"] 
     },
 
-    // SỬA: Chuyển Parts/Inventory ra khỏi Admin
+    // Phần 2a: Quản lý sản phẩm & phụ tùng - Chỉ Admin và EVM_Staff
     { 
-      name: "Linh kiện & Tồn kho", 
+      name: "Quản lý Sản phẩm & Phụ tùng", 
       icon: "📦", 
       href: "/parts", 
-      roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"], // Mở quyền xem
+      roles: ["Admin", "EVM_Staff"], 
     },
 
     // SỬA: Chuyển Reports ra khỏi Admin
@@ -90,7 +90,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       name: "Quản lý Khách hàng", 
       icon: "👥",
       href: "/admin/customers",
-      roles: ["Admin", "EVM_Staff"], 
+      roles: ["Admin", "EVM_Staff"], // Chỉ Admin và EVM_Staff
     },
     { 
       name: "Chính sách Bảo hành", 
@@ -107,7 +107,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { 
       name: "Chiến dịch Triệu hồi", 
       icon: "📢", 
-      href: "/admin/campaigns", 
+      href: "/campaigns", 
+      roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"], // Phần 1d: SC Staff/Technician cần xem và thực hiện chiến dịch
+    },
+    { 
+      name: "Chuỗi Cung ứng Phụ tùng", 
+      icon: "📦", 
+      href: "/admin/supply-chain", 
       roles: ["Admin", "EVM_Staff"], 
     },
     { 

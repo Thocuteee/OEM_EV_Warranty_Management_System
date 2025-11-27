@@ -21,7 +21,7 @@ export default function AdminDashboard() {
 
   const modules = [
     { title: "Quản lý Users", desc: "Tạo / xóa user", icon: "👤", href: "/admin/users", roles: ["Admin"] },
-    { title: "Chiến dịch Triệu hồi", desc: "Recall Campaign", icon: "📢", href: "/admin/campaigns", roles: ["Admin", "EVM_Staff"] },
+    { title: "Chiến dịch Triệu hồi", desc: "Recall Campaign", icon: "📢", href: "/campaigns", roles: ["Admin", "EVM_Staff"] },
     { title: "Yêu cầu Bảo hành", desc: "Xử lý yêu cầu bảo hành", icon: "📋", href: "/claims", roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"] },
     { title: "Chính sách Bảo hành", desc: "Quản lý chính sách bảo hành", icon: "🛡️", href: "/admin/policies", roles: ["Admin", "EVM_Staff"] },
     { title: "Cấu hình Hệ thống", desc: "Backup / Logs / Phân quyền", icon: "⚙️", href: "/admin/system", roles: ["Admin"] },

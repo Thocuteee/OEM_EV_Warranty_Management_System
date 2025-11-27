@@ -31,9 +31,10 @@ export default function AdminCustomersPage() {
     // BẢO VỆ ROUTE & LOAD DATA
     // ---------------------------------------
     useEffect(() => {
-        // Bảo vệ route: Chỉ Admin/EVM Staff có quyền truy cập
+        // Bảo vệ route: Chỉ Admin và EVM_Staff có quyền truy cập
         if (!isAuthenticated) { router.push("/login"); return; }
-        if (user && user.role !== "Admin" && user.role !== "EVM_Staff") { router.push("/"); return; }
+        const allowedRoles = ["Admin", "EVM_Staff"];
+        if (user && !allowedRoles.includes(user.role)) { router.push("/"); return; }
 
         const loadCustomers = async () => {
             setIsLoading(true);
@@ -118,9 +119,10 @@ export default function AdminCustomersPage() {
     // Render JSX
     // ---------------------------------------
 
+    // Chỉ Admin và EVM_Staff có thể tạo/sửa/xóa khách hàng
     const canModify = user?.role === "Admin" || user?.role === "EVM_Staff";
     
-    if (!user || (!isAuthenticated && canModify)) return null;
+    if (!user || !isAuthenticated) return null;
 
     return (
         <Layout>

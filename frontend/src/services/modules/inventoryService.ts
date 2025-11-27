@@ -24,3 +24,21 @@ export const updateInventory = async (id: number, inventoryData: InventoryReques
 export const deleteInventory = async (id: number): Promise<void> => {
     await apiClient.delete(`/inventory/${id}`);
 };
+
+// 5. GET: Lấy Inventory theo Part ID
+export const getInventoryByPart = async (partId: number): Promise<InventoryResponse[]> => {
+    const response = await apiClient.get<InventoryResponse[]>(`/inventory/search/part/${partId}`);
+    return response.data;
+};
+
+// 6. GET: Lấy Inventory theo Center ID
+export const getInventoryByCenter = async (centerId: number): Promise<InventoryResponse[]> => {
+    const response = await apiClient.get<InventoryResponse[]>(`/inventory/search/center/${centerId}`);
+    return response.data;
+};
+
+// 7. GET: Lấy Inventory cần bổ sung (Low Stock - số lượng <= amount)
+export const getLowStockInventory = async (threshold: number): Promise<InventoryResponse[]> => {
+    const response = await apiClient.get<InventoryResponse[]>(`/inventory/restock?amount=${threshold}`);
+    return response.data;
+};
