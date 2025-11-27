@@ -59,14 +59,16 @@ const CampaignTable: React.FC<RecallCampaignTableProps> = ({ campaigns, onEdit, 
                                     </span>
                                 </td>
                                 <td className="whitespace-nowrap px-4 py-3 text-sm space-x-2">
+                                    {/* SC Staff/Technician có thể quản lý xe trong campaign */}
+                                    <button 
+                                        onClick={() => onManageVehicles(c)} 
+                                        className="text-indigo-600 hover:text-indigo-800 text-xs font-semibold p-1 hover:bg-indigo-50 rounded transition-colors"
+                                    >
+                                        Quản lý Xe
+                                    </button>
+                                    {/* Chỉ Admin/EVM_Staff mới có thể sửa/xóa campaign */}
                                     {canModify && (
                                         <>
-                                            <button 
-                                                onClick={() => onManageVehicles(c)} 
-                                                className="text-indigo-600 hover:text-indigo-800 text-xs font-semibold p-1 hover:bg-indigo-50 rounded transition-colors"
-                                            >
-                                                Quản lý Xe
-                                            </button>
                                             <button 
                                                 onClick={() => onEdit(c)} 
                                                 className="text-blue-600 hover:text-blue-800 text-xs font-semibold p-1 hover:bg-blue-50 rounded transition-colors"
@@ -110,11 +112,14 @@ export default function CampaignsPage() {
     
 
     const allowedRoles = ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"];
-    const canModify = !!(user && allowedRoles.includes(user.role));
+    // Chỉ Admin và EVM_Staff mới có thể tạo/sửa/xóa campaign
+    // SC Staff/Technician chỉ xem và quản lý xe trong campaign (theo phần 1d)
+    const canModify = !!(user && (user.role === "Admin" || user.role === "EVM_Staff"));
+    const canView = !!(user && allowedRoles.includes(user.role));
 
     useEffect(() => {
         if (!isAuthenticated) { router.push("/login"); return; }
-        if (user && !allowedRoles.includes(user.role)) { router.push("/admin"); return; }
+        if (user && !allowedRoles.includes(user.role)) { router.push("/"); return; }
         
         loadData();
     }, [isAuthenticated, user, router]);
@@ -232,8 +237,8 @@ export default function CampaignsPage() {
                 </div>
             )}
             
-            {/* [MỚI] Modal Quản lý Xe trong Campaign */}
-            {isVehicleManagerOpen && managingCampaign && canModify && (
+            {/* [MỚI] Modal Quản lý Xe trong Campaign - SC Staff/Technician cũng có thể quản lý xe */}
+            {isVehicleManagerOpen && managingCampaign && canView && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl p-8 w-full max-w-2xl shadow-2xl transform transition-all duration-300 overflow-y-auto max-h-[90vh]">
                         <CampaignVehicleManager
@@ -254,3 +259,4 @@ export default function CampaignsPage() {
         </Layout>
     );
 }
+

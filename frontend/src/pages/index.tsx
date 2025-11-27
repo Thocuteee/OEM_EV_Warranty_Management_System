@@ -30,7 +30,7 @@ const initialOtherSections: OtherSectionItem[] = [
     { 
         title: "Campaigns mới", 
         description: "Theo dõi các chiến dịch triệu hồi mới nhất.", 
-        href: "/admin/campaigns" 
+        href: "/campaigns" 
     },
     { 
         title: "Báo cáo & Thống kê", 

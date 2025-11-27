@@ -107,8 +107,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { 
       name: "Chiến dịch Triệu hồi", 
       icon: "📢", 
-      href: "/admin/campaigns", 
-      roles: ["Admin", "EVM_Staff"], 
+      href: "/campaigns", 
+      roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"], // Phần 1d: SC Staff/Technician cần xem và thực hiện chiến dịch
     },
     { 
       name: "Quản lý Hóa đơn", 

@@ -23,7 +23,7 @@ export default function SidebarAdmin() {
         // --- MODULE HỖ TRỢ VÀ TỒN KHO ---
         { name: "Quản lý Linh kiện/Tồn kho", href: "/admin/parts", icon: "🔧" }, 
         { name: "Quản lý Trung tâm Dịch vụ", href: "/admin/centers", icon: "📍" },
-        { name: "Chiến dịch", href: "/admin/campaigns", icon: "📣" }, 
+        { name: "Chiến dịch", href: "/campaigns", icon: "📣" }, 
         { name: "Quản lý Hóa đơn", href: "/admin/invoices", icon: "🧾" }, // Thêm Hóa đơn
         
         // --- KHÁC ---
