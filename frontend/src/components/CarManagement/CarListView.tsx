@@ -5,10 +5,12 @@
 import React, { useState, useMemo, ChangeEvent, useEffect } from 'react';
 import Link from 'next/link';
 // Import types đã tách
-import { VehicleResponse } from '@/types/vehicle'; 
+import { VehicleResponse, VehicleRequest } from '@/types/vehicle'; 
 // Import service thực tế
-import { getAllVehicles } from '@/services/modules/vehicleService'; 
+import { getAllVehicles, createVehicle } from '@/services/modules/vehicleService'; 
 import axios from 'axios';
+import { useAuth } from '@/context/AuthContext';
+import VehicleForm from '@/vehicles/VehicleForm';
 
 // FIX 1: Định nghĩa CarFilter (hoặc import từ types/index nếu có)
 interface CarFilter {
@@ -21,6 +23,19 @@ const CarListView: React.FC = () => {
     const [vehicles, setVehicles] = useState<VehicleResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const { user } = useAuth();
+    
+    // Modal state
+    const [isModalOpen, setModalOpen] = useState(false);
+    const [toast, setToast] = useState<string | null>(null);
+
+    // Auto-hide toast after 3 seconds
+    useEffect(() => {
+        if (toast) {
+            const timer = setTimeout(() => setToast(null), 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [toast]);
     
     // FIX 2: Dùng CarFilter thay vì any
     const [searchTerm, setSearchTerm] = useState<CarFilter>({
@@ -131,12 +146,13 @@ const CarListView: React.FC = () => {
                         className="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                     />
                     
-                    {/* Nút THÊM XE MỚI (Chuyển hướng đến Admin Panel) */}
-                    <Link href="/admin/vehicles">
-                        <button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300">
-                            Quản lý & Đăng ký Xe (Admin)
-                        </button>
-                    </Link>
+                    {/* Nút THÊM XE MỚI (Mở Modal) */}
+                    <button 
+                        onClick={() => setModalOpen(true)}
+                        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300"
+                    >
+                        Đăng ký Xe
+                    </button>
                 </div>
             </div>
 
@@ -185,6 +201,53 @@ const CarListView: React.FC = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* Modal Đăng ký Xe */}
+            {isModalOpen && user && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+                        <div className="mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">Đăng ký Xe mới</h2>
+                            <p className="text-gray-600 text-sm">Điền thông tin để đăng ký xe điện mới vào hệ thống</p>
+                        </div>
+                        <VehicleForm
+                            initialData={null}
+                            onSubmit={async (payload: VehicleRequest) => {
+                                try {
+                                    const newVehicle = await createVehicle(payload);
+                                    setVehicles(prev => [...prev, newVehicle]);
+                                    setModalOpen(false);
+                                    setToast("Đăng ký xe thành công!");
+                                } catch (err: unknown) {
+                                    let errorMessage = "Lỗi đăng ký xe không xác định.";
+                                    if (err instanceof Error) {
+                                        errorMessage = err.message;
+                                    } else if (axios.isAxiosError(err) && err.response) {
+                                        const apiError = err.response.data as { message?: string };
+                                        errorMessage = apiError.message || errorMessage;
+                                    }
+                                    throw new Error(errorMessage);
+                                }
+                            }}
+                            onClose={() => setModalOpen(false)}
+                            currentUserId={user.id}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* Toast Notification */}
+            {toast && (
+                <div 
+                    className="fixed bottom-6 right-6 bg-green-600 text-white px-6 py-4 rounded-xl shadow-2xl transition-all duration-300 z-50 cursor-pointer hover:bg-green-700 flex items-center gap-3"
+                    onClick={() => setToast(null)}
+                >
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="font-semibold">{toast}</span>
+                </div>
+            )}
         </>
     );
 };

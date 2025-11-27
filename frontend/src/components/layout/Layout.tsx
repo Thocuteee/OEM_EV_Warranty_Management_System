@@ -55,7 +55,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       name: "Quản lý Xe", 
       icon: "🚗", 
       href: "/cars", 
-      roles: ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"], 
+      roles: ["SC_Staff", "SC_Technician"], // Phần 1a: Dành cho SC Staff và SC Technician
     },
 
     // SỬA: Chuyển Claims ra khỏi Admin
@@ -90,7 +90,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       name: "Quản lý Khách hàng", 
       icon: "👥",
       href: "/admin/customers",
-      roles: ["Admin", "EVM_Staff"], 
+      roles: ["SC_Staff", "SC_Technician"], // Phần 1a: Dành cho SC Staff và SC Technician
     },
     { 
       name: "Chính sách Bảo hành", 

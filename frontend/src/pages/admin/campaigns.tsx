@@ -109,7 +109,7 @@ export default function CampaignsPage() {
     const [managingCampaign, setManagingCampaign] = useState<RecallCampaignResponse | null>(null);
     
 
-    const allowedRoles = ["Admin", "EVM_Staff"];
+    const allowedRoles = ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"];
     const canModify = !!(user && allowedRoles.includes(user.role));
 
     useEffect(() => {
