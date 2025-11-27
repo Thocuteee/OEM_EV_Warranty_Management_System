@@ -12,12 +12,16 @@ import { PartRequest, PartResponse } from "@/types/part";
 import { PartSerialRequest, PartSerialResponse } from "@/types/partSerial"; 
 // [MỚI] Import Inventory Types
 import { InventoryRequest, InventoryResponse } from "@/types/inventory";
+// [MỚI] Import VehiclePartHistory Types
+import { VehiclePartHistoryRequest, VehiclePartHistoryResponse } from "@/types/vehiclePartHistory";
 
 // Import Service functions
 import { getAllParts, createPart, updatePart, deletePart } from "@/services/modules/partService";
 import { getAllPartSerials, createPartSerial, updatePartSerial, deletePartSerial } from "@/services/modules/partSerialService";
 // [MỚI] Import Inventory Service
 import { getAllInventory, createOrUpdateInventory, updateInventory, deleteInventory } from "@/services/modules/inventoryService";
+// [MỚI] Import VehiclePartHistory Service
+import { getAllVehiclePartHistory, createVehiclePartHistory, deleteVehiclePartHistory } from "@/services/modules/vehiclePartHistoryService";
 
 
 // Import Form Components
@@ -25,7 +29,9 @@ import PartForm from "@/parts/PartForm";
 import PartSerialForm from "@/parts/PartSerialForm"; 
 // [MỚI] Import Inventory Components
 import InventoryTable from "./InventoryTable"; 
-import InventoryForm from "./InventoryForm"; 
+import InventoryForm from "./InventoryForm";
+// [MỚI] Import VehiclePartHistory Components
+import VehiclePartHistoryFormForParts from "@/parts/VehiclePartHistoryFormForParts"; 
 
 
 // Dùng types đã được import
@@ -158,7 +164,9 @@ export default function PartsPage() {
     const [parts, setParts] = useState<PartResponseInterface[]>([]);
     const [serials, setSerials] = useState<PartSerialResponseInterface[]>([]);
     // [MỚI] State cho Inventory Records
-    const [inventory, setInventory] = useState<InventoryResponse[]>([]); 
+    const [inventory, setInventory] = useState<InventoryResponse[]>([]);
+    // [MỚI] State cho VehiclePartHistory (Gắn số seri với VIN)
+    const [vehiclePartHistory, setVehiclePartHistory] = useState<VehiclePartHistoryResponse[]>([]); 
     
     const [isLoading, setIsLoading] = useState(true);
     const [searchKeyword, setSearchKeyword] = useState("");
@@ -171,19 +179,23 @@ export default function PartsPage() {
     // [MỚI] State cho Inventory Modal
     const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
     const [editingInventory, setEditingInventory] = useState<InventoryResponse | null>(null);
+    // [MỚI] State cho VehiclePartHistory Modal
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+    const [editingHistory, setEditingHistory] = useState<VehiclePartHistoryResponse | null>(null);
+    const [selectedVehicleId, setSelectedVehicleId] = useState<number | null>(null);
+    const [selectedClaimId, setSelectedClaimId] = useState<number | null>(null);
 
+    // [MỚI] Thêm tab Inventory và VehiclePartHistory
+    const [activeTab, setActiveTab] = useState<'parts' | 'serials' | 'inventory' | 'vehicle-parts'>('parts');
 
-    // [MỚI] Thêm tab Inventory
-    const [activeTab, setActiveTab] = useState<'parts' | 'serials' | 'inventory'>('parts');
-
-    const allowedViewRoles = ["Admin", "EVM_Staff", "SC_Staff", "SC_Technician"];
-    // Chỉ Admin/EVM Staff có thể quản lý Part/Serial/Inventory
+    // Phần 2a: Chỉ Admin và EVM_Staff mới có quyền quản lý sản phẩm & phụ tùng
+    const allowedRoles = ["Admin", "EVM_Staff"];
     const canModify = user?.role === "Admin" || user?.role === "EVM_Staff";
 
     useEffect(() => {
-        // Bảo vệ route: Tất cả các vai trò nghiệp vụ đều được truy cập
+        // Bảo vệ route: Chỉ Admin và EVM_Staff
         if (!isAuthenticated) { router.push("/login"); return; }
-        if (user && !allowedViewRoles.includes(user.role)) { router.push("/"); return; }
+        if (user && !allowedRoles.includes(user.role)) { router.push("/"); return; }
         
         loadData();
     }, [isAuthenticated, user, router]);
@@ -191,15 +203,17 @@ export default function PartsPage() {
     const loadData = async () => {
         setIsLoading(true);
         try {
-            // [CẬP NHẬT] Thêm getAllInventory()
-            const [partsData, serialsData, inventoryData] = await Promise.all([
+            // [CẬP NHẬT] Thêm getAllInventory() và getAllVehiclePartHistory()
+            const [partsData, serialsData, inventoryData, historyData] = await Promise.all([
                 getAllParts(),
                 getAllPartSerials(),
-                getAllInventory(), 
+                getAllInventory(),
+                getAllVehiclePartHistory(),
             ]);
             setParts(partsData);
             setSerials(serialsData);
-            setInventory(inventoryData); 
+            setInventory(inventoryData);
+            setVehiclePartHistory(historyData);
         } catch(err) {
             console.error("Lỗi tải dữ liệu:", err);
             setToast("Không thể tải danh sách Linh kiện/Serial/Tồn kho.");
@@ -297,6 +311,35 @@ export default function PartsPage() {
             setToast("Lỗi khi xóa Bản ghi tồn kho.");
         }
     };
+
+    // --- Handlers (VehiclePartHistory - MỚI) ---
+    const handleSaveVehiclePartHistory = async (payload: VehiclePartHistoryRequest) => {
+        try {
+            await createVehiclePartHistory(payload);
+            setToast("Gắn số seri phụ tùng với VIN thành công!");
+            await loadData();
+            setIsHistoryModalOpen(false);
+            setEditingHistory(null);
+            setSelectedVehicleId(null);
+            setSelectedClaimId(null);
+        } catch (err: unknown) {
+            const errorMessage = axios.isAxiosError(err) && err.response?.data?.message 
+                ? err.response.data.message 
+                : "Lỗi khi gắn số seri phụ tùng với VIN.";
+            throw new Error(errorMessage);
+        }
+    };
+
+    const handleDeleteVehiclePartHistory = async (id: number) => {
+        if (!confirm("Bạn chắc chắn muốn xóa bản ghi này?")) return;
+        try {
+            await deleteVehiclePartHistory(id);
+            setToast("Đã xóa bản ghi thành công.");
+            await loadData();
+        } catch {
+            setToast("Lỗi khi xóa bản ghi.");
+        }
+    };
     // --- End Handlers ---
 
     const filteredParts = useMemo(() => {
@@ -332,6 +375,18 @@ export default function PartsPage() {
             return partName.includes(keyword) || centerName.includes(keyword);
         });
     }, [inventory, searchKeyword]);
+
+    // [MỚI] Lọc VehiclePartHistory
+    const filteredVehiclePartHistory = useMemo(() => {
+        if (!vehiclePartHistory || vehiclePartHistory.length === 0) return [];
+        const keyword = searchKeyword.toLowerCase();
+        return vehiclePartHistory.filter(h => {
+            if (!h) return false;
+            const vin = h.vehicleVIN?.toLowerCase() || '';
+            const serial = h.partSerialNumber?.toLowerCase() || '';
+            return vin.includes(keyword) || serial.includes(keyword);
+        });
+    }, [vehiclePartHistory, searchKeyword]);
     
     
     if (isLoading || !user) return <Layout><p>Đang tải dữ liệu...</p></Layout>;
@@ -340,8 +395,8 @@ export default function PartsPage() {
         <Layout>
             {/* Header section with enhanced style */}
             <div className="bg-white p-6 rounded-xl shadow-md border mb-6">
-                <h1 className="text-3xl font-bold text-gray-900">Quản lý Linh kiện & Tồn kho</h1>
-                <p className="text-gray-600 mt-1">Quản lý danh mục linh kiện gốc, theo dõi từng số Serial và số lượng tồn kho tại các trung tâm.</p>
+                <h1 className="text-3xl font-bold text-gray-900">Quản lý Sản phẩm & Phụ tùng</h1>
+                <p className="text-gray-600 mt-1">Quản lý cơ sở dữ liệu bộ phận EV, gắn số seri phụ tùng với xe (VIN), và quản lý tồn kho.</p>
             </div>
             
             {/* Tab Selector */}
@@ -364,6 +419,13 @@ export default function PartsPage() {
                     className={`pb-2 font-semibold text-lg transition-colors ${activeTab === 'inventory' ? 'text-yellow-600 border-b-2 border-yellow-600' : 'text-gray-500 hover:text-yellow-500'}`}
                 >
                     Tồn kho Chi tiết ({inventory.length})
+                </button>
+                {/* [MỚI] Tab Gắn số seri với VIN */}
+                <button 
+                    onClick={() => setActiveTab('vehicle-parts')}
+                    className={`pb-2 font-semibold text-lg transition-colors ${activeTab === 'vehicle-parts' ? 'text-purple-600 border-b-2 border-purple-600' : 'text-gray-500 hover:text-purple-500'}`}
+                >
+                    Gắn Seri với VIN ({vehiclePartHistory.length})
                 </button>
             </div>
 
@@ -414,6 +476,23 @@ export default function PartsPage() {
                     >
                         + Thêm Tồn kho
                     </button>
+                ) : canModify && activeTab === 'vehicle-parts' ? ( // [MỚI] Nút Gắn Seri với VIN
+                    <button
+                        onClick={() => { 
+                            if (serials.length === 0) {
+                                setToast("Vui lòng thêm Serial linh kiện trước.");
+                            } else {
+                                setEditingHistory(null);
+                                setSelectedVehicleId(null);
+                                setSelectedClaimId(null);
+                                setIsHistoryModalOpen(true);
+                            }
+                        }}
+                        className="bg-purple-600 text-white px-5 py-2 rounded-lg font-semibold shadow-md hover:bg-purple-700 transition-colors disabled:opacity-50"
+                        disabled={serials.length === 0}
+                    >
+                        + Gắn Seri với VIN
+                    </button>
                 ) : (
                     <div className="w-1/3 text-right">
                         <span className="text-sm text-gray-500">Chỉ Admin/EVM Staff có thể thay đổi.</span>
@@ -449,6 +528,52 @@ export default function PartsPage() {
                     onDelete={handleDeleteInventory}
                     canModify={canModify}
                 />
+            )}
+            {/* [MỚI] Bảng VehiclePartHistory - Gắn số seri với VIN */}
+            {activeTab === 'vehicle-parts' && (
+                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-md">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-purple-50">
+                            <tr>
+                                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-purple-800">ID</th>
+                                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-purple-800">VIN Xe</th>
+                                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-purple-800">Serial Phụ tùng</th>
+                                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-purple-800">Claim ID</th>
+                                <th className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-purple-800">Ngày Lắp đặt</th>
+                                {canModify && <th className="px-4 py-3 text-center text-xs font-bold uppercase tracking-wider text-purple-800">Thao tác</th>}
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100 bg-white">
+                            {filteredVehiclePartHistory.length === 0 ? (
+                                <tr>
+                                    <td colSpan={canModify ? 6 : 5} className="px-4 py-10 text-center text-gray-500">
+                                        Chưa có bản ghi nào về việc gắn số seri phụ tùng với VIN.
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredVehiclePartHistory.map((h) => (
+                                    <tr key={h.id} className="hover:bg-purple-50/50 transition-colors">
+                                        <td className="whitespace-nowrap px-4 py-3 text-sm font-semibold text-gray-900">{h.id}</td>
+                                        <td className="px-4 py-3 text-sm font-medium text-blue-600 font-mono">{h.vehicleVIN || 'N/A'}</td>
+                                        <td className="px-4 py-3 text-sm font-medium text-gray-700 font-mono">{h.partSerialNumber || 'N/A'}</td>
+                                        <td className="px-4 py-3 text-sm text-gray-700">{h.claimId}</td>
+                                        <td className="px-4 py-3 text-sm text-gray-500">{h.dateInstalled ? new Date(h.dateInstalled).toLocaleDateString('vi-VN') : 'N/A'}</td>
+                                        {canModify && (
+                                            <td className="px-4 py-3 whitespace-nowrap text-sm text-center">
+                                                <button
+                                                    onClick={() => handleDeleteVehiclePartHistory(h.id)}
+                                                    className="text-red-600 hover:text-red-800 text-xs font-semibold p-1 hover:bg-red-50 rounded transition-colors"
+                                                >
+                                                    Xóa
+                                                </button>
+                                            </td>
+                                        )}
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             )}
             
             {/* Modal tạo/cập nhật Linh kiện (Giữ nguyên) */}
@@ -486,6 +611,23 @@ export default function PartsPage() {
                             initialData={editingInventory}
                             onSubmit={handleSaveInventory}
                             onClose={() => { setIsInventoryModalOpen(false); setEditingInventory(null); }}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {/* [MỚI] Modal Gắn số seri phụ tùng với VIN */}
+            {isHistoryModalOpen && canModify && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl p-8 w-full max-w-2xl shadow-2xl transform transition-all duration-300 max-h-[90vh] overflow-y-auto">
+                        <VehiclePartHistoryFormForParts
+                            onSubmit={handleSaveVehiclePartHistory}
+                            onClose={() => { 
+                                setIsHistoryModalOpen(false); 
+                                setEditingHistory(null);
+                                setSelectedVehicleId(null);
+                                setSelectedClaimId(null);
+                            }}
                         />
                     </div>
                 </div>
